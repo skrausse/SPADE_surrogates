@@ -1,3 +1,0 @@
-[submodule "multielectrode_grasp"]
-	path = data/multielectrode_grasp
-	url = git@gin.g-node.org:/INT/multielectrode_grasp.git
