@@ -147,8 +147,6 @@ def get_cv2(spiketrain, sep):
         single neuron concatenate spike train
     sep: pq.Quantity
 
-
-
     Returns
     -------
     cv2 : float
@@ -311,10 +309,10 @@ if __name__ == '__main__':
     load_original_data = False
 
     for session in sessions:
-        if not os.path.exists(f'../ppr/{session}'):
-            os.makedirs(f'../ppr/{session}')
-        if not os.path.exists(f'../gamma/{session}'):
-            os.makedirs(f'../gamma/{session}')
+        if not os.path.exists(f'../data/experimental_data/ppr/{session}'):
+            os.makedirs(f'../data/experimental_data/ppr/{session}')
+        if not os.path.exists(f'../data/experimental_data/gamma/{session}'):
+            os.makedirs(f'../data/experimental_data/gamma/{session}')
         for epoch in epochs:
             for trialtype in trialtypes:
                 print(f'Loading data {session} {epoch} {trialtype}')
@@ -330,8 +328,10 @@ if __name__ == '__main__':
                         firing_rate_threshold=firing_rate_threshold)
                 else:
                     print('Loading already concatenated spiketrains')
-                    sts = np.load(f'../concatenated_spiketrains/{session}/'
-                                  f'{epoch}_{trialtype}.npy', allow_pickle=True)
+                    sts = np.load(f'../data/concatenated_spiketrains/'
+                                  f'{session}/'
+                                  f'{epoch}_{trialtype}.npy',
+                                  allow_pickle=True)
 
                 print("Generating data")
                 ppr, gamma, cvs = \
@@ -345,10 +345,10 @@ if __name__ == '__main__':
 
                 print('Storing data...')
                 if 'ppr' in processes:
-                    np.save(f'../ppr/{session}/'
+                    np.save(f'../data/experimental_data/ppr/{session}/'
                             f'ppr_{epoch}_{trialtype}.npy', ppr)
                 if 'gamma' in processes:
-                    np.save(f'../gamma/{session}/'
+                    np.save(f'../data/experimental_data/gamma/{session}/'
                             f'gamma_{epoch}_{trialtype}.npy', gamma)
-                    np.save(f'../gamma/{session}/'
+                    np.save(f'../data/experimental_data/gamma/{session}/'
                             f'cvs_{epoch}_{trialtype}.npy', cvs)
