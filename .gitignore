@@ -132,3 +132,6 @@ dmypy.json
 
 # plot folder
 plots/
+
+# spiketrain folders
+concatenated_spiketrains/
