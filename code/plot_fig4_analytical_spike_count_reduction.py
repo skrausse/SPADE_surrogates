@@ -166,6 +166,7 @@ def plot_spike_count_reduction(
     dither_parameter : pq.Quantity
     dead_times : pq.Quantity
     shape_factors : np.ndarray
+    plot_path : string
 
     Returns
     -------
@@ -235,7 +236,7 @@ def plot_spike_count_reduction(
     axes[1].legend()
 
     fig.savefig(plot_path, dpi=300)
-    plt.show()
+    # plt.show()
 
 
 if __name__ == '__main__':

@@ -125,9 +125,10 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
-# Pyre type checker
 .pyre/
 
 # pycharm project settings
-.idea
 .idea/
+
+# plot folder
+plots/
