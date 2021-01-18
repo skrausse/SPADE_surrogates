@@ -12,16 +12,27 @@ import os
 def plot_isi_surr(st, ax, dither, num_surr=500, show_ylabel=True,
                   show_xlabel=True, fontsize=14, legend=False):
     """
+    Function calculating the ISI distributions of two example
+    neurons and the ISI distribution of UD surrogates generated from the
+    original neurons. Neurons represented are, with (channel-id,unit-id)
+    notation, (7,1) and (16,1) for monkey N, (5,1) and (6.1) for monkey L.
+    or each monkey, on the left we show the ISI distributions of two example
+    neurons (blue line) and the ISI distribution of UD surrogates generated
+    from the original neurons (gray line: average across 500 surrogates;
+    gray band represents the first standard deviation) on a 1ms resolution.
 
-    :param st:
-    :param ax:
-    :param dither:
-    :param num_surr:
-    :param show_ylabel:
-    :param show_xlabel:
-    :param fontsize:
-    :param legend:
-    :return:
+    Parameters
+    ----------
+    sts: list
+        list of spiketrains
+    ax: plt.axes
+        ax where to plot
+    dither: pq.quantities
+        dithering parameter of the surrogate generation
+    sep: pq.quantities
+        separation time between trials
+    num_surr: int
+        number of surrogates to generate to show the ISI distribution
     """
     # calculate isi of original spike train
     isi = stat.isi(st)
@@ -96,9 +107,13 @@ def create_sts_list(sts, sep, epoch_length):
 
 def get_cv2(isis):
     """
+    Function calculating the CV2 given a list of ISIs extracted from one
+    spiketrain. Function from Van Vreiswijk 2010.
 
-    :param isis:
-    :return:
+    Parameters
+    ----------
+    isis: list
+        list of ISIs
     """
     cv2 = np.sum([2*np.sum(np.abs(trial_isi[:-1]-trial_isi[1:]) / (trial_isi[:-1]+trial_isi[1:])) for trial_isi in isis]
                 )/np.sum([len(trial_isi)-1 if len(trial_isi) > 0 else 0 for trial_isi in isis])
@@ -108,15 +123,19 @@ def get_cv2(isis):
 def plot_cv2(sts, ax, epoch_length, sep, show_xlabel=True,
              show_ylabel=True, fontsize=14):
     """
+    Function producing the distribution of CV2 of all neurons in the
+    considered dataset.
 
-    :param sts:
-    :param ax:
-    :param epoch_length:
-    :param sep:
-    :param show_xlabel:
-    :param show_ylabel:
-    :param fontsize:
-    :return:
+    Parameters
+    ----------
+    sts: list
+        list of spiketrains
+    ax: plt.axes
+        ax where to plot
+    epoch_length: pq.quantities
+        length of each trial
+    sep: pq.quantities
+        separation time between trials
     """
     sts_list = create_sts_list(sts, epoch_length=epoch_length,
                                sep=sep)
@@ -146,16 +165,21 @@ def plot_cv2(sts, ax, epoch_length, sep, show_xlabel=True,
 def plot_dt(sts, ax, sorting_dead_time, sep, max_refractory=4 * pq.ms,
             show_xlabel=True, show_ylabel=True, fontsize=14):
     """
+    Function producing the distribution of dead times (calculated as minimal
+    ISI) of all neurons in the considered dataset.
 
-    :param sts:
-    :param ax:
-    :param sorting_dead_time:
-    :param sep:
-    :param max_refractory:
-    :param show_xlabel:
-    :param show_ylabel:
-    :param fontsize:
-    :return:
+    Parameters
+    ----------
+    sts: list
+        list of spiketrains
+    ax: plt.axes
+        ax where to plot
+    sep: pq.quantities
+        separation time between trials
+    sorting_deadtime: dict
+        dictionary of dead times for all neurons fixed during spike sorting
+    max_refractory: pq.quantities
+        maximal refractory period as a top boundary
     """
     rp_list = []
     # loop over the neurons
@@ -181,17 +205,36 @@ def plot_dt(sts, ax, sorting_dead_time, sep, max_refractory=4 * pq.ms,
 
 
 def r2g_statistics(sessions, epoch, trialtype, data_path,
-                   sorting_deadtime, sep, dither):
+                   sorting_deadtime, sep, dither, epoch_length):
     """
+    Function reproducing Figure 3 of the paper. It represents the neuronal
+    statistics of experimental data (ISI distribution, CV2, dead time d).
+    At top: Statistics shown for Monkey N (session i140703-001, movement PGHF).
+    Bottom: Statistics shown for Monkey L (session l101210-001, movement PGHF).
+    For each monkey, on the left the ISI distributions of two example
+    neurons and the ISI distribution of UD surrogates generated from the
+    original neurons. On the right, the distribution of the average CV2 for
+    all neurons and their respective dead time distribution (d).
 
-    :param sessions:
-    :param epoch:
-    :param trialtype:
-    :param data_path:
-    :param sorting_deadtime:
-    :param sep:
-    :param dither:
-    :return:
+    Parameters
+    ----------
+    sessions: list of strings
+        sessions plotted
+    epoch: str
+        epoch of the trial taken into consideration
+    trialtype: str
+        trialtype taken into consideration
+    dither: pq.quantities
+        dithering parameter of the surrogate generation
+    data_path: str
+        data folder
+    epoch_length: pq.quantities
+        length of each trial
+    sep: pq.quantities
+        separation time between trials
+    sorting_deadtime: dict
+        dictionary of dead times for all neurons fixed during spike sorting
+
     """
     # gridspec inside gridspec
     fig = plt.figure(figsize=(5.2, 5))
@@ -314,4 +357,4 @@ if __name__ == '__main__':
 
     r2g_statistics(sessions=sessions, epoch=epoch, trialtype=trialtype,
                    data_path=data_path, sorting_deadtime=sorting_deadtime,
-                   sep=sep, dither=dither)
+                   sep=sep, dither=dither, epoch_length=epoch_length)
