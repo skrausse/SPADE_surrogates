@@ -40,12 +40,12 @@ def create_rate_dict(session,
         {'rates': sorted rates (in decreased order), 'n_bins': n_bins,
                   'rates_ordered_by_neuron': rates ordered by neuron id}
     """
-    if process == 'ppr':
-        data_path = '../ppr/'
+    if process == 'ppd':
+        data_path = '../ppd/'
     elif process == 'gamma':
         data_path = '../gamma/'
     else:
-        raise KeyError('Process parameter has to be either ppr or gamma')
+        raise KeyError('Process parameter has to be either ppd or gamma')
     sts_units = np.load(data_path + session + '/' + process + '_' +
                         ep + '_' + trialtype + '.npy',
                         allow_pickle=True)

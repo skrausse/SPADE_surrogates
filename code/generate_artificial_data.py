@@ -227,7 +227,7 @@ def generate_artificial_data(data, seed, max_refractory, processes,
 
     Returns
     -------
-    ppr_spiketrains: list
+    ppd_spiketrains: list
         list of poisson processes (neo.SpikeTrain) with rate profile and
         refractory period estimated from data
     gamma_spiketrains: list
@@ -243,7 +243,7 @@ def generate_artificial_data(data, seed, max_refractory, processes,
 
     rates = []
     refractory_periods = []
-    ppr_spiketrains = []
+    ppd_spiketrains = []
     gamma_spiketrains = []
     cvs = []
     cv2s = []
@@ -259,15 +259,15 @@ def generate_artificial_data(data, seed, max_refractory, processes,
         cvs.append(cv)
         cv2s.append(cv2)
 
-        if 'ppr' in processes:
+        if 'ppd' in processes:
             # generating Poisson spike trains with refractory period
-            ppr_spiketrain = stg.inhomogeneous_poisson_process(
+            ppd_spiketrain = stg.inhomogeneous_poisson_process(
                 rate=rate,
                 as_array=False,
                 refractory_period=refractory_period)
-            ppr_spiketrain.annotate(**spiketrain.annotations)
-            ppr_spiketrain = ppr_spiketrain.rescale(pq.s)
-            ppr_spiketrains.append(ppr_spiketrain)
+            ppd_spiketrain.annotate(**spiketrain.annotations)
+            ppd_spiketrain = ppd_spiketrain.rescale(pq.s)
+            ppd_spiketrains.append(ppd_spiketrain)
 
         if 'gamma' in processes:
             # generating gamma spike train with cv estimated by neuron
@@ -281,7 +281,7 @@ def generate_artificial_data(data, seed, max_refractory, processes,
                                                   t_stop=spiketrain.t_stop)
             gamma_spiketrain.annotate(**spiketrain.annotations)
             gamma_spiketrains.append(gamma_spiketrain)
-    return ppr_spiketrains, gamma_spiketrains, cvs
+    return ppd_spiketrains, gamma_spiketrains, cvs
 
 
 if __name__ == '__main__':
@@ -308,8 +308,8 @@ if __name__ == '__main__':
     load_original_data = False
 
     for session in sessions:
-        if not os.path.exists(f'../data/experimental_data/ppr/{session}'):
-            os.makedirs(f'../data/experimental_data/ppr/{session}')
+        if not os.path.exists(f'../data/experimental_data/ppd/{session}'):
+            os.makedirs(f'../data/experimental_data/ppd/{session}')
         if not os.path.exists(f'../data/experimental_data/gamma/{session}'):
             os.makedirs(f'../data/experimental_data/gamma/{session}')
         for epoch in epochs:
@@ -333,7 +333,7 @@ if __name__ == '__main__':
                                   allow_pickle=True)
 
                 print("Generating data")
-                ppr, gamma, cvs = \
+                ppd, gamma, cvs = \
                         generate_artificial_data(data=sts,
                                                  seed=seed,
                                                  max_refractory=max_refractory,
@@ -343,9 +343,9 @@ if __name__ == '__main__':
                 print('Finished data generation')
 
                 print('Storing data...')
-                if 'ppr' in processes:
-                    np.save(f'../data/experimental_data/ppr/{session}/'
-                            f'ppr_{epoch}_{trialtype}.npy', ppr)
+                if 'ppd' in processes:
+                    np.save(f'../data/experimental_data/ppd/{session}/'
+                            f'ppd_{epoch}_{trialtype}.npy', ppd)
                 if 'gamma' in processes:
                     np.save(f'../data/experimental_data/gamma/{session}/'
                             f'gamma_{epoch}_{trialtype}.npy', gamma)
