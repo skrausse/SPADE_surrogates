@@ -248,7 +248,6 @@ def generate_artificial_data(data, seed, max_refractory, processes,
     cvs = []
     cv2s = []
     for index, spiketrain in enumerate(data):
-        print(index)
         # estimate statistics
         rate, refractory_period, cv = \
             estimate_rate_refrperiod_cv(spiketrain=spiketrain,
