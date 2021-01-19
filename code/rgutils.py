@@ -824,4 +824,3 @@ def remove_synchrofact_spikes(sts, n=2, dt=0 * pq.ms, dt2=0 * pq.ms):
             t_0 = time.time()
             sts2.append(st.take(np.where([np.abs(t-times).min()>dt2 for t in st])[0]))
         return sts2
-
