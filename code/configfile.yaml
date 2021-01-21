@@ -1,5 +1,5 @@
 # The sessions to analyze
-sessions : ['i140703-001', 'l101210-001']
+sessions : ['i140703-001','l101210-001']
 # The 5 epochs to analyze
 epochs : ['start', 'cue1', 'earlydelay', 'latedelay', 'movement', 'hold']
 # The 4 trial types to analyze
@@ -14,8 +14,6 @@ binsize : 0.005
 percentile_poiss : 95
 # the percentile of the rate distribution to use to compute min occ (int between 0 and 100)
 percentile_rates : 90
-# The trial type to use to estimate firing rates
-reference_trialtype : 'SGHF'
 # Spectrum to use
 spectrum : '3d#'
 # sliding window length
@@ -35,9 +33,11 @@ psr_param : [2, 2, 2]
 # Unit in which every time of the analysis is expressed
 unit : 's'
 # Data being generated
-processes : ['ppr', 'gamma']
+processes : ['ppd', 'gamma']
+# Data
+dataset : ['experimental', 'artificial']
 # Firing rate threshold to exclude neurons
-firing_rate_threshold :
+firing_rate_threshold : 60
 # Seed for the data generation
 seed : 0
 # SNR threshold

@@ -41,9 +41,9 @@ def create_rate_dict(session,
                   'rates_ordered_by_neuron': rates ordered by neuron id}
     """
     if process == 'ppd':
-        data_path = '../ppd/'
+        data_path = '../data/artificial_data/ppd/'
     elif process == 'gamma':
-        data_path = '../gamma/'
+        data_path = '../data/artificial_data/gamma/'
     else:
         raise KeyError('Process parameter has to be either ppd or gamma')
     sts_units = np.load(data_path + session + '/' + process + '_' +
@@ -227,21 +227,16 @@ def estimate_number_occurrences(sessions,
     # Computing the min_occ for given a pattern size (min_spikes)
     param_dict = {}
     # Initialize dictionary with neurons to exclude from analysis by session
-    if not os.path.exists('./excluded_neurons.npy'):
-        if firing_rate_threshold is None:
-            excluded_neurons = None
-        else:
-            excluded_neurons = {}
+    if firing_rate_threshold is None:
+        excluded_neurons = None
+    else:
+        excluded_neurons = {}
     for session in sessions:
         param_dict[session] = {}
         for process in processes:
             param_dict[session][process] = {}
-            if not os.path.exists('./excluded_neurons.npy'):
-                if firing_rate_threshold is not None:
-                    excluded_neurons[session] = np.array([])
-            else:
-                excluded_neurons = np.load('excluded_neurons.npy',
-                                           allow_pickle=True).item()
+            if firing_rate_threshold is not None:
+                excluded_neurons[session] = np.array([])
             # Total number of jobs
             job_counter = 0
             print('session: ', session)
@@ -252,7 +247,8 @@ def estimate_number_occurrences(sessions,
                 # Storing parameters for each trial type
                 for tt in trialtypes:
                     # Path where to store the results
-                    rates_path = '../{}/rates/{}/{}_{}'.format(process,
+                    rates_path = '../results/artificial_data/' \
+                                 '{}/rates/{}/{}_{}'.format(process,
                                                                session,
                                                                ep,
                                                                tt)
@@ -273,12 +269,11 @@ def estimate_number_occurrences(sessions,
                         rates_dict['rates_ordered_by_neuron'])
                     # saving excluded neurons per session and behavioral context
                     if firing_rate_threshold is not None:
-                        if not os.path.exists('./excluded_neurons.npy'):
-                            excluded_neurons[session] = np.append(
-                                excluded_neurons[session],
-                                np.where(
-                                    rates_by_neuron > firing_rate_threshold)[
-                                    0])
+                        excluded_neurons[session] = np.append(
+                            excluded_neurons[session],
+                            np.where(
+                                rates_by_neuron > firing_rate_threshold)[
+                                0])
                         # remove the eliminated neurons from the rank of rates
                         if len(excluded_neurons[session]) > 0:
                             number_excluded_neurons = len(
@@ -465,14 +460,14 @@ def estimate_number_occurrences(sessions,
                             spectrum=spectrum,
                             abs_min_spikes=abs_min_spikes,
                             surr_method=surr_method)
-            if not os.path.exists('./excluded_neurons.npy'):
-                if firing_rate_threshold is not None:
-                    # ensure that excluded neurons are not repeated
-                    excluded_neurons[session] = np.unique(
-                        np.array(excluded_neurons[session]).flatten())
-                    # sort the neuron indexes in decreasing order (easy to pop)
-                    excluded_neurons[session] = np.sort(
-                        excluded_neurons[session])[::-1]
+            if firing_rate_threshold is not None:
+                # ensure that excluded neurons are not repeated
+                print(excluded_neurons)
+                excluded_neurons[session] = np.unique(
+                    np.array(excluded_neurons[session]).flatten())
+                # sort the neuron indexes in decreasing order (easy to pop)
+                excluded_neurons[session] = np.sort(
+                    excluded_neurons[session])[::-1]
     if not os.path.exists('./excluded_neurons.npy'):
         np.save('excluded_neurons', excluded_neurons)
     return param_dict, excluded_neurons

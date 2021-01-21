@@ -308,10 +308,10 @@ if __name__ == '__main__':
     load_original_data = False
 
     for session in sessions:
-        if not os.path.exists(f'../data/experimental_data/ppd/{session}'):
-            os.makedirs(f'../data/experimental_data/ppd/{session}')
-        if not os.path.exists(f'../data/experimental_data/gamma/{session}'):
-            os.makedirs(f'../data/experimental_data/gamma/{session}')
+        if not os.path.exists(f'../data/artificial_data/ppd/{session}'):
+            os.makedirs(f'../data/artificial_data/ppd/{session}')
+        if not os.path.exists(f'../data/artificial_data/gamma/{session}'):
+            os.makedirs(f'../data/artificial_data/gamma/{session}')
         for epoch in epochs:
             for trialtype in trialtypes:
                 print(f'Loading data {session} {epoch} {trialtype}')
@@ -344,10 +344,10 @@ if __name__ == '__main__':
 
                 print('Storing data...')
                 if 'ppd' in processes:
-                    np.save(f'../data/experimental_data/ppd/{session}/'
+                    np.save(f'../data/artificial_data/ppd/{session}/'
                             f'ppd_{epoch}_{trialtype}.npy', ppd)
                 if 'gamma' in processes:
-                    np.save(f'../data/experimental_data/gamma/{session}/'
+                    np.save(f'../data/artificial_data/gamma/{session}/'
                             f'gamma_{epoch}_{trialtype}.npy', gamma)
-                    np.save(f'../data/experimental_data/gamma/{session}/'
+                    np.save(f'../data/artificial_data/gamma/{session}/'
                             f'cvs_{epoch}_{trialtype}.npy', cvs)
