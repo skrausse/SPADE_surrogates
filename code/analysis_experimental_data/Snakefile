@@ -1,4 +1,4 @@
-configfile: "configfile.yaml"
+configfile: "../configfile.yaml"
 
 import numpy as np
 import quantities as pq

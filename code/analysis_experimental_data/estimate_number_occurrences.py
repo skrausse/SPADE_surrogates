@@ -1,6 +1,6 @@
 import numpy as np
 import rgutils
-from spade_utils import mkdirp, split_path
+import spade_utils as utils
 import math
 import copy
 from scipy.stats import binom
@@ -12,7 +12,6 @@ import os
 def create_rate_dict(session,
                      ep,
                      trialtype,
-                     SNR_thresh,
                      rates_path,
                      binsize):
     """
@@ -41,34 +40,30 @@ def create_rate_dict(session,
         {'rates': sorted rates (in decreased order), 'n_bins': n_bins,
                   'rates_ordered_by_neuron': rates ordered by neuron id}
     """
+    data_path = '../../data/concatenated_data/'
 
-    data = rgutils.load_epoch_as_lists(session,
-                                       ep,
-                                       trialtypes=trialtype,
-                                       SNRthresh=SNR_thresh,
-                                       verbose=True)
-    sts_units = list(data.values())
-    length_data = len(sts_units[0]) * 0.5
+    sts_units = np.load(data_path + session + '/' + '_' +
+                        ep + '_' + trialtype + '.npy',
+                        allow_pickle=True)
+    length_data = sts_units[0].t_stop
     # Total number of bins
     n_bins = int(length_data / binsize)
     # Compute list of average firing rate
     rates = []
     # Loop over neurons
     for sts in sts_units:
-        spike_count = 0
-        # Loop over trials
-        for st in sts:
-            spike_count += len(st)
+        spike_count = len(sts)
         rates.append(spike_count / float(length_data))
     sorted_rates = sorted(rates)
     rates_dict = {'rates': sorted_rates, 'n_bins': n_bins,
                   'rates_ordered_by_neuron': rates}
     # Create path is not already existing
     path_temp = './'
-    for folder in split_path(rates_path):
+    for folder in utils.split_path(rates_path):
         path_temp = path_temp + '/' + folder
-        mkdirp(path_temp)
+        utils.mkdirp(path_temp)
     np.save(rates_path + '/rates.npy', rates_dict)
+
     return rates_dict
 
 
@@ -257,7 +252,6 @@ def estimate_number_occurrences(sessions,
                         create_rate_dict(session=session,
                                          ep=ep,
                                          trialtype=tt,
-                                         SNR_thresh=SNR_thresh,
                                          rates_path=rates_path,
                                          binsize=binsize)
                 rates = rates_dict['rates']
@@ -282,7 +276,7 @@ def estimate_number_occurrences(sessions,
                 min_occ = abs_min_occ + 1
                 min_occ_old = n_bins
                 while min_occ > abs_min_occ:
-                    param_dict = storing_initial_parameters(
+                    param_dict = _storing_initial_parameters(
                         param_dict=param_dict,
                         session=session,
                         context=context,
