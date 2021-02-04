@@ -5,7 +5,7 @@ from scipy.stats import binom
 from scipy.special import binom as binom_coeff
 import quantities as pq
 import os
-from spade_utils import mkdirp, split_path
+import spade_utils as utils
 
 
 def create_rate_dict(session,
@@ -41,9 +41,9 @@ def create_rate_dict(session,
                   'rates_ordered_by_neuron': rates ordered by neuron id}
     """
     if process == 'ppd':
-        data_path = '../data/artificial_data/ppd/'
+        data_path = '../../data/artificial_data/ppd/'
     elif process == 'gamma':
-        data_path = '../data/artificial_data/gamma/'
+        data_path = '../../data/artificial_data/gamma/'
     else:
         raise KeyError('Process parameter has to be either ppd or gamma')
     sts_units = np.load(data_path + session + '/' + process + '_' +
@@ -63,9 +63,9 @@ def create_rate_dict(session,
                   'rates_ordered_by_neuron': rates}
     # Create path is not already existing
     path_temp = './'
-    for folder in split_path(rates_path):
+    for folder in utils.split_path(rates_path):
         path_temp = path_temp + '/' + folder
-        mkdirp(path_temp)
+        utils.mkdirp(path_temp)
     np.save(rates_path + '/rates.npy', rates_dict)
     return rates_dict
 
@@ -247,7 +247,7 @@ def estimate_number_occurrences(sessions,
                 # Storing parameters for each trial type
                 for tt in trialtypes:
                     # Path where to store the results
-                    rates_path = '../results/artificial_data/' \
+                    rates_path = '../../results/artificial_data/' \
                                  '{}/rates/{}/{}_{}'.format(process,
                                                                session,
                                                                ep,

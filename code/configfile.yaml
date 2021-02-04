@@ -7,7 +7,7 @@ trialtypes : ['PGHF', 'PGLF' ,'SGHF', 'SGLF' ]
 # Absolute (independent of the number of spikes) minimum number of occurrences of a pattern
 abs_min_occ : 10
 # Minimum number of spikes
-abs_min_spikes : 2
+abs_min_spikes : 2.
 # The binsize to use to run the spade analysis in seconds
 binsize : 0.005
 # Percentile of Poisson pattern count to set minimum occ (int between 0 and 100)
@@ -34,8 +34,6 @@ psr_param : [2, 2, 2]
 unit : 's'
 # Data being generated
 processes : ['ppd', 'gamma']
-# Data
-dataset : ['experimental', 'artificial']
 # Firing rate threshold to exclude neurons
 firing_rate_threshold : 60
 # Seed for the data generation
