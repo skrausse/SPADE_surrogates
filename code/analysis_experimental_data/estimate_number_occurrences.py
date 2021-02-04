@@ -1,5 +1,4 @@
 import numpy as np
-import rgutils
 import spade_utils as utils
 import math
 import copy
@@ -40,9 +39,9 @@ def create_rate_dict(session,
         {'rates': sorted rates (in decreased order), 'n_bins': n_bins,
                   'rates_ordered_by_neuron': rates ordered by neuron id}
     """
-    data_path = '../../data/concatenated_data/'
+    data_path = '../../data/concatenated_spiketrains/'
 
-    sts_units = np.load(data_path + session + '/' + '_' +
+    sts_units = np.load(data_path + session + '/' +
                         ep + '_' + trialtype + '.npy',
                         allow_pickle=True)
     length_data = sts_units[0].t_stop
@@ -98,7 +97,6 @@ def _storing_remaining_parameters(param_dict,
                                   psr_param,
                                   alpha,
                                   n_surr,
-                                  reference_trialtype,
                                   abs_min_occ,
                                   dither,
                                   spectrum,
@@ -118,8 +116,6 @@ def _storing_remaining_parameters(param_dict,
     param_dict[session][context][job_counter][
         'n_surr'] = n_surr
     param_dict[session][context][job_counter][
-        'reference_trialtype'] = reference_trialtype
-    param_dict[session][context][job_counter][
         'abs_min_occ'] = abs_min_occ
     param_dict[session][context][job_counter][
         'dither'] = dither
@@ -136,7 +132,6 @@ def estimate_number_occurrences(sessions,
                                 epochs,
                                 trialtypes,
                                 sep,
-                                reference_trialtype,
                                 SNR_thresh,
                                 binsize,
                                 abs_min_spikes,
@@ -329,7 +324,6 @@ def estimate_number_occurrences(sessions,
                         psr_param=psr_param,
                         alpha=alpha,
                         n_surr=n_surr,
-                        reference_trialtype=reference_trialtype,
                         abs_min_occ=abs_min_occ,
                         dither=dither,
                         spectrum=spectrum,
@@ -379,7 +373,6 @@ def estimate_number_occurrences(sessions,
                         psr_param=psr_param,
                         alpha=alpha,
                         n_surr=n_surr,
-                        reference_trialtype=reference_trialtype,
                         abs_min_occ=abs_min_occ,
                         dither=dither,
                         spectrum=spectrum,
@@ -428,7 +421,6 @@ def estimate_number_occurrences(sessions,
                         psr_param=psr_param,
                         alpha=alpha,
                         n_surr=n_surr,
-                        reference_trialtype=reference_trialtype,
                         abs_min_occ=abs_min_occ,
                         dither=dither,
                         spectrum=spectrum,
@@ -456,8 +448,6 @@ if __name__ == "__main__":
     trialtypes = config['trialtypes']
     # The sessions to analyze
     sessions = config['sessions']
-    # The trial type to use to estimate firing rates
-    reference_trialtype = config['reference_trialtype']
     # Absolute minimum number of occurrences of a pattern
     abs_min_occ = config['abs_min_occ']
     # Magnitude of the binsize used
@@ -466,8 +456,6 @@ if __name__ == "__main__":
     percentile_poiss = config['percentile_poiss']
     # The percentile for the Poisson distribution of rates
     percentile_rates = config['percentile_rates']
-    # The trial type to use to estimate firing rates
-    ref_tt = config['reference_trialtype']
     # minimum number of spikes per patterns
     abs_min_spikes = config['abs_min_spikes']
     # The winlen parameter for the SPADE analysis
@@ -500,7 +488,6 @@ if __name__ == "__main__":
                                     epochs=epochs,
                                     trialtypes=trialtypes,
                                     sep=sep,
-                                    reference_trialtype=reference_trialtype,
                                     SNR_thresh=SNR_thresh,
                                     binsize=binsize,
                                     abs_min_spikes=abs_min_spikes,

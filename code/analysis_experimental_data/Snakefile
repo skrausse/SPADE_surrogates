@@ -11,8 +11,6 @@ epochs = config['epochs']
 trialtypes = config['trialtypes']
 # The sessions to analyze
 sessions = config['sessions']
-# The trial type to use to estimate firing rates
-reference_trialtype = config['reference_trialtype']
 # Absolute (independent of the number of spikes) minimum number of occurrences of a pattern
 abs_min_occ = config['abs_min_occ']
 # Magnitude of the binsize used
@@ -59,7 +57,6 @@ param_dict, excluded_neurons = \
                                 epochs=epochs,
                                 trialtypes=trialtypes,
                                 sep=sep,
-                                reference_trialtype=reference_trialtype,
                                 SNR_thresh=SNR_thresh,
                                 binsize=binsize,
                                 abs_min_spikes=abs_min_spikes,
@@ -105,13 +102,13 @@ rule analyze_data:
         excluded_neurons = 'excluded_neurons.npy',
         script='spade_analysis.py'
     output:
-        '../results/experimental_data/{session}/{context}/{job_id}/results.npy'
+        '../../results/experimental_data/{session}/{context}/{job_id}/results.npy'
     shell:
         "mpirun python spade_analysis.py {wildcards.job_id} {wildcards.context} {wildcards.session}"
 
 # Function to create output path for filtered results
 def select_job_ids_context(wildcards):
-    return ['../results/experimental_data/{session}/{context}/{job_id}/results.npy'.format(job_id=job_id,
+    return ['../../results/experimental_data/{session}/{context}/{job_id}/results.npy'.format(job_id=job_id,
                                                                          session=wildcards.session,
                                                                          context=wildcards.context)
             for job_id in param_dict[wildcards.session][wildcards.context]]
@@ -123,6 +120,6 @@ rule filter_results:
         results=select_job_ids_context,
         script='filter_results.py'
     output:
-        '../results/experimental_data/{session}/{context}/filtered_res.npy'
+        '../../results/experimental_data/{session}/{context}/filtered_res.npy'
     shell:
         "python filter_results.py {wildcards.context} {wildcards.session}"
