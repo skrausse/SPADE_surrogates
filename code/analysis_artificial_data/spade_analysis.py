@@ -103,11 +103,11 @@ if firing_rate_threshold is not None:
     try:
         excluded_neurons = np.load('excluded_neurons.npy',
                                allow_pickle=True).item()[session]
+        for neuron in excluded_neurons:
+            sts.pop(int(neuron))
     except FileNotFoundError:
         print('excluded neurons list is not yet computed: '
               'run estimate_number_occurrences script')
-    for neuron in excluded_neurons:
-        sts.pop(int(neuron))
 
 ##### SPADE analysis ######
 comm = MPI.COMM_WORLD  # create MPI communicator
