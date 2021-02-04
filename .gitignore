@@ -135,3 +135,6 @@ plots/
 
 # spiketrain folders
 concatenated_spiketrains/
+
+# data surrogate statistics
+surrogate_statistics/

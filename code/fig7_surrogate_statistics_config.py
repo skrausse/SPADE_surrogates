@@ -19,7 +19,7 @@ FIG_NAME = 'Fig7_surrogate_statistics.eps'
 #  data generation
 
 # Global surrogate methods and spike train types.
-SURR_METHODS = ('UD', 'UDD', 'ISI-D', 'JISI-D', 'SHIFT-ST', 'BIN-SHUFF')
+SURR_METHODS = ('UD', 'UDD', 'JISI-D', 'ISI-D', 'SHIFT-ST', 'BIN-SHUFF')
 DATA_TYPES = ('Poisson', 'PPD', 'Gamma')
 
 # Data type for firing rate step and for eff. moved
@@ -144,4 +144,4 @@ CC_BOTTOM = 0.8
 CC_TOP = 1.6
 
 # AC/ CC xlim relative to dither
-AC_CC_XLIM = 3.05
+AC_CC_XLIM = 2.1

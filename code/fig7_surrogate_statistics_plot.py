@@ -15,6 +15,7 @@ DATA_TYPES = cf.DATA_TYPES
 STEP_DATA_TYPE = cf.STEP_DATA_TYPE
 
 FIRING_RATE = cf.FIRING_RATE
+RATES = cf.RATES
 
 DURATION_RATES_STEP = cf.DURATION_RATES_STEP
 
@@ -127,12 +128,15 @@ def _label_axes(axes_isi, axes_ac, axes_cc):
     for axis_ac, axis_cc in zip(axes_ac, axes_cc):
         axis_ac.set_ylim(bottom=AC_BOTTOM * FIRING_RATE,
                          top=AC_TOP * FIRING_RATE)
-        axis_cc.set_ylim(bottom=CC_BOTTOM * FIRING_RATE,
-                         top=CC_TOP * FIRING_RATE)
         axis_ac.set_xlim(left=-AC_CC_XLIM * DITHER,
                          right=AC_CC_XLIM * DITHER)
+
+    for axis_cc in axes_cc:
+        axis_cc.set_ylim(bottom=CC_BOTTOM * FIRING_RATE,
+                         top=CC_TOP * FIRING_RATE)
         axis_cc.set_xlim(left=-AC_CC_XLIM * DITHER,
                          right=AC_CC_XLIM * DITHER)
+        axis_cc.set_xticks([-DITHER.magnitude, 0., DITHER.magnitude])
 
 
 def plot_statistical_analysis_of_single_rate(
@@ -223,6 +227,10 @@ def plot_eff_moved(axis):
     axis.set_xlabel(r'$\lambda$ in Hz', labelpad=XLABELPAD)
     axis.set_ylabel(r'$N_{moved}/N$', labelpad=YLABELPAD)
 
+    maximal_rate = RATES[-1]
+    axis.set_xticks([1/4 * maximal_rate, 2/4 * maximal_rate,
+                     3/4 * maximal_rate, 4/4 * maximal_rate])
+
 
 def plot_cv_change(axis):
     results = np.load(f'{DATA_PATH}/cv_change.npy', allow_pickle=True).item()
@@ -237,7 +245,7 @@ def plot_cv_change(axis):
                   color=COLORS[surr_method],
                   linestyle=LINE_STYLES[surr_method])
     axis.set_xlabel('CV - original', labelpad=XLABELPAD)
-    axis.set_ylabel('CV - dithered', labelpad=YLABELPAD)
+    axis.set_ylabel('CV - surrogate', labelpad=YLABELPAD)
 
 
 def _hide_x_ticks(axis):
