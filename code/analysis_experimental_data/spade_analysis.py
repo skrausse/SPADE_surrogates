@@ -22,6 +22,8 @@ parser.add_argument('context', metavar='context', type=str,
                    help='behavioral context (epoch_trialtype) to analyze')
 parser.add_argument('session', metavar='session', type=str,
                    help='Recording session to analyze')
+parser.add_argument('surrogate method', metavar='surr_method', type=str,
+                   help='Surrogate method to use')
 
 args = parser.parse_args()
 
@@ -31,6 +33,8 @@ session = args.session
 context = args.context
 # id of the job to perform with this call
 job_id = args.job_id
+# surr_method to use
+surr_method = args.surr_method
 # Loading parameters specific to this job id
 param_dict = np.load('./param_dict.npy', encoding='latin1',
                      allow_pickle=True).item()
@@ -46,7 +50,6 @@ unit = config['unit']
 dither = (config['dither'] * pq.s).rescale(unit)
 n_surr = config['n_surr']
 binsize = (config['binsize'] * pq.s).rescale(unit)
-surr_method = config['surr_method']
 correction = config['correction']
 # Parameter specific to the job
 min_occ = param_dict[session][context][job_id]['min_occ']
@@ -109,7 +112,7 @@ for st_idx, st in enumerate(sts):
 if firing_rate_threshold is not None:
     try:
         excluded_neurons = np.load('excluded_neurons.npy',
-                               allow_pickle=True).item()[session]
+                                   allow_pickle=True).item()[session]
         for neuron in excluded_neurons:
             sts.pop(int(neuron))
     except FileNotFoundError:
@@ -139,7 +142,8 @@ spade_res = spade(spiketrains=sts,
                   output_format='concepts')
 
 # Path where to store the results
-res_path = '../../results/experimental_data/{}/{}_{}/{}'.format(session,
+res_path = '../../results/experimental_data/{}/{}/{}_{}/{}'.format(surr_method,
+                                                                   session,
                                                                 epoch,
                                                                 trialtype,
                                                                 job_id)
@@ -159,5 +163,6 @@ if rank == 0:
                                     config])
     # Storing annotations param
     np.save(
-        '../../results/experimental_data/{}/{}_{}'.format(
-            session, epoch, trialtype) + '/annotations.npy', annotations_dict)
+        '../../results/experimental_data/{}/{}/{}_{}'.format(
+            surr_method, session, epoch, trialtype) + '/annotations.npy',
+        annotations_dict)

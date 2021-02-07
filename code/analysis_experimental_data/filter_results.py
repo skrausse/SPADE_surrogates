@@ -15,12 +15,16 @@ parser.add_argument('context', metavar='context', type=str,
                    help='behavioral context (epoch_trialtype) to analyze')
 parser.add_argument('session', metavar='session', type=str,
                    help='Recording session to analyze')
+parser.add_argument('surrogate method', metavar='surr_method', type=str,
+                   help='Surrogate method to use')
 args = parser.parse_args()
 
 # Session to analyze
 session_name = args.session
 # Context to analyze
 context = args.context
+# surr_method to use
+surr_method = args.surr_method
 
 # Initialize n_surr , pv_spec and psr_param to None
 n_surr = None
@@ -28,8 +32,9 @@ psr_param = None
 pv_spec = None
 
 # Merging and filtering the results from all epochs nad trialtypes
-directory = '../../results/experimental_data/{}/{}'.format(session_name,
-                                                           context)
+directory = '../../results/experimental_data/{}/{}/{}'.format(surr_method,
+                                                              session_name,
+                                                              context)
 concepts = []
 ns_sgnt = []
 # Collecting outputs from  all the jobs
@@ -105,7 +110,7 @@ patterns = spade.concept_output_to_patterns(concepts=concepts,
                                             binsize=binsize,
                                             spectrum=spectrum)
 # Attaching additional info on neurons involved in patterns
-annotations = np.load('../results/{}/{}'.format(
+annotations = np.load('../results/{}/{}/{}'.format(surr_method,
     session_name, context) + '/annotations.npy', allow_pickle=True).item()
 for patt_idx, selected_patt in enumerate(patterns):
     selected_patt['channel_ids'] = []
@@ -131,7 +136,7 @@ filter_param = {'alpha': alpha,
 
 # Store merged filtered results
 np.save(
-    '../../results/experimental_data/{}/{}/filtered_res.npy'.format(
-        session_name, context), [patterns, loading_param,
+    '../../results/experimental_data/{}/{}/{}/filtered_res.npy'.format(
+        surr_method,session_name, context), [patterns, loading_param,
                                  filter_param, configfile_param,
                                  spade_param])

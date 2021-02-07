@@ -78,9 +78,14 @@ param_dict, excluded_neurons = \
 # Rule to collect all the results
 rule all:
     input:
-        ['../../results/experimental_data/{session}/{context}/{job_id}/results.npy'.format(job_id=job_id, session=session, context=context)
+        ['../../results/experimental_data/{surr_method}/{session}/{context}/{job_id}/results.npy'.format(job_id=job_id,
+                                                                                                         session=session,
+                                                                                                         context=context,
+                                                                                                         surr_method=surr_method)
          for session in sessions for context in contexts for job_id in param_dict[session][context]] + [
-             '../../results/experimental_data/{session}/{context}/filtered_res.npy'.format(session=session, context=context)
+             '../../results/experimental_data/{surr_method}/{session}/{context}/filtered_res.npy'.format(session=session,
+                                                                                                         context=context,
+                                                                                                         surr_method=surr_method)
              for context in contexts for session in sessions]
 
 # Rule to store the new version of the dictionary containing all the parameters
@@ -90,7 +95,7 @@ rule create_parameter_dict:
         '../configfile.yaml'
     output:
         'param_dict.npy',
-	'excluded_neurons.npy'
+	    'excluded_neurons.npy'
     run:
         np.save('./param_dict.npy', param_dict)
         np.save('./excluded_neurons.npy', excluded_neurons)
@@ -102,15 +107,16 @@ rule analyze_data:
         excluded_neurons = 'excluded_neurons.npy',
         script='spade_analysis.py'
     output:
-        '../../results/experimental_data/{session}/{context}/{job_id}/results.npy'
+        '../../results/experimental_data/{surr_method}/{session}/{context}/{job_id}/results.npy'
     shell:
-        "mpirun python spade_analysis.py {wildcards.job_id} {wildcards.context} {wildcards.session}"
+        "mpirun python spade_analysis.py {wildcards.job_id} {wildcards.context} {wildcards.session} {wildcards.surr_method}"
 
 # Function to create output path for filtered results
 def select_job_ids_context(wildcards):
-    return ['../../results/experimental_data/{session}/{context}/{job_id}/results.npy'.format(job_id=job_id,
-                                                                         session=wildcards.session,
-                                                                         context=wildcards.context)
+    return ['../../results/experimental_data/{surr_method}/{session}/{context}/{job_id}/results.npy'.format(job_id=job_id,
+                                                                                                            session=wildcards.session,
+                                                                                                            context=wildcards.context,
+                                                                                                            surr_method=wildcards.surr_method)
             for job_id in param_dict[wildcards.session][wildcards.context]]
 
 
@@ -120,6 +126,6 @@ rule filter_results:
         results=select_job_ids_context,
         script='filter_results.py'
     output:
-        '../../results/experimental_data/{session}/{context}/filtered_res.npy'
+        '../../results/experimental_data/{surr_method}/{session}/{context}/filtered_res.npy'
     shell:
-        "python filter_results.py {wildcards.context} {wildcards.session}"
+        "python filter_results.py {wildcards.context} {wildcards.session} {wildcards.surr_method}"
