@@ -19,6 +19,8 @@ parser.add_argument(
 parser.add_argument(
     'process', metavar='process', type=str,
     help='Point process to analyze')
+parser.add_argument('surrogate method', metavar='surr_method', type=str,
+                   help='Surrogate method to use')
 args = parser.parse_args()
 
 # Session to analyze
@@ -27,6 +29,8 @@ session_name = args.session
 context = args.context
 # Point process generated as artificial data
 process = args.process
+# surr_method to use
+surr_method = args.surr_method
 
 # Initialize n_surr and psr_param to None
 n_surr = None
@@ -34,7 +38,8 @@ psr_param = None
 pv_spec = None
 
 # Merging and filtering the results from all epochs nad trialtypes
-directory = f'../../results/artificial_data/{process}/{session_name}/{context}'
+directory = f'../../results/artificial_data/{surr_method}/{process}/' \
+    f'{session_name}/{context}'
 concepts = []
 ns_sgnt = []
 # Collecting outputs from  all the jobs
@@ -113,8 +118,8 @@ patterns = spade.concept_output_to_patterns(concepts,
                                             spectrum=spectrum)
 # Attching additional info on neurons involved in patterns
 annotations = np.load(
-    f'../../results/artificial_data/{process}/{session_name}/{context}'
-    f'/annotations.npy',
+    f'../../results/artificial_data/{surr_method}/{process}/{session_name}/'
+    f'{context}/annotations.npy',
     allow_pickle=True).item()
 for patt_idx, selected_patt in enumerate(patterns):
     selected_patt['channel_ids'] = []
@@ -140,6 +145,6 @@ filter_param = {'alpha': alpha,
 
 # Store merged filtered results
 np.save(
-    f'../../results/artificial_data/{process}/{session_name}/{context}'
-    f'/filtered_res.npy',
+    f'../../results/artificial_data/{surr_method}/{process}/{session_name}'
+    f'/{context}/filtered_res.npy',
     [patterns, loading_param, filter_param, configfile_param, spade_param])

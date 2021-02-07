@@ -17,6 +17,8 @@ parser.add_argument('session', metavar='session', type=str,
                    help='Recording session to analyze')
 parser.add_argument('process', metavar='process', type=str,
                    help='Point process to analyze')
+parser.add_argument('surrogate method', metavar='surr_method', type=str,
+                   help='Surrogate method to use')
 
 args = parser.parse_args()
 
@@ -28,6 +30,8 @@ context = args.context
 job_id = args.job_id
 # Point process generated as artificial data
 process = args.process
+# surr_method to use
+surr_method = args.surr_method
 # Loading parameters specific to this job id
 param_dict = np.load('./param_dict.npy',
                      encoding='latin1',
@@ -43,7 +47,6 @@ unit = config['unit']
 dither = (config['dither'] * pq.s).rescale(unit)
 n_surr = config['n_surr']
 binsize = (config['binsize'] * pq.s).rescale(unit)
-surr_method = config['surr_method']
 
 # Parameter specific to the job
 min_occ = param_dict[session][process][context][job_id]['min_occ']
@@ -134,7 +137,7 @@ else:
 
 # Path where to store the results
 res_path = f'../../results/artificial_data/' \
-    f'{process}/{session}/{epoch}_{trialtype}/{job_id}'
+    f'{surr_method}/{process}/{session}/{epoch}_{trialtype}/{job_id}'
 # Create path is not already existing
 path_temp = './'
 for folder in split_path(res_path):
@@ -150,6 +153,6 @@ if rank == 0:
                                     config])
     # Storing annotations param
     np.save(
-        f'../../results/artificial_data/{process}/{session}/{epoch}_{trialtype}'
+        f'../../results/artificial_data/{surr_method}/{process}/{session}/{epoch}_{trialtype}'
         + '/annotations.npy',
         annotations_dict)

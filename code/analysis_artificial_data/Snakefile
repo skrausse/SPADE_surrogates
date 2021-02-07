@@ -69,9 +69,9 @@ param_dict, excluded_neurons = \
 # Rule to collect all the results
 rule all:
     input:
-         [f'../../results/artificial_data/{process}/{session}/{context}/{job_id}/results.npy'
+         [f'../../results/artificial_data/{surr_method}/{process}/{session}/{context}/{job_id}/results.npy'
          for process in processes for session in sessions for context in contexts for job_id in param_dict[session][process][context]] + [
-             f'../../results/artificial_data/{process}/{session}/{context}/filtered_res.npy'
+             f'../../results/artificial_data/{surr_method}/{process}/{session}/{context}/filtered_res.npy'
              for context in contexts for session in sessions for process in processes ]
 
 
@@ -92,13 +92,14 @@ rule analyze_data:
         excluded_neurons='excluded_neurons.npy',
         script='spade_analysis.py'
     output:
-        '../../results/artificial_data/{process}/{session}/{context}/{job_id}/results.npy'
+        '../../results/artificial_data/{surr_method}/{process}/{session}/{context}/{job_id}/results.npy'
     shell:
-        "mpirun python spade_analysis.py {wildcards.job_id} {wildcards.context} {wildcards.session} {wildcards.process}"
+        "mpirun python spade_analysis.py {wildcards.job_id} {wildcards.context} {wildcards.session} {wildcards.process} {wildcards.surr_method}"
 
 # Function to create output path for filtered results
 def select_job_ids_context(wildcards):
-    return ['../../results/artificial_data/{process}/{session}/{context}/{job_id}/results.npy'.format(job_id=job_id,
+    return ['../../results/artificial_data/{surr_method}/{process}/{session}/{context}/{job_id}/results.npy'.format(surr_method=surr_method,
+                                                                                                                    job_id=job_id,
                                                                                    process=wildcards.process,
                                                                                    session=wildcards.session,
                                                                                    context=wildcards.context)
@@ -110,6 +111,6 @@ rule filter_results:
         results=select_job_ids_context,
         script='filter_results.py'
     output:
-        '../../results/artificial_data/{process}/{session}/{context}/filtered_res.npy'
+        '../../results/artificial_data/{surr_method}/{process}/{session}/{context}/filtered_res.npy'
     shell:
-        "python filter_results.py {wildcards.context} {wildcards.session} {wildcards.process}"
+        "python filter_results.py {wildcards.context} {wildcards.session} {wildcards.process} {wildcards.surr_method}"
