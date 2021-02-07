@@ -94,7 +94,7 @@ rule analyze_data:
     output:
         '../../results/artificial_data/{process}/{session}/{context}/{job_id}/results.npy'
     shell:
-        "mpirun python spade_analysis.py {wildcards.job_id} {wildcards.context} {wildcrds.session} {wildcards.process}"
+        "mpirun python spade_analysis.py {wildcards.job_id} {wildcards.context} {wildcards.session} {wildcards.process}"
 
 # Function to create output path for filtered results
 def select_job_ids_context(wildcards):
