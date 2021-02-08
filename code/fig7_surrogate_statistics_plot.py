@@ -1,3 +1,9 @@
+"""
+Plot the figure containing the overview over statistical
+features of the different surrogate methods.
+
+It is necessary to first run the data generation script.
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 import quantities as pq
@@ -43,13 +49,13 @@ CC_TOP = cf.CC_TOP
 AC_CC_XLIM = cf.AC_CC_XLIM
 
 
-def plot_clipped_firing_rate_and_eff_moved(axes_clip):
+def plot_clipped_firing_rate(axes_clip):
     """
-    This function makes a plot for the clipped firing rate,
-    the ratio of spike in same bins and the ratio
-    of identical spikes.
-    Spike train types are PPR and Gamma. The surrogate methods are uniform
-    dithering, UDR and joint-ISI dithering.
+    This function makes a plot for the clipped firing rate.
+
+    Parameters
+    ----------
+    axes_clip : Generator of matplotlib.axes.Axes
 
     Returns
     -------
@@ -141,6 +147,20 @@ def _label_axes(axes_isi, axes_ac, axes_cc):
 
 def plot_statistical_analysis_of_single_rate(
         axes_isi, axes_ac, axes_cc):
+    """
+    Plot the ISI-distribution, autocorrelation, cross-correlation for original
+    data and its surrogates.
+
+    Parameters
+    ----------
+    axes_isi : Generator of matplotlib.axes.Axes
+    axes_ac : Generator of matplotlib.axes.Axes
+    axes_cc : Generator of matplotlib.axes.Axes
+
+    Returns
+    -------
+    None
+    """
     for type_id, data_type in enumerate(DATA_TYPES):
         _plot_isi(axes_isi, data_type, type_id, surr_method='original')
         _plot_ac_cc(axes_ac, axes_cc, type_id, data_type,
@@ -158,17 +178,17 @@ def plot_statistical_analysis_of_single_rate(
 def plot_firing_rate_change(axis):
     """
     This function creates a plot which shows the change in firing rate profile
-    after applying a surrogate method. Starting point is a process (either PPR
-    or Gamma) with that has the first 50 ms a firing rate of 10 Hz and than of
+    after applying a surrogate method. Starting point is a spike train
+    that has the first 75 ms a firing rate of 10 Hz and than of
     80 Hz, chosen similarly to Louis et al. (2010).
-    The surrogates are than created with uniform dithering, UDR and joint-ISI
-    dithering.
-    The plot is saved in the plots folder.
+
+    Parameters
+    ----------
+    axis : matplotlib.axes.Axes
 
     Returns
     -------
     None
-
     """
     results = np.load(f'{DATA_PATH}/rate_step.npy', allow_pickle=True).item()
 
@@ -193,11 +213,13 @@ def plot_firing_rate_change(axis):
 
 def plot_eff_moved(axis):
     """
-    This function makes a plot for the clipped firing rate,
-    the ratio of spike in same bins and the ratio
-    of identical spikes.
-    Spike train types are PPR and Gamma. The surrogate methods are uniform
-    dithering, UDR and joint-ISI dithering.
+    This function makes a plot showing the ratio between moved spikes over the
+    spike count depending on the firing rate.
+
+    Parameters
+    ----------
+    axis: matplotlib.axes.Axes
+        The axis to plot onto
 
     Returns
     -------
@@ -233,6 +255,19 @@ def plot_eff_moved(axis):
 
 
 def plot_cv_change(axis):
+    """
+    Function to plot the relationship of the CV from original data to that of
+    the surrogates.
+
+    Parameters
+    ----------
+    axis: matplotlib.axes.Axes
+        The axis to plot onto
+
+    Returns
+    -------
+    None
+    """
     results = np.load(f'{DATA_PATH}/cv_change.npy', allow_pickle=True).item()
 
     cvs_real = results['cvs_real']
@@ -265,6 +300,14 @@ def _dash_spines(axis):
 
 
 def plot_statistics_overview():
+    """
+    This function creates and saves the plot with the overview over the
+    statistical features of the surrogate methods.
+
+    Returns
+    -------
+    None
+    """
     plt.rcParams.update({'font.size': FONTSIZE,
                          'text.usetex': True,
                          'lines.linewidth': SURROGATES_LINEWIDTH,
@@ -307,7 +350,7 @@ def plot_statistics_overview():
     axes_ac[0].set_ylabel('ACH in 1/s', labelpad=YLABELPAD)
     axes_cc[0].set_ylabel('CCH in 1/s', labelpad=YLABELPAD)
 
-    plot_clipped_firing_rate_and_eff_moved(axes_clip)
+    plot_clipped_firing_rate(axes_clip)
 
     plot_statistical_analysis_of_single_rate(
         axes_isi, axes_ac, axes_cc)

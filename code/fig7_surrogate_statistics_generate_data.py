@@ -1,6 +1,6 @@
 """
-In this script are all functions gathered for a numerical assessment of
- statistical quantities after applying a surrogate method.
+Generate the data for the figure containing the overview over statistical
+features of the different surrogate methods.
 """
 import time
 import random
@@ -254,6 +254,14 @@ def _single_clipped_rate_and_eff_moved(rate):
 
 
 def statistical_analysis_of_single_rate():
+    """
+    Calculate the ISI-distribution, autocorrelation, cross-correlation for
+    original data and its surrogates, and save these measures.
+
+    Returns
+    -------
+    None
+    """
 
     t_start = 0. * pq.s
     t_stop = (HIGH_NUMBER_SPIKES / FIRING_RATE).rescale(pq.s)
@@ -301,11 +309,8 @@ def _convert_nested_defaultdict(default_dict_object):
 
 def clipped_rates_and_eff_moved():
     """
-    This function makes a plot for the clipped firing rate,
-    the ratio of spike in same bins and the ratio
-    of identical spikes.
-    Spike train types are PPR and Gamma. The surrogate methods are uniform
-    dithering, UDR and joint-ISI dithering.
+    This function calculates the clipped firing rate and the ratio of moved
+    spikes and saves it.
 
     Returns
     -------
@@ -342,18 +347,14 @@ def clipped_rates_and_eff_moved():
 
 def firing_rate_change():
     """
-    This function creates a plot which shows the change in firing rate profile
-    after applying a surrogate method. Starting point is a process (either PPR
-    or Gamma) with that has the first 50 ms a firing rate of 10 Hz and than of
-    80 Hz, chosen similarly to Louis et al. (2010).
-    The surrogates are than created with uniform dithering, UDR and joint-ISI
-    dithering.
-    The plot is saved in the plots folder.
+    This function calculates the change in firing rate profile
+    after applying a surrogate method. Starting point is a spike train
+    that has the first 75 ms a firing rate of 10 Hz and than of
+    80 Hz, chosen similarly to Louis et al. (2010). The results are then saved.
 
     Returns
     -------
     None
-
     """
 
     rate_1, rate_2 = FIRING_RATES_STEP
@@ -506,6 +507,14 @@ def firing_rate_change():
 
 
 def cv_change():
+    """
+    Calculate the relationship of the CV from original data to that of
+    the surrogates.
+
+    Returns
+    -------
+    None
+    """
     results = {}
     t_start = 0. * pq.s
     t_stop = (LOW_NUMBER_SPIKES / FIRING_RATE).rescale(pq.s)

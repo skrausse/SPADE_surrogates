@@ -1,10 +1,13 @@
+"""
+Configurations to create the figure containing the overview over statistical
+features of the different surrogate methods.
+"""
 import os
 
 import numpy as np
 import quantities as pq
 
-from scipy.special import gamma as gamma_function
-from scipy.optimize import brentq
+from generate_artificial_data import get_shape_factor_from_cv2
 
 DATA_PATH = '../data/surrogate_statistics'
 PLOT_PATH = '../plots'
@@ -63,40 +66,6 @@ TRIAL_SEPARATION = 0. * pq.ms
 # Values for refractory period and CV2
 DEAD_TIME = 1.6 * pq.ms
 CV2 = 0.75
-
-
-def get_cv2_from_shape_factor(shape_factor):
-    """
-    calculates cv2 from shape factor based on van Vreswijk's formula
-
-    Parameters
-    ----------
-    shape_factor : float
-
-    Returns
-    -------
-    cv2 : float
-    """
-    return gamma_function(2 * shape_factor) / \
-        (shape_factor * (2 ** (shape_factor - 1)
-                         * gamma_function(shape_factor))) ** 2
-
-
-def get_shape_factor_from_cv2(cv2):
-    """
-    calculates shape factor from cv2 based on van Vreswijk's formula
-
-    Parameters
-    ----------
-    cv2 : float
-
-    Returns
-    -------
-    shape_factor : float
-    """
-
-    return brentq(lambda x: get_cv2_from_shape_factor(x) - cv2, 0.05, 50.)
-
 
 SHAPE_FACTOR = get_shape_factor_from_cv2(CV2)
 
