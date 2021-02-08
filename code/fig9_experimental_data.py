@@ -5,19 +5,18 @@ import yaml
 from yaml import Loader
 
 
-def _load_results(results, session_name, epoch, tt):
+def _load_results(results, surrogate, session_name, epoch, tt):
     """
     Loading results from corresponding folder
     """
-    directory = '../results/experimental_data/{}/{}/{}_{}'.format(results,
-                                        session_name,
-                                        epoch, tt)
+    directory = f'../results/experimental_data/{surrogate}/' \
+        f'{results}/{session_name}/{epoch}_{tt}'
     patterns = np.load(directory + '/filtered_res.npy', encoding='latin1',
                        allow_pickle=True)[0]
     return patterns
 
 
-def create_dictionaries_statistics(results, sessions, trialtypes,
+def create_dictionaries_statistics(surrogate, results, sessions, trialtypes,
                                    epoch_tags, binsize, winlen):
     """
     Function creating numerous histograms of important features of results.
@@ -26,6 +25,8 @@ def create_dictionaries_statistics(results, sessions, trialtypes,
 
     Parameters
     ----------
+    surrogate: int
+        surrogate technique used
     results: list
         list of patterns detected in a particular session and behavioral
         context
@@ -111,7 +112,8 @@ def create_dictionaries_statistics(results, sessions, trialtypes,
                 lags[session_name][behav_context] = []
                 length[session_name][behav_context] = []
 
-                patterns = _load_results(results=results,
+                patterns = _load_results(surrogate=surrogate,
+                                         results=results,
                                          session_name=session_name,
                                          epoch=epoch,
                                          tt=tt)
@@ -201,12 +203,12 @@ def plot_experimental_data_results(surrogates, tag_surrogates,
                  'hotpink']
     num_subplots = 1
     for index, surrogate in enumerate(surrogates):
-        results = 'results_5ms_' + surrogate
+        results = 'results_' + surrogate
         num_patt, lags, num_spikes, length, max_patt_per_ep, \
         hist_spikes, hist_lags = \
-            create_dictionaries_statistics(results=results,
+            create_dictionaries_statistics(surrogate=surrogate,
+                                           results=results,
                                            sessions=sessions,
-                                           surrogate=surrogate,
                                            trialtypes=trialtypes,
                                            epoch_tags=epoch_tags,
                                            binsize=binsize,
@@ -307,7 +309,12 @@ if __name__ == "__main__":
     trialtypes = param['trialtypes']
     # The sessions to analyze
     sessions = param['sessions']
-    surrogates = ['ud', 'udrp', 'jisi', 'isi', 'shift_st', 'bin_shuffling']
+    surrogates = ['dither_spikes',
+                  'dither_spikes_with_refractory_period',
+                  'joint_isi_dithering',
+                  'isi_dithering'
+                  'trial_shifting',
+                  'bin_shuffling',]
     tag_surrogates = ['UD', 'UDD', 'JISI-D', 'ISI-D', 'TR-SHIFT', 'BIN-SHUFF']
     plot_experimental_data_results(surrogates=surrogates,
                                    tag_surrogates=tag_surrogates,
