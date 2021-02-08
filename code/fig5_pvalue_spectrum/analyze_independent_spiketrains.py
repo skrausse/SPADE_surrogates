@@ -1,6 +1,8 @@
 """
 This module calls the spade run that analyzes the generated data.
 """
+import random
+
 import numpy as np
 
 from spade_analyze import SPADE
@@ -15,6 +17,8 @@ else:
 
 
 if __name__ == '__main__':
+    np.random.seed(RANK)
+    random.seed(RANK)
     for surr_method in ('dither_spikes', 'ground_truth'):
         setup = SPADE(surr_method=surr_method)
 
