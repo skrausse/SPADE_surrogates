@@ -9,5 +9,6 @@
 #SBATCH --partition=blaustein
 #SBATCH --exclude=hambach[26-28]
 
+source activate surrogates
 python max_order_statistics.py
 python create_independent_spiketrains.py

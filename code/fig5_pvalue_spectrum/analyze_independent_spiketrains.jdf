@@ -10,4 +10,5 @@
 #SBATCH --partition=blaustein
 #SBATCH --exclude=hambach[26-28]
 
+source activate surrogates
 mpirun python analyze_independent_spiketrains.py
