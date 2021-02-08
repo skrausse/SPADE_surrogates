@@ -138,3 +138,6 @@ concatenated_spiketrains/
 
 # data surrogate statistics
 surrogate_statistics/
+
+# data pvalue spectrum
+pvalue_spectrum/
