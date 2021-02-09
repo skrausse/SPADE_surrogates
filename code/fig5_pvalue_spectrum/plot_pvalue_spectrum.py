@@ -45,11 +45,19 @@ def _get_mean_optimized_pvalue_spec(setup):
 
 def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
     cmap = 'Blues_r'
+    scatter_size = 75.
 
     size = setup1.sizes_to_analyze[0]
 
-    plt.rcParams.update({'font.size': 14,
+    plt.rcParams.update({'font.size': 12,
                          'text.usetex': True})
+
+    color_norm = mcolors.SymLogNorm(
+        linthresh=1e-6,
+        vmin=1e-6,
+        vmax=1.,
+        base=10.)
+
     fig, axes = plt.subplots(2, 1, figsize=(5., 5.), sharex=True)
 
     # find max_occurrences to fill up with zeroes
@@ -95,12 +103,12 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
                     occs_zeros.append(occ)
                     pvs_zeros.append(0)
 
-        axis.scatter(occs, durs, s=200., c=pvs, marker='s', cmap=cmap,
-                     norm=mcolors.SymLogNorm(linthresh=1e-6),
-                     vmin=1e-6,
-                     vmax=1.)
+        axis.scatter(occs, durs, s=scatter_size,
+                     c=pvs, marker='s', cmap=cmap,
+                     norm=color_norm)
 
-        axis.scatter(occs_zeros, durs_zeros, s=200., c=pvs_zeros, marker='s',
+        axis.scatter(occs_zeros, durs_zeros, s=scatter_size,
+                     c=pvs_zeros, marker='s',
                      cmap='binary_r')
 
         if axis_id == 1:
@@ -110,14 +118,13 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
             axis.set_title('Ground Truth')
         else:
             axis.set_title('Uniform Dithering')
-        axis.set_yticks(np.arange(setup.win_len))
-        axis.set_yticklabels(np.arange(1, setup.win_len+1))
+        axis.set_yticks(np.arange(1, setup.win_len, 2))
+        axis.set_yticklabels(np.arange(2, setup.win_len+1, 2))
 
     cbar_map = cm.ScalarMappable(
-            norm=mcolors.LogNorm(
-                vmin=1e-06, vmax=1.),
-            cmap=cmap
-        )
+            norm=color_norm,
+            cmap=cmap)
+
     cbar_map.set_array([])
     cbar = fig.colorbar(mappable=cbar_map, ax=axes)
 
