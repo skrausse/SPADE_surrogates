@@ -85,7 +85,7 @@ LABELS = {'original': 'original',
           'ISI-D': 'ISI-D',
           'JISI-D': 'JISI-D',
           'SHIFT-ST': 'TR-SHIFT',
-          'BIN-SHUFF': 'BIN-SHUFF'}
+          'BIN-SHUFF': 'WIN-SHUFF'}
 
 COLORS = {'original': 'C0',
           'UD': 'C1',
@@ -104,7 +104,7 @@ LINE_STYLES = {'original': 'solid',
                'BIN-SHUFF': 'solid'}
 
 # Panel letters
-LETTERS = ('A', 'B', 'C', 'D', 'E', 'F')
+LETTERS = ('A', 'B', 'C', 'D', 'E', 'F', 'G')
 
 # limits AC/CC relative to rate
 AC_BOTTOM = 0.8

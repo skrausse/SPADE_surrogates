@@ -343,7 +343,7 @@ def plot_statistics_overview():
          for x in range(3)]
 
     axes_clip, axes_isi, axes_ac, axes_cc = axes
-    axis_step, axis_moved, axis_cv = lower_axes
+    axis_moved, axis_step, axis_cv = lower_axes
 
     axes_clip[0].set_ylabel(r'$1 - N_{clip}/N$', labelpad=YLABELPAD)
     axes_isi[0].set_ylabel(r'$p(\tau)$ in 1/s', labelpad=YLABELPAD)
@@ -363,16 +363,17 @@ def plot_statistics_overview():
         axes[0][data_id].set_title(data_type)
 
     for axis_id, axis in enumerate(axes):
-        if axis_id < 3:
-            axis[0].text(
-                -0.2, 1.05, LETTERS[axis_id],
-                transform=axis[0].transAxes, fontsize=15)
+        letter_pos_x = -0.25
+        letter_pos_y = 1.05 if axis_id < 3 else 0.85
+        axis[0].text(
+            letter_pos_x, letter_pos_y, LETTERS[axis_id],
+            transform=axis[0].transAxes, fontsize=15)
         _hide_y_ticks(axis[1])
         _hide_y_ticks(axis[2])
 
     for axis_id, axis in enumerate(lower_axes):
         axis.text(
-            -0.2, 1.05, LETTERS[3 + axis_id],
+            -0.15, 1.05, LETTERS[len(axes) + axis_id],
             transform=axis.transAxes, fontsize=15)
 
     for axis in axes_ac:
