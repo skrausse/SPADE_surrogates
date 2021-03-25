@@ -141,3 +141,6 @@ surrogate_statistics/
 
 # data pvalue spectrum
 pvalue_spectrum/
+
+Numpy files
+*.npy
