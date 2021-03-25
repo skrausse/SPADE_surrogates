@@ -1,4 +1,6 @@
 import os
+import sys
+
 import numpy as np
 import quantities as pq
 import yaml
@@ -33,8 +35,24 @@ if __name__ == '__main__':
                     trialtypes=trialtype,
                     SNRthresh=SNR_thresh,
                     synchsize=synchsize,
-                    sep=sep,
-                    firing_rate_threshold=firing_rate_threshold)
+                    sep=sep)
                 np.save(f'../data/concatenated_spiketrains/{session}/'
                         f'{epoch}_{trialtype}.npy',
                         sts)
+
+    if firing_rate_threshold is not None:
+        sys.path.insert(0, 'analysis_experimental_data')
+        import estimate_number_occurrences # create the excluded_neurons file
+
+        excluded_neurons = np.load('excluded_neurons.npy',
+                                   allow_pickle=True).item()
+        for session in sessions:
+            for epoch in epochs:
+                for trialtype in trialtypes:
+                    sts = list(np.load(f'../data/concatenated_spiketrains/{session}/'
+                            f'{epoch}_{trialtype}.npy'))
+                    sts = rgutils.filter_neurons(
+                        sts, excluded_neurons=excluded_neurons[session])
+                    np.save(f'../data/concatenated_spiketrains/{session}/'
+                            f'{epoch}_{trialtype}.npy',
+                            sts)

@@ -6,6 +6,7 @@ from scipy.stats import binom
 from scipy.special import binom as binom_coeff
 import quantities as pq
 import os
+import inspect
 
 
 def create_rate_dict(session,
@@ -436,12 +437,25 @@ def estimate_number_occurrences(sessions,
                 excluded_neurons[session])[::-1]
     return param_dict, excluded_neurons
 
+if __name__ != '__main__':
+    for frame in inspect.stack()[1:]:
+        if frame.filename[0] != '<':
+            imported_from = frame.filename
+            imported_from = imported_from.split("/")[-1]
+            break
 
-if __name__ == "__main__":
+if __name__ == "__main__" or imported_from == 'generate_original_concatenated_data.py':
+    # like this it can be run also when importing this in
+    # generate_original_concatenated_data
+
     import yaml
     from yaml import Loader
-    with open("configfile.yaml", 'r') as stream:
-        config = yaml.load(stream, Loader=Loader)
+    if __name__ == '__main__':
+        with open("../configfile.yaml", 'r') as stream:
+            config = yaml.load(stream, Loader=Loader)
+    else:
+        with open("configfile.yaml", 'r') as stream:
+            config = yaml.load(stream, Loader=Loader)
     # The 5 epochs to analyze
     epochs = config['epochs']
     # The 4 trial types to analyze
