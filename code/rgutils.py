@@ -570,24 +570,6 @@ def load_epoch_concatenated_trials(
     # Return the list of SpikeTrains
     return sts
 
-def filter_neurons(sts, excluded_neurons):
-    """
-    Filter excluded neurons
-
-    Parameters
-    ----------
-    sts : list of neo.SpikeTrain
-    excluded_neurons : list of int
-        list of neurons ids to exclude
-
-    Returns
-    -------
-    filtered_sts : list of neo.SpikeTrain
-    """
-    for neuron in excluded_neurons:
-        sts.pop(int(neuron))
-    return sts
-
 # ==========================================================================
 # routines to remove synchrofacts
 # ==========================================================================
