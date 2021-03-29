@@ -3,7 +3,7 @@ import quantities as pq
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.pylab as pylab
-from generate_artificial_data import estimate_rate_refrperiod_cv, \
+from generate_artificial_data import estimate_rate_deadtime, \
     create_st_list
 import elephant
 import os
@@ -43,13 +43,12 @@ def build_dicts(st, gamma_st, ppd_st, max_refractory):
     processes = ['original', 'gamma', 'ppd']
     for order, process in enumerate(processes):
         rate, refractory_period, cv = \
-            estimate_rate_refrperiod_cv(list_st[order],
+            estimate_rate_deadtime(list_st[order],
                                         max_refractory=max_refractory,
                                         sampling_period=0.1*pq.ms)
         rate_dict[process] = rate
         rp_dict[process] = refractory_period
-        cv_dict[process] = cv
-    return rate_dict, rp_dict, cv_dict
+    return rate_dict, rp_dict
 
 
 def cut_firing_rate_into_trials(rate, epoch_length, sep, sampling_period):
@@ -178,40 +177,6 @@ def plot_trial_firing_rate(ax, sts, gamma, ppd, neuron, max_refractory, sep,
     xticks = ax.get_xticks().tolist()
     rescaled_xticks = [int(int(lab) / 10) for lab in xticks]
     ax.set_xticklabels(rescaled_xticks)
-    return ax
-
-
-def plot_cv(ax, sts, gamma, ppd, max_refractory, sampling_period):
-    """
-    Plot representing the coefficient of variation of all neurons of one
-    dataset, for the original data, the gamma and the ppd data.
-
-    Parameters
-    ----------
-    ax: matplotlib.pyplot.axes
-        ax where to plot the figure
-    sts: list
-        list of neo spiketrains of the original data
-    gamma: list
-        list of neo spiketrains of the gamma data
-    ppd: list
-        list of neo spiketrains of the PPD data
-    max_refractory: quantity
-        maximal refractory period
-    """
-    processes = {'original': sts, 'ppd': ppd, 'gamma': gamma}
-    # loop over the neurons
-    cv_dict = {'original':[], 'ppd':[], 'gamma':[]}
-    for neuron in range(len(sts)):
-        for key in cv_dict.keys():
-            cv = estimate_rate_refrperiod_cv(processes[key][neuron],
-                                             max_refractory=max_refractory,
-                                             sampling_period=sampling_period)[2]
-            cv_dict[key].append(cv)
-    bins = np.arange(0,1.5, 0.1)
-    for key in cv_dict.keys():
-        ax.hist(cv_dict[key], bins, alpha=1, label=key, histtype='step')
-    ax.legend(loc='upper right')
     return ax
 
 

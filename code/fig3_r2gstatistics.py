@@ -1,6 +1,6 @@
 import numpy as np
 import quantities as pq
-from generate_artificial_data import estimate_rate_refrperiod_cv, \
+from generate_artificial_data import estimate_rate_deadtime, \
     get_shape_factor_from_cv2, create_st_list
 import elephant.statistics as stat
 import elephant.spike_train_surrogates as surrogates
@@ -184,10 +184,10 @@ def plot_dt(sts, ax, sorting_dead_time, sep, max_refractory=4 * pq.ms,
     rp_list = []
     # loop over the neurons
     for st in sts:
-        rp = estimate_rate_refrperiod_cv(st,
-                                         max_refractory=max_refractory,
-                                         sampling_period=1*pq.ms,
-                                         sep=sep)[1]
+        rp = estimate_rate_deadtime(st,
+                                    max_refractory=max_refractory,
+                                    sampling_period=1*pq.ms,
+                                    sep=sep)[1]
         rp_list.append(rp * 1000)
     rp_array = np.array(rp_list)[~np.isnan(np.array(rp_list))]
     bin_width = 0.1
