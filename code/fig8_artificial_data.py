@@ -301,9 +301,9 @@ def plot_cv2(ax, sts, gamma, ppd, sep, fontsize):
     fontsize: int
         fontsize of the legend
     """
-    processes = {'original': sts, 'gamma': gamma, 'ppd': ppd}
+    processes = {'original': sts, 'ppd': ppd, 'gamma': gamma}
     # loop over the neurons
-    cv2_dict = {'original': [], 'gamma': [], 'ppd': []}
+    cv2_dict = {'original': [], 'ppd': [], 'gamma': []}
 
     # original
     cv2_list = []
