@@ -10,14 +10,15 @@ import neo
 sys.path.append('./')
 from scipy.special import gamma as gamma_function
 from scipy.optimize import brentq
+from tqdm import tqdm
 
 
-def estimate_rate_refrperiod_cv(spiketrain,
-                                max_refractory,
-                                sep,
-                                sampling_period=0.1 * pq.ms,
-                                sigma=100 * pq.ms,
-                                trial_length=500 * pq.ms):
+def estimate_rate_deadtime(spiketrain,
+                           max_refractory,
+                           sep,
+                           sampling_period=0.1 * pq.ms,
+                           sigma=100 * pq.ms,
+                           trial_length=500 * pq.ms):
     """
     Function estimating rate, refractory period and cv, given one spiketrain
     Parameters
@@ -41,8 +42,8 @@ def estimate_rate_refrperiod_cv(spiketrain,
         rate of the spiketrain
     refractory_period: pq.Quantity
         refractory period of the spiketrain (minimal isi)
-    cv: float
-        coefficient of variation of the spiketrain
+    rate_list: list
+        list of rate profiles for all trials
     """
 
     # create list of trials and deconcatenate data
@@ -50,12 +51,12 @@ def estimate_rate_refrperiod_cv(spiketrain,
 
     # using Shinomoto rate estimation
     if all(len(trial) > 10 for trial in trial_list):
-        rates = [stat.instantaneous_rate(
+        rate_list = [stat.instantaneous_rate(
             spiketrain=trial,
             sampling_period=sampling_period,
             boundary_correction=True) for trial in trial_list]
     else:
-        rates = [stat.instantaneous_rate(
+        rate_list = [stat.instantaneous_rate(
             spiketrain=trial,
             sampling_period=sampling_period,
             kernel=stat.kernels.GaussianKernel(
@@ -68,7 +69,7 @@ def estimate_rate_refrperiod_cv(spiketrain,
         shape=len(trial_list) * int(
             (trial_length.simplified.magnitude +
              sep.simplified.magnitude)/sampling_period.simplified.magnitude))
-    for trial_id, rate_trial in enumerate(rates):
+    for trial_id, rate_trial in enumerate(rate_list):
         start_id = trial_id * int(
             ((trial_length + sep)/sampling_period).simplified.magnitude)
         stop_id = start_id + int(
@@ -76,7 +77,7 @@ def estimate_rate_refrperiod_cv(spiketrain,
         rate[start_id: stop_id] = rate_trial.flatten().magnitude
 
     rate = neo.AnalogSignal(signal=rate,
-                            units=rates[0].units,
+                            units=rate_list[0].units,
                             sampling_period=sampling_period)
 
     # calculating refractory period
@@ -87,12 +88,7 @@ def estimate_rate_refrperiod_cv(spiketrain,
             isi,
             initial=max_refractory.simplified.magnitude) * pq.s
 
-    if len(spiketrain) > 5:
-        cv = stat.cv(spiketrain)
-    else:
-        cv = 1
-
-    return rate, refractory_period, cv
+    return rate, refractory_period, rate_list
 
 
 def create_st_list(spiketrain, sep,
@@ -223,6 +219,10 @@ def get_cv_operational_time(spiketrain, rate_list, sep):
     trial_list = create_st_list(spiketrain, sep=sep)
     isis_operational_time = []
 
+    # requiring at least one spike per trial, if not returning cv=1
+    if sum(len(trial)for trial in trial_list) < len(trial_list):
+        return 1
+
     for rate, trial in zip(rate_list, trial_list):
         # check there is at least one ISI per trial
         if len(trial) > 1:
@@ -237,8 +237,6 @@ def get_cv_operational_time(spiketrain, rate_list, sep):
                 (rate*rate.sampling_period).simplified.magnitude)
             operational_time = np.hstack((0., operational_time))
             # In real time the spikes are first aligned to the left border of the bin.
-            # Note that indices are greater than 0 because 'operational_time' was
-            # padded with zeros.
             trial_operational_time = operational_time[indices - 1]
             # the relative position of the spikes in the operational time bins
             positions_in_bins = \
@@ -254,7 +252,7 @@ def get_cv_operational_time(spiketrain, rate_list, sep):
     number_of_isis = np.sum([len(trial_isi) for trial_isi
                              in isis_operational_time])
     cv = 1
-    if number_of_isis > 0:
+    if number_of_isis > 3:
         mean_isi = \
             np.sum([np.sum(trial_isi) for trial_isi in
                     isis_operational_time]) / \
@@ -308,12 +306,13 @@ def generate_artificial_data(data, seed, max_refractory, processes,
     ppd_spiketrains = []
     gamma_spiketrains = []
     cv2s = []
-    for index, spiketrain in enumerate(data):
+
+    for index, spiketrain in tqdm(enumerate(data)):
         # estimate statistics
-        rate, refractory_period, cv = \
-            estimate_rate_refrperiod_cv(spiketrain=spiketrain,
-                                        max_refractory=max_refractory,
-                                        sep=sep)
+        rate, refractory_period, rate_list = \
+            estimate_rate_deadtime(spiketrain=spiketrain,
+                                   max_refractory=max_refractory,
+                                   sep=sep)
         cv2 = get_cv2(spiketrain, sep=sep)
         rates.append(rate)
         refractory_periods.append(refractory_period)
@@ -330,10 +329,11 @@ def generate_artificial_data(data, seed, max_refractory, processes,
             ppd_spiketrains.append(ppd_spiketrain)
 
         if 'gamma' in processes:
-            # TODO: need to deconcatenate rate
-            shape_factor = 1/(get_cv_operational_time(spiketrain=spiketrain,
+            cv = get_cv_operational_time(spiketrain=spiketrain,
                                                       rate_list=rate_list,
-                                                      sep=sep))**2
+                                                      sep=sep)
+            shape_factor = 1/(cv)**2
+            print('cv = ', cv, 'shape_factor = ', shape_factor)
             if np.count_nonzero(rate) != 0:
                 gamma_spiketrain = stg.inhomogeneous_gamma_process(
                     rate=rate, shape_factor=shape_factor)
