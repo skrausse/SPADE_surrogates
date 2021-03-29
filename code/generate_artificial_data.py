@@ -208,6 +208,67 @@ def get_shape_factor_from_cv2(cv2):
     return brentq(lambda x: get_cv2_from_shape_factor(x) - cv2, 0.05, 50.)
 
 
+def get_cv_operational_time(spiketrain, rate_list, sep):
+    """
+    calculates cv of spike train in operational time
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    cv : float
+    """
+    # deconcatenate spike train into list of trials
+    trial_list = create_st_list(spiketrain, sep=sep)
+    isis_operational_time = []
+
+    for rate, trial in zip(rate_list, trial_list):
+        # check there is at least one ISI per trial
+        if len(trial) > 1:
+            # The time points at which the firing rates are given
+            real_time = np.hstack((rate.times.simplified.magnitude,
+                                   rate.t_stop.simplified.magnitude))
+            # indices where between which points in real time the spikes lie
+            indices = np.searchsorted(real_time, trial)
+
+            # Operational time corresponds to the integral of the firing rate over time
+            operational_time = np.cumsum(
+                (rate*rate.sampling_period).simplified.magnitude)
+            operational_time = np.hstack((0., operational_time))
+            # In real time the spikes are first aligned to the left border of the bin.
+            # Note that indices are greater than 0 because 'operational_time' was
+            # padded with zeros.
+            trial_operational_time = operational_time[indices - 1]
+            # the relative position of the spikes in the operational time bins
+            positions_in_bins = \
+                (trial_operational_time - real_time[indices - 1]) / \
+                rate.sampling_period.simplified.magnitude
+            # add the positions in the bin times the sampling period in op time
+            trial_operational_time += \
+                (operational_time[indices] - operational_time[indices-1]) \
+                * positions_in_bins
+            # add isis per trial into the overall list
+            isis_operational_time.append(np.diff(trial_operational_time))
+
+    number_of_isis = np.sum([len(trial_isi) for trial_isi
+                             in isis_operational_time])
+    cv = 1
+    if number_of_isis > 0:
+        mean_isi = \
+            np.sum([np.sum(trial_isi) for trial_isi in
+                    isis_operational_time]) / \
+            number_of_isis
+
+        variance_isi = np.sum(
+            [np.sum((trial_isi - mean_isi) ** 2) for trial_isi
+             in isis_operational_time]) / \
+                       number_of_isis
+        cv = np.sqrt(variance_isi) / mean_isi
+
+    return cv
+
+
 def generate_artificial_data(data, seed, max_refractory, processes,
                              sep):
     """
@@ -246,7 +307,6 @@ def generate_artificial_data(data, seed, max_refractory, processes,
     refractory_periods = []
     ppd_spiketrains = []
     gamma_spiketrains = []
-    cvs = []
     cv2s = []
     for index, spiketrain in enumerate(data):
         # estimate statistics
@@ -257,7 +317,6 @@ def generate_artificial_data(data, seed, max_refractory, processes,
         cv2 = get_cv2(spiketrain, sep=sep)
         rates.append(rate)
         refractory_periods.append(refractory_period)
-        cvs.append(cv)
         cv2s.append(cv2)
 
         if 'ppd' in processes:
@@ -271,8 +330,10 @@ def generate_artificial_data(data, seed, max_refractory, processes,
             ppd_spiketrains.append(ppd_spiketrain)
 
         if 'gamma' in processes:
-            # generating gamma spike train with cv estimated by neuron
-            shape_factor = get_shape_factor_from_cv2(cv2)
+            # TODO: need to deconcatenate rate
+            shape_factor = 1/(get_cv_operational_time(spiketrain=spiketrain,
+                                                      rate_list=rate_list,
+                                                      sep=sep))**2
             if np.count_nonzero(rate) != 0:
                 gamma_spiketrain = stg.inhomogeneous_gamma_process(
                     rate=rate, shape_factor=shape_factor)
@@ -282,8 +343,7 @@ def generate_artificial_data(data, seed, max_refractory, processes,
                                                   t_stop=spiketrain.t_stop)
             gamma_spiketrain.annotate(**spiketrain.annotations)
             gamma_spiketrains.append(gamma_spiketrain)
-    print(np.max([np.mean(rate) for rate in rates]))
-    return ppd_spiketrains, gamma_spiketrains, cvs
+    return ppd_spiketrains, gamma_spiketrains, cv2s
 
 
 if __name__ == '__main__':
@@ -334,7 +394,7 @@ if __name__ == '__main__':
                                   allow_pickle=True)
 
                 print("Generating data")
-                ppd, gamma, cvs = \
+                ppd, gamma, cv2s = \
                         generate_artificial_data(data=sts,
                                                  seed=seed,
                                                  max_refractory=max_refractory,
@@ -351,4 +411,4 @@ if __name__ == '__main__':
                     np.save(f'../data/artificial_data/gamma/{session}/'
                             f'gamma_{epoch}_{trialtype}.npy', gamma)
                     np.save(f'../data/artificial_data/gamma/{session}/'
-                            f'cvs_{epoch}_{trialtype}.npy', cvs)
+                            f'cv2s_{epoch}_{trialtype}.npy', cv2s)
