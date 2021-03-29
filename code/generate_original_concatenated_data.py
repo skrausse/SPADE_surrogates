@@ -1,4 +1,5 @@
 import os
+
 import numpy as np
 import quantities as pq
 import yaml
@@ -15,8 +16,6 @@ if __name__ == '__main__':
     winlen = config['winlen']
     unit = config['unit']
     binsize = (config['binsize'] * pq.s).rescale(unit)
-    firing_rate_threshold = config['firing_rate_threshold']
-    seed = config['seed']
     SNR_thresh = config['SNR_thresh']
     synchsize = config['synchsize']
     sep = 2 * winlen * binsize
@@ -33,8 +32,7 @@ if __name__ == '__main__':
                     trialtypes=trialtype,
                     SNRthresh=SNR_thresh,
                     synchsize=synchsize,
-                    sep=sep,
-                    firing_rate_threshold=firing_rate_threshold)
+                    sep=sep)
                 np.save(f'../data/concatenated_spiketrains/{session}/'
                         f'{epoch}_{trialtype}.npy',
                         sts)

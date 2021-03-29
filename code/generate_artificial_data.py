@@ -222,9 +222,8 @@ def generate_artificial_data(data, seed, max_refractory, processes,
         maximal refractory period
     processes: list
         processes to be generated
-    binsize: pq.Quantity
-        binsize of the spade analysis
-    winlen: pq.Quantity
+    sep: pq.Quantity
+        buffering between two trials
 
 
     Returns
@@ -283,6 +282,7 @@ def generate_artificial_data(data, seed, max_refractory, processes,
                                                   t_stop=spiketrain.t_stop)
             gamma_spiketrain.annotate(**spiketrain.annotations)
             gamma_spiketrains.append(gamma_spiketrain)
+    print(np.max([np.mean(rate) for rate in rates]))
     return ppd_spiketrains, gamma_spiketrains, cvs
 
 
@@ -325,8 +325,7 @@ if __name__ == '__main__':
                         trialtypes=trialtype,
                         SNRthresh=SNR_thresh,
                         synchsize=synchsize,
-                        sep=sep,
-                        firing_rate_threshold=firing_rate_threshold)
+                        sep=sep)
                 else:
                     print('Loading already concatenated spiketrains')
                     sts = np.load(f'../data/concatenated_spiketrains/'

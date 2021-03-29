@@ -235,13 +235,12 @@ def estimate_number_occurrences(sessions,
         # Storing parameters for each trial type
             for tt in trialtypes:
                 # Path where to store the results
-                rates_path = '../../results/experimental_data/' \
-                                 '{}/rates/{}_{}'.format(session,
-                                                          ep,
-                                                          tt)
+                rates_path = f'../../results/experimental_data/{session}/' \
+                             f'rates/{ep}_{tt}'
                 if os.path.exists(rates_path + '/rates.npy'):
                     rates_dict = np.load(rates_path + '/rates.npy',
-                                         allow_pickle='True').item()
+                                         allow_pickle=True).item()
+                    print(tt, np.max(rates_dict['rates']))
                 else:
                     rates_dict = \
                         create_rate_dict(session=session,
@@ -302,15 +301,11 @@ def estimate_number_occurrences(sessions,
                     if min_occ <= abs_min_occ:
                         param_dict[session][context][job_counter]['min_occ'] = \
                             abs_min_occ
-                        print('{} min_spikes {} min_occ {}'.format(context,
-                                                                   min_spikes,
-                                                                   abs_min_occ))
+                        # print(f'{context} {min_spikes=} {abs_min_occ=}')
                     else:
                         param_dict[session][context][job_counter][
                             'min_occ'] = min_occ
-                        print('{} min_spikes {} min_occ {}'.format(context,
-                                                                   min_spikes,
-                                                                   min_occ))
+                        # print(f'{context} {min_spikes=} {min_occ=}')
                     # Storing remaining parameters
                     param_dict = _storing_remaining_parameters(
                         param_dict=param_dict,
@@ -352,15 +347,11 @@ def estimate_number_occurrences(sessions,
                     if min_occ <= abs_min_occ:
                         param_dict[session][context][job_counter][
                             'min_occ'] = abs_min_occ
-                        print('{} min_spikes {} min_occ {}'.format(context,
-                                                                   min_spikes,
-                                                                   abs_min_occ))
+                        # print(f'{context} {min_spikes=} {abs_min_occ=}')
                     else:
                         param_dict[session][context][job_counter][
                             'min_occ'] = min_occ
-                        print('{} min_spikes {} min_occ {}'.format(context,
-                                                                   min_spikes,
-                                                                   min_occ))
+                        # print(f'{context} {min_spikes=} {min_occ=}')
                     param_dict = _storing_remaining_parameters(
                         param_dict=param_dict,
                         session=session,
@@ -400,15 +391,11 @@ def estimate_number_occurrences(sessions,
                     if min_occ <= abs_min_occ:
                         param_dict[session][context][job_counter]['min_occ'] = \
                             abs_min_occ
-                        print('{} min_spikes {} min_occ {}'.format(context,
-                                                                   min_spikes,
-                                                                   abs_min_occ))
+                        # print(f'{context} {min_spikes=} {abs_min_occ=}')
                     else:
                         param_dict[session][context][job_counter][
                             'min_occ'] = min_occ
-                        print('{} min_spikes {} min_occ {}'.format(context,
-                                                                   min_spikes,
-                                                                   min_occ))
+                        # print(f'{context} {min_spikes=} {min_occ=}')
                     param_dict = _storing_remaining_parameters(
                         param_dict=param_dict,
                         session=session,
@@ -434,13 +421,19 @@ def estimate_number_occurrences(sessions,
             # sort the neuron indexes in decreasing order (easy to pop)
             excluded_neurons[session] = np.sort(
                 excluded_neurons[session])[::-1]
+    if not os.path.exists('./excluded_neurons.npy'):
+        np.save('excluded_neurons', excluded_neurons)
     return param_dict, excluded_neurons
 
 
 if __name__ == "__main__":
+    # like this it can be run also when importing this in
+    # generate_original_concatenated_data
+
     import yaml
     from yaml import Loader
-    with open("configfile.yaml", 'r') as stream:
+
+    with open("../configfile.yaml", 'r') as stream:
         config = yaml.load(stream, Loader=Loader)
     # The 5 epochs to analyze
     epochs = config['epochs']
