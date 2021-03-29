@@ -52,13 +52,15 @@ def estimate_rate_refrperiod_cv(spiketrain,
     if all(len(trial) > 10 for trial in trial_list):
         rates = [stat.instantaneous_rate(
             spiketrain=trial,
-            sampling_period=sampling_period) for trial in trial_list]
+            sampling_period=sampling_period,
+            boundary_correction=True) for trial in trial_list]
     else:
         rates = [stat.instantaneous_rate(
             spiketrain=trial,
             sampling_period=sampling_period,
             kernel=stat.kernels.GaussianKernel(
-                sigma=sigma)
+                sigma=sigma),
+            boundary_correction=True
         ) for trial in trial_list]
 
     # reconcatenating rates
