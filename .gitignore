@@ -133,8 +133,12 @@ dmypy.json
 # plot folder
 plots/
 
+# results folder
+results/
+
 # spiketrain folders
 concatenated_spiketrains/
+artificial_data/
 
 # data surrogate statistics
 surrogate_statistics/
@@ -142,5 +146,5 @@ surrogate_statistics/
 # data pvalue spectrum
 pvalue_spectrum/
 
-Numpy files
+# Numpy files
 *.npy

@@ -30,8 +30,6 @@ def create_rate_dict(session,
         path where to store the rate profiles
     binsize: pq.quantities
         binsize of the spade analysis
-    process: str
-        model (point process) being analysed and estimated
 
     Returns
     -------
