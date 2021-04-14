@@ -1,3 +1,4 @@
+import itertools
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -227,11 +228,8 @@ def plot_loss_top_panel(ax, sts, dither, binsize,
     std_spike_counts_dither = np.array(std_spike_counts_dither)
 
     firing_rates = original_spike_counts / (number_of_trials * epoch_length)
-    binned_loss = (original_spike_counts - binned_spike_counts) / \
-                  original_spike_counts
-
-    mean_loss_dither = (original_spike_counts -
-                        mean_spike_counts_dither) / original_spike_counts
+    binned_loss = 1. - binned_spike_counts / original_spike_counts
+    mean_loss_dither = 1. - mean_spike_counts_dither / original_spike_counts
     std_loss_dither = std_spike_counts_dither / original_spike_counts
 
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
@@ -298,16 +296,20 @@ def plot_residuals(ax, sts, dither, binsize, fontsize, epoch_length,
     ax.set_xticks(np.arange(0, 65, 20))
 
 
-def plot_fig2_spikeloss(folder,
-                        sessions,
-                        epoch,
-                        trialtype,
-                        dither,
-                        binsize,
-                        n_surr,
-                        winlen,
-                        epoch_length,
-                        fontsize):
+def plot_fig2_spikeloss(
+        folder,
+        sessions,
+        epoch,
+        trialtype,
+        dither,
+        binsize,
+        n_surr,
+        winlen,
+        epoch_length,
+        fontsize,
+        data_type='original',
+        file_type='eps'
+):
     """
     Function to reproduce fig 2 of the paper.
     Spike count reduction resulting by clipping and UD surrogate generation.
@@ -341,6 +343,10 @@ def plot_fig2_spikeloss(folder,
         length of each trial
     winlen: int
         window length of the spade analysis
+    data_type: {'original', 'ppd', 'gamma'}, optional
+        Default: 'original'
+    file_type: {'eps', 'png'}, optional
+        Default: 'eps'
 
     """
     np.random.seed(0)
@@ -352,8 +358,10 @@ def plot_fig2_spikeloss(folder,
 
     # Nikos
     # loading
+    extra_part = f'{data_type}_' if data_type != 'original' else ''
+    file_nikos = f'{folder}{sessions[0]}/{extra_part}{epoch}_{trialtype}.npy'
     sts_N = np.load(
-        sts_folder + sessions[0] + '/' + epoch + '_' + trialtype + '.npy',
+        file_nikos,
         allow_pickle=True)
 
     # plotting
@@ -381,13 +389,18 @@ def plot_fig2_spikeloss(folder,
                    n_surr=n_surr,
 
                    fontsize=fontsize)
-    plt.figtext(x=0.12, y=0.9,
-                s='Monkey N\nSession i140703-001, movement PGHF', fontsize=10,
-                multialignment='center')
+    if data_type == 'original':
+        title = f'Monkey N\n' \
+                f'Session {sessions[0]}, {epoch} {trialtype}'
+    else:
+        title = f'Monkey N - {data_type}\n' \
+               f'Session {sessions[0]}, {epoch} {trialtype}'
+    plt.figtext(
+        x=0.12, y=0.9, s=title, fontsize=10, multialignment='center')
 
     # Lilou
     sts_L = np.load(
-        folder + sessions[1] + '/' + epoch + '_' + trialtype + '.npy',
+        f'{folder}{sessions[1]}/{extra_part}{epoch}_{trialtype}.npy',
         allow_pickle=True)
 
     gs1 = gridspec.GridSpecFromSubplotSpec(nrows=2, ncols=1,
@@ -395,7 +408,7 @@ def plot_fig2_spikeloss(folder,
                                            height_ratios=[2, 1])
     ax11 = fig.add_subplot(gs1[0])
     plot_loss_top_panel(ax=ax11,
-                        sts=sts_N,
+                        sts=sts_L,
                         binsize=binsize,
                         dither=dither,
                         fontsize=fontsize,
@@ -413,13 +426,21 @@ def plot_fig2_spikeloss(folder,
                    winlen=winlen,
                    n_surr=n_surr,
                    fontsize=fontsize)
-    plt.figtext(x=0.61, y=0.9, s='Monkey L\nSession l101210-001 movement PGHF',
-                fontsize=10, multialignment='center')
+    if data_type == 'original':
+        title = f'Monkey L\n' \
+                f'Session {sessions[1]}, {epoch} {trialtype}'
+    else:
+        title = f'Monkey L - {data_type}\n' \
+               f'Session {sessions[1]}, {epoch} {trialtype}'
+    plt.figtext(
+        x=0.61, y=0.9, s=title, fontsize=10, multialignment='center')
 
     plt.rcParams.update({'font.size': 10})
-    if not os.path.exists('../plots'):
-        os.mkdir('../plots')
-    plt.savefig('../plots/fig2_spikeloss.eps')
+    if not os.path.exists('../plots/fig2_spikeloss'):
+        os.mkdir('../plots/fig2_spikeloss')
+    plt.savefig(
+        f'../plots/fig2_spikeloss/'
+        f'fig2_spikeloss_{epoch}_{trialtype}_{data_type}.{file_type}')
 
 
 if __name__ == '__main__':
@@ -441,19 +462,43 @@ if __name__ == '__main__':
     SNR_thresh = config['SNR_thresh']
     # size for removal of synchrofacts from data
     synchsize = config['synchsize']
-    sts_folder = '../data/concatenated_spiketrains/'
-    epoch = 'movement'
-    trialtype = 'PGHF'
+
+    data_types = ['original']
+    data_types.extend(config['processes'])
+
+    # data_type = 'original'
+    # epoch = 'movement'
+    # trialtype = 'PGHF'
+
     n_surr = 100
     epoch_length = 0.5 * pq.s
     fontsize = 10
-    plot_fig2_spikeloss(folder=sts_folder,
-                        sessions=sessions,
-                        epoch=epoch,
-                        trialtype=trialtype,
-                        dither=dither,
-                        binsize=binsize,
-                        n_surr=n_surr,
-                        winlen=winlen,
-                        epoch_length=epoch_length,
-                        fontsize=fontsize)
+
+    file_type = 'png'
+    # file_type = 'eps'  # for publication in PLOS CB
+
+    for epoch, trialtype, data_type in itertools.product(
+            config['epochs'], config['trialtypes'], data_types):
+        if (data_type == 'original'
+                and trialtype=='PGHF'
+                and epoch == 'movement'):
+            continue
+
+        if data_type == 'original':
+            sts_folder = '../data/concatenated_spiketrains/'
+        else:
+            sts_folder = f'../data/artificial_data/{data_type}/'
+
+        plot_fig2_spikeloss(
+            folder=sts_folder,
+            sessions=sessions,
+            epoch=epoch,
+            trialtype=trialtype,
+            dither=dither,
+            binsize=binsize,
+            n_surr=n_surr,
+            winlen=winlen,
+            epoch_length=epoch_length,
+            fontsize=fontsize,
+            data_type=data_type,
+            file_type=file_type)
