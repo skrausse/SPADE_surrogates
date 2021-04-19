@@ -133,7 +133,44 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
                 dpi=300)
 
 
+def plot_flattened_pvalue_spectra(setup1, setup2):
+
+    plt.rcParams.update({'font.size': 12,
+                         'text.usetex': True})
+
+    fig, ax = plt.subplots(1, 1, figsize=(5., 5.))
+
+    optimized_pvalue_spec1 = _get_mean_optimized_pvalue_spec(setup1)
+    optimized_pvalue_spec2 = _get_mean_optimized_pvalue_spec(setup2)
+
+    pvalues1 = []
+    pvalues2 = []
+
+    for size in optimized_pvalue_spec1.keys():
+        for dur in optimized_pvalue_spec1[size].keys():
+            for occ in optimized_pvalue_spec1[size][dur].keys():
+                pvalues1.append(optimized_pvalue_spec1[size][dur][occ])
+                if isinstance(optimized_pvalue_spec2[size][dur][occ], float):
+                    pvalues2.append(optimized_pvalue_spec2[size][dur][occ])
+                else:
+                    pvalues2.append(0.)
+
+    ax.scatter(np.array(pvalues1), np.array(pvalues2))
+    # ax.scatter(np.log(np.array(pvalues1)), np.log(np.array(pvalues2)))
+    # ax.set_xscale('log')
+    # ax.set_yscale('log')
+    ax.set_xlabel('p-values GT')
+    ax.set_ylabel('p-values UD')
+    # ax.set_xlabel('log(p-values GT)')
+    # ax.set_ylabel('log(p-values UD)')
+    # ax.set_xlim(-0.05, 1.05)
+    # ax.set_ylim(-0.05, 1.05)
+    # fig.savefig('../../plots/pvalue-comparison_loglog_3')
+    # plt.show()
+
+
 if __name__ == '__main__':
     setup_gt = cf.TestCaseSetUp(surr_method='ground_truth')
     setup_ud = cf.TestCaseSetUp(surr_method='dither_spikes')
     plot_comparison_of_two_pvalue_spectra(setup_gt, setup_ud)
+    # plot_flattened_pvalue_spectra(setup_gt, setup_ud)
