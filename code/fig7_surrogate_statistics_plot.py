@@ -7,6 +7,7 @@ It is necessary to first run the data generation script.
 import numpy as np
 import matplotlib.pyplot as plt
 import quantities as pq
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 import fig7_surrogate_statistics_config as cf
 
@@ -87,7 +88,7 @@ def plot_clipped_firing_rate(axes_clip):
                                       labelpad=XLABELPAD)
 
 
-def _plot_isi(axes_isi, data_type, type_id, surr_method):
+def _plot_isi(axes_isi, axes_insets, data_type, type_id, surr_method):
     results = np.load(
         f'{DATA_PATH}/isi_{data_type}_{surr_method}.npy',
         allow_pickle=True).item()
@@ -100,6 +101,14 @@ def _plot_isi(axes_isi, data_type, type_id, surr_method):
     label = LABELS[surr_method] if type_id == 0 else None
 
     axes_isi[type_id].plot(
+        bin_edges[:-1] + bin_edges[0] / 2,
+        hist,
+        linewidth=linewidth,
+        label=label,
+        color=COLORS[surr_method],
+        linestyle=LINE_STYLES[surr_method])
+
+    axes_insets[type_id].plot(
         bin_edges[:-1] + bin_edges[0] / 2,
         hist,
         linewidth=linewidth,
@@ -161,13 +170,23 @@ def plot_statistical_analysis_of_single_rate(
     -------
     None
     """
+    axes_insets = []
     for type_id, data_type in enumerate(DATA_TYPES):
-        _plot_isi(axes_isi, data_type, type_id, surr_method='original')
+        axes_insets.append(
+            inset_axes(axes_isi[type_id], 0.7, 0.6))  # (0.7, 0.5)
+        axes_insets[type_id].set_xlim(-0.5, 5.5)        # (0., 7.5)
+        axes_insets[type_id].set_ylim(
+            0.5 * FIRING_RATE, 1.1*FIRING_RATE)
+
+    for type_id, data_type in enumerate(DATA_TYPES):
+        _plot_isi(axes_isi, axes_insets,
+                  data_type, type_id, surr_method='original')
         _plot_ac_cc(axes_ac, axes_cc, type_id, data_type,
                     surr_method='original')
 
         for surr_method in SURR_METHODS:
-            _plot_isi(axes_isi, data_type, type_id, surr_method)
+            _plot_isi(
+                axes_isi, axes_insets, data_type, type_id, surr_method)
 
             _plot_ac_cc(axes_ac, axes_cc, type_id, data_type,
                         surr_method)
@@ -343,7 +362,7 @@ def plot_statistics_overview():
          for x in range(3)]
 
     axes_clip, axes_isi, axes_ac, axes_cc = axes
-    axis_moved, axis_step, axis_cv = lower_axes
+    axis_cv, axis_moved, axis_step = lower_axes
 
     axes_clip[0].set_ylabel(r'$1 - N_{clip}/N$', labelpad=YLABELPAD)
     axes_isi[0].set_ylabel(r'$p(\tau)$ in 1/s', labelpad=YLABELPAD)
