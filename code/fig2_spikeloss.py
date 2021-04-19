@@ -441,6 +441,7 @@ def plot_fig2_spikeloss(
     plt.savefig(
         f'../plots/fig2_spikeloss/'
         f'fig2_spikeloss_{epoch}_{trialtype}_{data_type}.{file_type}')
+    plt.close(fig=fig)
 
 
 if __name__ == '__main__':
@@ -466,22 +467,22 @@ if __name__ == '__main__':
     data_types = ['original']
     data_types.extend(config['processes'])
 
-    # data_type = 'original'
-    # epoch = 'movement'
-    # trialtype = 'PGHF'
+    data_type_fixed = 'original'
+    epoch_fixed = 'movement'
+    trialtype_fixed = 'PGHF'
 
     n_surr = 100
     epoch_length = 0.5 * pq.s
     fontsize = 10
 
-    file_type = 'png'
-    # file_type = 'eps'  # for publication in PLOS CB
+    # file_type = 'png'
+    file_type = 'eps'  # for publication in PLOS CB
 
     for epoch, trialtype, data_type in itertools.product(
             config['epochs'], config['trialtypes'], data_types):
-        if (data_type == 'original'
-                and trialtype=='PGHF'
-                and epoch == 'movement'):
+        if not (data_type == data_type_fixed
+                and trialtype == trialtype_fixed
+                and epoch == epoch_fixed):
             continue
 
         if data_type == 'original':
