@@ -922,13 +922,15 @@ if __name__ == "__main__":
     #                      'joint_isi_dithering',
     #                      'isi_dithering']
 
-    surrogate_methods = ('ud', 'bin_shuffling', 'udrp',
-                         'isi', 'jisi', 'tr_shift')
+    surrogate_methods = ('ud',  'udrp', 'jisi', 'isi',
+                         'tr_shift', 'bin_shuffling')
+
+    surrogates_tag = ('UD', 'UDD', 'JISI-D', 'ISI-D', 'TR-SHIFT', 'WIN-SHUFF')
 
     sessions = ['i140703-001', 'l101210-001']
     processes = ['ppd', 'gamma']
 
-    surrogates_tag = ['UD', 'WIN-SHUFF', 'TR-SHIFT', 'UDD', 'JISI-D', 'ISI-D']
+
     figure8_artificial_data(
         sts=sts,
         gamma=gamma,
