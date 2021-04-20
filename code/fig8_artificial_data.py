@@ -38,14 +38,13 @@ def build_dicts(st, gamma_st, ppd_st, max_refractory):
     """
     rate_dict = {}
     rp_dict = {}
-    cv_dict = {}
     list_st = [st, gamma_st, ppd_st]
     processes = ['original', 'gamma', 'ppd']
     for order, process in enumerate(processes):
         rate, refractory_period, cv = \
             estimate_rate_deadtime(list_st[order],
-                                        max_refractory=max_refractory,
-                                        sampling_period=0.1*pq.ms)
+                                   max_refractory=max_refractory,
+                                   sampling_period=0.1 * pq.ms)
         rate_dict[process] = rate
         rp_dict[process] = refractory_period
     return rate_dict, rp_dict
@@ -80,14 +79,14 @@ def cut_firing_rate_into_trials(rate, epoch_length, sep, sampling_period):
     sep = sep.rescale(pq.ms)
     sampling_period = sampling_period.rescale(pq.ms)
     stop_index = int(start_index + (
-            epoch_length/sampling_period).simplified.magnitude)
+            epoch_length / sampling_period).simplified.magnitude)
     while stop_index < len_rate:
         cut_rate = rate[start_index: stop_index]
         trials_rate.append(cut_rate)
-        start_index += int((epoch_length/sampling_period).simplified.magnitude
-                           + (sep/sampling_period).simplified.magnitude)
+        start_index += int((epoch_length / sampling_period).simplified.magnitude
+                           + (sep / sampling_period).simplified.magnitude)
         stop_index = int(start_index + (
-                epoch_length/sampling_period).simplified.magnitude)
+                epoch_length / sampling_period).simplified.magnitude)
     return np.array(trials_rate)
 
 
@@ -154,7 +153,7 @@ def plot_trial_firing_rate(ax, sts, gamma, ppd, neuron, max_refractory, sep,
                                                  epoch_length=epoch_length,
                                                  sep=sep,
                                                  sampling_period=sampling_period)
-    x = np.arange(0, int(epoch_length.rescale(pq.ms).magnitude/
+    x = np.arange(0, int(epoch_length.rescale(pq.ms).magnitude /
                          sampling_period.rescale(pq.ms).magnitude))
     ax.plot(np.squeeze(np.mean(cut_trials_original, axis=0)), label='original')
     ax.fill_between(x, np.squeeze(np.mean(cut_trials_original, axis=0) - np.std(cut_trials_original, axis=0)),
@@ -169,7 +168,7 @@ def plot_trial_firing_rate(ax, sts, gamma, ppd, neuron, max_refractory, sep,
                     np.squeeze(np.mean(cut_trials_ppd, axis=0) + np.std(cut_trials_ppd, axis=0)),
                     alpha=0.2)
     plt.ylim(min(np.squeeze(np.mean(cut_trials_ppd, axis=0) - np.std(cut_trials_ppd, axis=0))) - 10,
-                max(np.squeeze(np.mean(cut_trials_ppd, axis=0) + np.std(cut_trials_ppd, axis=0))) + 10)
+             max(np.squeeze(np.mean(cut_trials_ppd, axis=0) + np.std(cut_trials_ppd, axis=0))) + 10)
     ax.set_xlabel('time (ms)', fontsize=fontsize)
     ax.set_ylabel('firing rate (Hz)', fontsize=fontsize)
     ax.set_title('Single unit average FR', fontsize=fontsize)
@@ -209,18 +208,18 @@ def plot_rp(ax, sts, gamma, ppd, max_refractory, sampling_period, sep,
     """
     processes = {'original': sts, 'ppd': ppd, 'gamma': gamma}
     # loop over the neurons
-    rp_dict = {'original':[], 'ppd':[], 'gamma':[]}
+    rp_dict = {'original': [], 'ppd': [], 'gamma': []}
     for neuron in range(len(sts)):
         for key in rp_dict.keys():
             rp = estimate_rate_refrperiod_cv(processes[key][neuron],
                                              max_refractory=max_refractory,
                                              sampling_period=sampling_period,
                                              sep=sep)[1]
-            rp_dict[key].append(rp*1000)
-    bins = np.arange(0,4, 0.1)
+            rp_dict[key].append(rp * 1000)
+    bins = np.arange(0, 4, 0.1)
     for key in rp_dict.keys():
         ax.hist(rp_dict[key], bins, alpha=1, label=key, histtype='step')
-    ax.legend(loc='upper right', fontsize=fontsize-4)
+    ax.legend(loc='upper right', fontsize=fontsize - 4)
     ax.set_title('Dead time of all units', fontsize=fontsize)
     ax.set_ylabel('Count', fontsize=fontsize)
     ax.set_xlabel('DT (ms)', fontsize=fontsize)
@@ -251,14 +250,14 @@ def plot_isi(ax, sts, gamma, ppd, neuron, fontsize):
     st = sts[neuron]
     gamma_st = gamma[neuron]
     ppd_st = ppd[neuron]
-    isi_dict = {'original':[], 'ppd':[], 'gamma':[]}
+    isi_dict = {'original': [], 'ppd': [], 'gamma': []}
     list_st = [st, ppd_st, gamma_st]
     for index, key in enumerate(isi_dict.keys()):
         isi = elephant.statistics.isi(list_st[index])
         isi_dict[key].append(isi)
-    bins = np.arange(0,0.3, 0.01)
+    bins = np.arange(0, 0.3, 0.01)
     for index, key in enumerate(isi_dict.keys()):
-        ax.hist(isi_dict[key], bins,alpha=1, label=key, histtype='step')
+        ax.hist(isi_dict[key], bins, alpha=1, label=key, histtype='step')
     # ax.legend(loc='upper right', fontsize=fontsize-4)
     ax.set_xlabel('ISI (s)', fontsize=fontsize)
     ax.set_ylabel('Count', fontsize=fontsize)
@@ -276,8 +275,9 @@ def get_cv2(isis):
     isis: list
         list of interspike intervals
     """
-    cv2 = np.sum([2*np.sum(np.abs(trial_isi[:-1]-trial_isi[1:]) / (trial_isi[:-1]+trial_isi[1:])) for trial_isi in isis]
-                )/np.sum([len(trial_isi)-1 if len(trial_isi) > 0 else 0 for trial_isi in isis])
+    cv2 = np.sum(
+        [2 * np.sum(np.abs(trial_isi[:-1] - trial_isi[1:]) / (trial_isi[:-1] + trial_isi[1:])) for trial_isi in isis]
+        ) / np.sum([len(trial_isi) - 1 if len(trial_isi) > 0 else 0 for trial_isi in isis])
     return cv2
 
 
@@ -353,7 +353,7 @@ def plot_cv2(ax, sts, gamma, ppd, sep, fontsize):
 
 
 def panelA_plot(axes, sts, gamma, ppd, neuron, max_refractory, sep,
-                  epoch_length, sampling_period, fontsize):
+                epoch_length, sampling_period, fontsize):
     """
     Function representing Panel A of figure 8 of the manuscript.
     Comparison of statistics of the original to the generated artificial data
@@ -401,7 +401,7 @@ def panelA_plot(axes, sts, gamma, ppd, neuron, max_refractory, sep,
                                  epoch_length=epoch_length,
                                  sampling_period=sampling_period,
                                  fontsize=fontsize)
-    ax1.set_ylim([0,50])
+    ax1.set_ylim([0, 50])
 
     # isi distribution plot
     ax2 = plot_isi(ax=ax2,
@@ -489,8 +489,8 @@ def calculate_fps(surrogate_methods, sessions):
         ppd_fps[surrogate] = 0
         for session in sessions:
             folder_res = [f.path for f in
-                          os.scandir('../results/artificial_data/'+
-                                     surrogate+'/ppd/'+ session +'/'
+                          os.scandir('../results/artificial_data/' +
+                                     surrogate + '/ppd/' + session + '/'
                                      ) if f.is_dir()]
             for result in folder_res:
                 res = np.load(result + '/filtered_res.npy', allow_pickle=True)
@@ -500,8 +500,8 @@ def calculate_fps(surrogate_methods, sessions):
         gamma_fps[surrogate_methods[index]] = 0
         for session in sessions:
             folder_res = [f.path for f in
-                          os.scandir('../results/artificial_data/'+
-                                     surrogate+'/gamma/'+ session +'/'
+                          os.scandir('../results/artificial_data/' +
+                                     surrogate + '/gamma/' + session + '/'
                                      ) if f.is_dir()]
             for result in folder_res:
                 res = np.load(result + '/filtered_res.npy', allow_pickle=True)
@@ -528,7 +528,7 @@ def calculate_fps_rate(surrogate_methods, sessions, binsize, winlen,
         itself, having keys as the surrogate methods.
     """
 
-    neurons_fr = {'gamma':{}, 'ppd':{}}
+    neurons_fr = {'gamma': {}, 'ppd': {}}
 
     # loading original data
     for surrogate in surrogate_methods:
@@ -574,10 +574,10 @@ def calculate_fps_rate(surrogate_methods, sessions, binsize, winlen,
                         original_sts = np.load(original_data_path,
                                                allow_pickle=True)
                         rate = \
-                        estimate_rate(original_sts[neuron],
-                                             binsize=binsize,
-                                             winlen=winlen,
-                                             epoch_length=epoch_length)
+                            estimate_rate(original_sts[neuron],
+                                          binsize=binsize,
+                                          winlen=winlen,
+                                          epoch_length=epoch_length)
                         neurons_fr['gamma'][surrogate].append(rate.magnitude)
         neurons_fr['gamma'][surrogate] = \
             np.array(neurons_fr['gamma'][surrogate]).flatten()
@@ -855,42 +855,44 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
             plt.text(x=- 0.25, y=1.05, s='B', transform=ax11.transAxes,
                      fontsize=title_size)
             ax12 = plot_inset_fps_fr(ax_fps_fr=ax12,
-                                              process=process,
-                                              sessions=sessions,
-                                              surrogate_methods=surrogate_methods,
-                                              surrogates_tag=surrogates_tag,
-                                              scale=scale,
-                                              binsize=binsize,
-                                              winlen=winlen,
-                                              epoch_length=epoch_length)
+                                     process=process,
+                                     sessions=sessions,
+                                     surrogate_methods=surrogate_methods,
+                                     surrogates_tag=surrogates_tag,
+                                     scale=scale,
+                                     binsize=binsize,
+                                     winlen=winlen,
+                                     epoch_length=epoch_length)
             ax12.set_ylabel('distr. FPs by neuronal FR')
             ax12.set_xlabel('firing rate (Hz)')
             ax12.set_ylim([0, 0.15])
             plt.text(x=-0.25, y=1.05, s='C', transform=ax12.transAxes,
                      fontsize=title_size)
         if process == 'gamma':
-            ax21 = plot_inset(ax_num_fps=ax21,
-                                       index=index,
-                                       process=process,
-                                       sessions=sessions,
-                                       surrogate_methods=surrogate_methods,
-                                       label_size=label_size,
-                                       tick_size=tick_size)
+            ax21 = plot_inset(
+                ax_num_fps=ax21,
+                index=index,
+                process=process,
+                sessions=sessions,
+                surrogate_methods=surrogate_methods,
+                label_size=label_size,
+                tick_size=tick_size)
             ax21.set_xticklabels(surrogates_tag, rotation=45,
                                  size=tick_size)
             ax21.set_ylabel('')
             ax21.set_ylim([0, 100])
             plt.text(x=0.45, y=1.05, s='Gamma', transform=ax21.transAxes,
                      fontsize=title_size)
-            ax22 = plot_inset_fps_fr(ax_fps_fr=ax22,
-                                              process=process,
-                                              sessions=sessions,
-                                              surrogate_methods=surrogate_methods,
-                                              surrogates_tag=surrogates_tag,
-                                              scale=scale,
-                                              binsize=binsize,
-                                              winlen=winlen,
-                                              epoch_length=epoch_length)
+            ax22 = plot_inset_fps_fr(
+                ax_fps_fr=ax22,
+                process=process,
+                sessions=sessions,
+                surrogate_methods=surrogate_methods,
+                surrogates_tag=surrogates_tag,
+                scale=scale,
+                binsize=binsize,
+                winlen=winlen,
+                epoch_length=epoch_length)
             ax22.legend()
             ax22.set_ylim([0, 0.15])
             ax22.set_xlabel('firing rate (Hz)')
