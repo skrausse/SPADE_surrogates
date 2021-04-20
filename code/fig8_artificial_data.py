@@ -1,3 +1,5 @@
+import itertools
+
 import numpy as np
 import quantities as pq
 from matplotlib import pyplot as plt
@@ -7,6 +9,10 @@ from generate_artificial_data import estimate_rate_deadtime, \
     create_st_list
 import elephant
 import os
+
+excluded_neurons = np.load(
+    'analysis_artificial_data/excluded_neurons.npy',
+    allow_pickle=True).item()
 
 
 def build_dicts(st, gamma_st, ppd_st, max_refractory):
@@ -57,7 +63,7 @@ def cut_firing_rate_into_trials(rate, epoch_length, sep, sampling_period):
 
     Parameters
     ----------
-    rate : neo.SpikeTrain
+    rate : neo.AnalogSignal
         firing rate estimated for a single neuron, estimated on concatenated
         data
     sep: pq.Quantity
@@ -129,18 +135,18 @@ def plot_trial_firing_rate(ax, sts, gamma, ppd, neuron, max_refractory, sep,
     ppd_st = ppd[neuron]
     rate_dict = {}
     rp_dict = {}
-    cv_dict = {}
     list_st = [st, gamma_st, ppd_st]
     processes = ['original', 'gamma', 'ppd']
     for order, process in enumerate(processes):
-        rate, refractory_period, cv = \
-            estimate_rate_refrperiod_cv(list_st[order],
-                                        max_refractory=max_refractory,
-                                        sampling_period=sampling_period,
-                                        sep=sep)
+        rate, refractory_period, _ = \
+            estimate_rate_deadtime(
+                list_st[order],
+                max_refractory=max_refractory,
+                sampling_period=sampling_period,
+                sep=sep)
         rate_dict[process] = rate
         rp_dict[process] = refractory_period
-        cv_dict[process] = cv
+
     cut_trials_original = cut_firing_rate_into_trials(rate_dict['original'],
                                                       epoch_length=epoch_length,
                                                       sep=sep,
@@ -172,11 +178,10 @@ def plot_trial_firing_rate(ax, sts, gamma, ppd, neuron, max_refractory, sep,
     ax.set_xlabel('time (ms)', fontsize=fontsize)
     ax.set_ylabel('firing rate (Hz)', fontsize=fontsize)
     ax.set_title('Single unit average FR', fontsize=fontsize)
-    # ax.legend(fontsize=fontsize-2)
+
     xticks = ax.get_xticks().tolist()
     rescaled_xticks = [int(int(lab) / 10) for lab in xticks]
     ax.set_xticklabels(rescaled_xticks)
-    return ax
 
 
 def plot_rp(ax, sts, gamma, ppd, max_refractory, sampling_period, sep,
@@ -197,12 +202,10 @@ def plot_rp(ax, sts, gamma, ppd, max_refractory, sampling_period, sep,
         list of neo spiketrains of the PPD data
     max_refractory: quantity
         maximal refractory period
-    sep: quantity
-        separation time within trials
-    epoch_length: quantity
-        trial duration (typically 500pq.ms)
     sampling_period: quantity
         sampling period of the recording (30.000Hz)
+    sep: quantity
+        separation time within trials
     fontsize: int
         fontsize of the legend
     """
@@ -211,10 +214,11 @@ def plot_rp(ax, sts, gamma, ppd, max_refractory, sampling_period, sep,
     rp_dict = {'original': [], 'ppd': [], 'gamma': []}
     for neuron in range(len(sts)):
         for key in rp_dict.keys():
-            rp = estimate_rate_refrperiod_cv(processes[key][neuron],
-                                             max_refractory=max_refractory,
-                                             sampling_period=sampling_period,
-                                             sep=sep)[1]
+            rp = estimate_rate_deadtime(
+                processes[key][neuron],
+                max_refractory=max_refractory,
+                sampling_period=sampling_period,
+                sep=sep)[1]
             rp_dict[key].append(rp * 1000)
     bins = np.arange(0, 4, 0.1)
     for key in rp_dict.keys():
@@ -224,7 +228,6 @@ def plot_rp(ax, sts, gamma, ppd, max_refractory, sampling_period, sep,
     ax.set_ylabel('Count', fontsize=fontsize)
     ax.set_xlabel('DT (ms)', fontsize=fontsize)
     ax.set_ylim([0, max([max(np.histogram(rp_dict[key], bins)[0]) for key in rp_dict.keys()]) + 5])
-    return ax
 
 
 def plot_isi(ax, sts, gamma, ppd, neuron, fontsize):
@@ -258,11 +261,10 @@ def plot_isi(ax, sts, gamma, ppd, neuron, fontsize):
     bins = np.arange(0, 0.3, 0.01)
     for index, key in enumerate(isi_dict.keys()):
         ax.hist(isi_dict[key], bins, alpha=1, label=key, histtype='step')
-    # ax.legend(loc='upper right', fontsize=fontsize-4)
+
     ax.set_xlabel('ISI (s)', fontsize=fontsize)
     ax.set_ylabel('Count', fontsize=fontsize)
     ax.set_title('Single unit ISI', fontsize=fontsize)
-    return ax
 
 
 def get_cv2(isis):
@@ -283,7 +285,7 @@ def get_cv2(isis):
 
 def plot_cv2(ax, sts, gamma, ppd, sep, fontsize):
     """
-    Plot representing the CV2 of one neuron of one
+    Plot representing the CV2 of all neurons of one
     dataset, for the original data, the gamma and the ppd data.
 
     Parameters
@@ -296,18 +298,14 @@ def plot_cv2(ax, sts, gamma, ppd, sep, fontsize):
         list of neo spiketrains of the gamma data
     ppd: list
         list of neo spiketrains of the PPD data
-    neuron: int
-        index of the neuron being plotted
     fontsize: int
         fontsize of the legend
     """
-    processes = {'original': sts, 'ppd': ppd, 'gamma': gamma}
-    # loop over the neurons
     cv2_dict = {'original': [], 'ppd': [], 'gamma': []}
 
     # original
     cv2_list = []
-    # for neuron, conc_st in enumerate(sts_list):
+    # loop over the neurons
     for neuron, conc_st in enumerate(sts):
         trial_list = create_st_list(conc_st, sep=sep)
         isis = [np.diff(st.magnitude)
@@ -320,6 +318,7 @@ def plot_cv2(ax, sts, gamma, ppd, sep, fontsize):
 
     # gamma
     cv2_list = []
+    # loop over the neurons
     for neuron, conc_st in enumerate(gamma):
         trial_list = create_st_list(conc_st, sep=sep)
         isis = [np.diff(st.magnitude)
@@ -332,6 +331,7 @@ def plot_cv2(ax, sts, gamma, ppd, sep, fontsize):
 
     # ppd
     cv2_list = []
+    # loop over the neurons
     for neuron, conc_st in enumerate(ppd):
         trial_list = create_st_list(conc_st, sep=sep)
         isis = [np.diff(st.magnitude)
@@ -345,11 +345,9 @@ def plot_cv2(ax, sts, gamma, ppd, sep, fontsize):
     bins = np.arange(0, 1.5, 0.1)
     for key in cv2_dict.keys():
         ax.hist(cv2_dict[key], bins, alpha=1, label=key, histtype='step')
-    # ax.legend(loc='upper right', fontsize=fontsize-4)
     ax.set_title('CV2 of all units', fontsize=fontsize)
     ax.set_ylabel('Count', fontsize=fontsize)
     ax.set_xlabel('CV2', fontsize=fontsize)
-    return ax
 
 
 def panelA_plot(axes, sts, gamma, ppd, neuron, max_refractory, sep,
@@ -367,8 +365,8 @@ def panelA_plot(axes, sts, gamma, ppd, neuron, max_refractory, sep,
 
     Parameters
     ----------
-    ax: matplotlib.pyplot.axes
-        ax where to plot the figure
+    axes: matplotlib.pyplot.axes
+        axes where to plot the figure
     sts: list
         list of neo spiketrains of the original data
     gamma: list
@@ -391,45 +389,47 @@ def panelA_plot(axes, sts, gamma, ppd, neuron, max_refractory, sep,
     (ax1, ax2, ax3, ax4) = axes
 
     # second plot
-    ax1 = plot_trial_firing_rate(ax1,
-                                 sts=sts,
-                                 gamma=gamma,
-                                 ppd=ppd,
-                                 neuron=neuron,
-                                 max_refractory=max_refractory,
-                                 sep=sep,
-                                 epoch_length=epoch_length,
-                                 sampling_period=sampling_period,
-                                 fontsize=fontsize)
+    plot_trial_firing_rate(
+        ax1,
+        sts=sts,
+        gamma=gamma,
+        ppd=ppd,
+        neuron=neuron,
+        max_refractory=max_refractory,
+        sep=sep,
+        epoch_length=epoch_length,
+        sampling_period=sampling_period,
+        fontsize=fontsize)
     ax1.set_ylim([0, 50])
 
     # isi distribution plot
-    ax2 = plot_isi(ax=ax2,
-                   sts=sts,
-                   gamma=gamma,
-                   ppd=ppd,
-                   neuron=neuron,
-                   fontsize=fontsize)
+    plot_isi(
+        ax=ax2,
+        sts=sts,
+        gamma=gamma,
+        ppd=ppd,
+        neuron=neuron,
+        fontsize=fontsize)
 
     # third plot
-    ax3 = plot_cv2(ax=ax3,
-                   sts=sts,
-                   gamma=gamma,
-                   ppd=ppd,
-                   sep=sep,
-                   fontsize=fontsize)
+    plot_cv2(
+        ax=ax3,
+        sts=sts,
+        gamma=gamma,
+        ppd=ppd,
+        sep=sep,
+        fontsize=fontsize)
 
     # fourth plot
-    ax4 = plot_rp(ax=ax4,
-                  sts=sts,
-                  gamma=gamma,
-                  ppd=ppd,
-                  max_refractory=max_refractory,
-                  sampling_period=sampling_period,
-                  sep=sep,
-                  fontsize=fontsize)
-
-    return axes
+    plot_rp(
+        ax=ax4,
+        sts=sts,
+        gamma=gamma,
+        ppd=ppd,
+        max_refractory=max_refractory,
+        sampling_period=sampling_period,
+        sep=sep,
+        fontsize=fontsize)
 
 
 def estimate_rate(spiketrain, binsize,
@@ -530,57 +530,38 @@ def calculate_fps_rate(surrogate_methods, sessions, binsize, winlen,
 
     neurons_fr = {'gamma': {}, 'ppd': {}}
 
-    # loading original data
-    for surrogate in surrogate_methods:
-        neurons_fr['ppd'][surrogate] = []
+    for process, surrogate in itertools.product(
+            ('gamma', 'ppd'), surrogate_methods):
+        neurons_fr[process][surrogate] = []
         for session in sessions:
-            folder_res = [f.path for f in os.scandir(
-                '../results/artificial_data/' + surrogate + '/ppd/' + session + '/') if
-                          f.is_dir()]
+            folder_res = \
+                [f.path for f in os.scandir(
+                 f'../results/artificial_data/'
+                 f'{surrogate}/{process}/{session}/') if f.is_dir()]
             for result in folder_res:
-                res = np.load(result + '/filtered_res.npy', allow_pickle=True)
-                for pattern in res[0]:
-                    for neuron in pattern['neurons']:
-                        # loading original data and retrieve the rate
-                        behavioral_context = result.split('/')[-1]
-                        original_data_path = '../data/concatenated_spiketrains/' + \
-                                             session + '/' + behavioral_context + \
-                                             '.npy'
-                        original_sts = np.load(original_data_path,
-                                               allow_pickle=True)
-                        rate = estimate_rate(original_sts[neuron],
-                                             binsize=binsize,
-                                             winlen=winlen,
-                                             epoch_length=epoch_length)
-                        neurons_fr['ppd'][surrogate].append(rate.magnitude)
-        neurons_fr['ppd'][surrogate] = \
-            np.array(neurons_fr['ppd'][surrogate]).flatten()
+                patterns = np.load(
+                    f'{result}/filtered_res.npy', allow_pickle=True)[0]
 
-    for surrogate in surrogate_methods:
-        neurons_fr['gamma'][surrogate] = []
-        for session in sessions:
-            folder_res = [f.path for f in os.scandir(
-                '../results/artificial_data/' + surrogate + '/gamma/' + session + '/') if
-                          f.is_dir()]
-            for result in folder_res:
-                res = np.load(result + '/filtered_res.npy', allow_pickle=True)
-                for pattern in res[0]:
+                # loading artificial data and retrieve the rate
+                behavioral_context = result.split('/')[-1]
+                spiketrain_path = \
+                    f'../data/artificial_data/{process}/{session}/' \
+                    f'{process}_{behavioral_context}.npy'
+                spiketrains = list(
+                    np.load(spiketrain_path, allow_pickle=True))
+                for neuron in excluded_neurons[session]:
+                    spiketrains.pop(int(neuron))
+
+                for pattern in patterns:
                     for neuron in pattern['neurons']:
-                        # loading original data and retrieve the rate
-                        behavioral_context = result.split('/')[-1]
-                        original_data_path = '../data/concatenated_spiketrains/' + \
-                                             session + '/' + behavioral_context + \
-                                             '.npy'
-                        original_sts = np.load(original_data_path,
-                                               allow_pickle=True)
-                        rate = \
-                            estimate_rate(original_sts[neuron],
-                                          binsize=binsize,
-                                          winlen=winlen,
-                                          epoch_length=epoch_length)
-                        neurons_fr['gamma'][surrogate].append(rate.magnitude)
-        neurons_fr['gamma'][surrogate] = \
-            np.array(neurons_fr['gamma'][surrogate]).flatten()
+                        rate = estimate_rate(
+                            spiketrains[int(neuron)],
+                            binsize=binsize,
+                            winlen=winlen,
+                            epoch_length=epoch_length)
+                        neurons_fr[process][surrogate].append(rate.magnitude)
+        neurons_fr[process][surrogate] = \
+            np.array(neurons_fr[process][surrogate]).flatten()
 
     return neurons_fr
 
@@ -636,7 +617,6 @@ def plot_inset_fps_fr(ax_fps_fr, process, sessions, surrogate_methods,
             ax_fps_fr.plot(hist, label=surrogates_tag[index])
             ax_fps_fr.set_xticklabels(
                 [x * scale for x in ax_fps_fr.get_xticks()])
-    return ax_fps_fr
 
 
 def plot_inset(ax_num_fps, index, process, sessions, surrogate_methods,
@@ -682,7 +662,6 @@ def plot_inset(ax_num_fps, index, process, sessions, surrogate_methods,
     ax_num_fps.set_xticks(range(1, len(surrogate_methods) + 1))
     ax_num_fps.tick_params(axis='both', which='major',
                            labelsize=tick_size)
-    return ax_num_fps
 
 
 def plot_fps(axes, processes, sessions, surrogate_methods):
@@ -733,8 +712,6 @@ def plot_fps(axes, processes, sessions, surrogate_methods):
             ax_num_fps.set_xticklabels(surrogates_tag, rotation=45,
                                        size=tick_size)
 
-    return axes
-
 
 def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
                             sep, sampling_period, epoch_length, winlen,
@@ -781,7 +758,7 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
         sampling period of the recording (30.000Hz)
     sessions: list
         list of sessions analyzed
-    surrogates_methods: list
+    surrogate_methods: list
         list of surrogate methods
     processes: list
         list of strings of the point process models employed (e.g. ['ppd',
@@ -840,13 +817,14 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
 
     for index, process in enumerate(processes):
         if process == 'ppd':
-            ax11 = plot_inset(ax_num_fps=ax11,
-                              index=index,
-                              process=process,
-                              sessions=sessions,
-                              surrogate_methods=surrogate_methods,
-                              label_size=label_size,
-                              tick_size=tick_size)
+            plot_inset(
+                ax_num_fps=ax11,
+                index=index,
+                process=process,
+                sessions=sessions,
+                surrogate_methods=surrogate_methods,
+                label_size=label_size,
+                tick_size=tick_size)
             ax11.set_xticklabels(surrogates_tag, rotation=45,
                                  size=tick_size)
             ax11.set_ylim([0, 100])
@@ -854,22 +832,23 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
                      fontsize=10)
             plt.text(x=- 0.25, y=1.05, s='B', transform=ax11.transAxes,
                      fontsize=title_size)
-            ax12 = plot_inset_fps_fr(ax_fps_fr=ax12,
-                                     process=process,
-                                     sessions=sessions,
-                                     surrogate_methods=surrogate_methods,
-                                     surrogates_tag=surrogates_tag,
-                                     scale=scale,
-                                     binsize=binsize,
-                                     winlen=winlen,
-                                     epoch_length=epoch_length)
+            plot_inset_fps_fr(
+                ax_fps_fr=ax12,
+                process=process,
+                sessions=sessions,
+                surrogate_methods=surrogate_methods,
+                surrogates_tag=surrogates_tag,
+                scale=scale,
+                binsize=binsize,
+                winlen=winlen,
+                epoch_length=epoch_length)
             ax12.set_ylabel('distr. FPs by neuronal FR')
             ax12.set_xlabel('firing rate (Hz)')
             ax12.set_ylim([0, 0.15])
             plt.text(x=-0.25, y=1.05, s='C', transform=ax12.transAxes,
                      fontsize=title_size)
         if process == 'gamma':
-            ax21 = plot_inset(
+            plot_inset(
                 ax_num_fps=ax21,
                 index=index,
                 process=process,
@@ -883,7 +862,7 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
             ax21.set_ylim([0, 100])
             plt.text(x=0.45, y=1.05, s='Gamma', transform=ax21.transAxes,
                      fontsize=title_size)
-            ax22 = plot_inset_fps_fr(
+            plot_inset_fps_fr(
                 ax_fps_fr=ax22,
                 process=process,
                 sessions=sessions,
@@ -896,8 +875,8 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
             ax22.legend()
             ax22.set_ylim([0, 0.15])
             ax22.set_xlabel('firing rate (Hz)')
-    plt.savefig('../figures/fig8_artificial_data.eps')
-    plt.savefig('../figures/fig8_artificial_data.png')
+    plt.savefig('../plots/fig8_artificial_data.eps')
+    plt.savefig('../plots/fig8_artificial_data.png')
     plt.show()
 
 
@@ -936,31 +915,34 @@ if __name__ == "__main__":
     # (5) bin_shuffling
     # (6) trial_shifting
 
-    surrogate_methods = ['dither_spikes',
-                         'bin_shuffling',
-                         'trial_shifting',
-                         'dither_spikes_with_refractory_period',
-                         'joint_isi_dithering',
-                         'isi_dithering']
+    # surrogate_methods = ['dither_spikes',
+    #                      'bin_shuffling',
+    #                      'trial_shifting',
+    #                      'dither_spikes_with_refractory_period',
+    #                      'joint_isi_dithering',
+    #                      'isi_dithering']
+
+    surrogate_methods = ('ud', 'bin_shuffling', 'udrp',
+                         'isi', 'jisi', 'tr_shift')
 
     sessions = ['i140703-001', 'l101210-001']
     processes = ['ppd', 'gamma']
 
-    surrogates_tag = ['UD', 'Bin-Shuff', 'TR-Shift', 'UD-DT', 'J-ISI-D',
-                      'ISI-D']
-    figure8_artificial_data(sts=sts,
-                            gamma=gamma,
-                            ppd=ppd,
-                            neuron=neuron,
-                            max_refractory=max_refractory,
-                            winlen=winlen,
-                            sep=sep,
-                            sampling_period=sampling_period,
-                            epoch_length=epoch_length,
-                            sessions=sessions,
-                            surrogate_methods=surrogate_methods,
-                            surrogates_tag=surrogates_tag,
-                            processes=processes,
-                            label_size=label_size,
-                            tick_size=tick_size,
-                            scale=scale)
+    surrogates_tag = ['UD', 'WIN-SHUFF', 'TR-SHIFT', 'UDD', 'JISI-D', 'ISI-D']
+    figure8_artificial_data(
+        sts=sts,
+        gamma=gamma,
+        ppd=ppd,
+        neuron=neuron,
+        max_refractory=max_refractory,
+        winlen=winlen,
+        sep=sep,
+        sampling_period=sampling_period,
+        epoch_length=epoch_length,
+        sessions=sessions,
+        surrogate_methods=surrogate_methods,
+        surrogates_tag=surrogates_tag,
+        processes=processes,
+        label_size=label_size,
+        tick_size=tick_size,
+        scale=scale)
