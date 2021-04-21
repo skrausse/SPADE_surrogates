@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.pylab as pylab
 from generate_artificial_data import estimate_rate_deadtime, \
-    create_st_list
+    create_st_list, estimate_deadtime
 import elephant
 import os
 
@@ -184,8 +184,8 @@ def plot_trial_firing_rate(ax, sts, gamma, ppd, neuron, max_refractory, sep,
     ax.set_xticklabels(rescaled_xticks)
 
 
-def plot_rp(ax, sts, gamma, ppd, max_refractory, sampling_period, sep,
-            fontsize):
+def plot_dead_time(
+        ax, sts, gamma, ppd, max_refractory, sampling_period, sep, fontsize):
     """
     Plot representing the dead time of all neurons of one
     dataset, for the original data, the gamma and the ppd data.
@@ -214,20 +214,21 @@ def plot_rp(ax, sts, gamma, ppd, max_refractory, sampling_period, sep,
     rp_dict = {'original': [], 'ppd': [], 'gamma': []}
     for neuron in range(len(sts)):
         for key in rp_dict.keys():
-            rp = estimate_rate_deadtime(
+            rp = estimate_deadtime(
                 processes[key][neuron],
-                max_refractory=max_refractory,
-                sampling_period=sampling_period,
-                sep=sep)[1]
-            rp_dict[key].append(rp * 1000)
+                max_dead_time=max_refractory)
+            rp_dict[key].append(rp.magnitude * 1000)  # append dead time in ms.
+
     bins = np.arange(0, 4, 0.1)
     for key in rp_dict.keys():
-        ax.hist(rp_dict[key], bins, alpha=1, label=key, histtype='step')
+        ax.hist(rp_dict[key], bins=bins, alpha=1, label=key, histtype='step')
     ax.legend(loc='upper right', fontsize=fontsize - 4)
     ax.set_title('Dead time of all units', fontsize=fontsize)
     ax.set_ylabel('Count', fontsize=fontsize)
     ax.set_xlabel('DT (ms)', fontsize=fontsize)
-    ax.set_ylim([0, max([max(np.histogram(rp_dict[key], bins)[0]) for key in rp_dict.keys()]) + 5])
+    ax.set_ylim(
+        [0, max([max(np.histogram(rp_dict[key], bins)[0])
+                 for key in rp_dict.keys()]) + 5])
 
 
 def plot_isi(ax, sts, gamma, ppd, neuron, fontsize):
@@ -421,7 +422,7 @@ def panelA_plot(axes, sts, gamma, ppd, neuron, max_refractory, sep,
         fontsize=fontsize)
 
     # fourth plot
-    plot_rp(
+    plot_dead_time(
         ax=ax4,
         sts=sts,
         gamma=gamma,
@@ -912,15 +913,8 @@ if __name__ == "__main__":
     # (2) dither_spikes_with_refractory_period
     # (3) joint_isi_dithering
     # (4) isi_dithering
-    # (5) bin_shuffling
-    # (6) trial_shifting
-
-    # surrogate_methods = ['dither_spikes',
-    #                      'bin_shuffling',
-    #                      'trial_shifting',
-    #                      'dither_spikes_with_refractory_period',
-    #                      'joint_isi_dithering',
-    #                      'isi_dithering']
+    # (5) trial_shifting
+    # (6) bin_shuffling
 
     surrogate_methods = ('ud',  'udrp', 'jisi', 'isi',
                          'tr_shift', 'bin_shuffling')
@@ -929,7 +923,6 @@ if __name__ == "__main__":
 
     sessions = ['i140703-001', 'l101210-001']
     processes = ['ppd', 'gamma']
-
 
     figure8_artificial_data(
         sts=sts,

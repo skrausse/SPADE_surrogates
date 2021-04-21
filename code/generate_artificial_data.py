@@ -13,12 +13,13 @@ from scipy.optimize import brentq
 from tqdm import tqdm
 
 
-def estimate_rate_deadtime(spiketrain,
-                           max_refractory,
-                           sep,
-                           sampling_period=0.1 * pq.ms,
-                           sigma=100 * pq.ms,
-                           trial_length=500 * pq.ms):
+def estimate_rate_deadtime(
+        spiketrain,
+        max_refractory,
+        sep,
+        sampling_period=0.1 * pq.ms,
+        sigma=100 * pq.ms,
+        trial_length=500 * pq.ms):
     """
     Function estimating rate, refractory period and cv, given one spiketrain
     Parameters
@@ -81,14 +82,36 @@ def estimate_rate_deadtime(spiketrain,
                             sampling_period=sampling_period)
 
     # calculating refractory period
-    refractory_period = max_refractory
-    if len(spiketrain) > 1:
-        isi = np.diff(spiketrain.simplified.magnitude)
-        refractory_period = np.min(
-            isi,
-            initial=max_refractory.simplified.magnitude) * pq.s
+    refractory_period = estimate_deadtime(
+        spiketrain, max_dead_time=max_refractory)
 
     return rate, refractory_period, rate_list
+
+
+def estimate_deadtime(spiketrain, max_dead_time):
+    """
+    Function to calculate the dead time of one spike train.
+    
+    Parameters
+    ----------
+    spiketrain : neo.SpikeTrain
+        spiketrain from which rate, refractory period and cv are estimated
+    max_dead_time : pq.Quantity
+        maximal refractory period allowed
+
+    Returns
+    -------
+    dead_time: pq.Quantity
+        refractory period of the spiketrain (minimal isi)
+    """
+    if len(spiketrain) > 1:
+        isi = np.diff(spiketrain.simplified.magnitude)
+        dead_time = np.min(
+            isi, initial=max_dead_time.simplified.magnitude) * pq.s
+    else:
+        dead_time = max_dead_time
+
+    return dead_time
 
 
 def create_st_list(spiketrain, sep,
