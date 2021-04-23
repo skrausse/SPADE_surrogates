@@ -39,9 +39,8 @@ def create_rate_dict(session,
     """
     data_path = '../../data/concatenated_spiketrains/'
 
-    sts_units = np.load(data_path + session + '/' +
-                        ep + '_' + trialtype + '.npy',
-                        allow_pickle=True)
+    sts_units = np.load(
+        f'{data_path}{session}/{ep}_{trialtype}.npy', allow_pickle=True)
     length_data = sts_units[0].t_stop
     # Total number of bins
     n_bins = int(length_data / binsize)
@@ -165,7 +164,7 @@ def estimate_number_occurrences(sessions,
         sessions being analyzed
     epochs: list of string
         epochs of the trials being analyzed
-    trialtype: list of strings
+    trialtypes: list of strings
         trialtypes being analyzed
     sep: pq.quantities
         separation time between trials

@@ -20,6 +20,8 @@ with open("../configfile.yaml", 'r') as stream:
 sep = 2. * config['winlen'] * config['binsize']  # in s
 epoch_length = 0.5  # in s
 
+markersize = 5.
+
 surr_methods = ['ud', 'udrp', 'jisi', 'isi', 'bin_shuffling', 'tr_shift']
 
 excluded_neurons = np.load(
@@ -76,7 +78,8 @@ for session, surr_method in itertools.product(
 
             ax.plot(
                 rates, np.repeat(bev_id, len(rates)),
-                color='grey', marker='o', linestyle='', alpha=0.3)
+                color='grey', marker='o', linestyle='', alpha=0.3,
+                markersize=markersize)
 
             patterns = np.load(
                 f'{results_path}{surr_method}/{process}/'
@@ -91,6 +94,7 @@ for session, surr_method in itertools.product(
 
             ax.plot(
                 rates[neurons], np.repeat(bev_id, len(rates[neurons])),
-                color='red', marker='o', linestyle='')
+                color='red', marker='o', linestyle='',
+                markersize=markersize)
     fig.savefig(
         f'{plot_path}{session}_{surr_method}')

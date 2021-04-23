@@ -72,7 +72,7 @@ class TestCaseSetUp(SpadeSetUp, PathSetUp):
     """
     n_spiketrains: int = 20
     rate: pq.Quantity = 60 * pq.Hz
-    dead_time: pq.Quantity = 2.5 * pq.ms
+    dead_time: pq.Quantity = 1.6 * pq.ms
     shape_factor: float = 2.
     t_start: pq.Quantity = 0*pq.s
     t_stop: pq.Quantity = 1*pq.s

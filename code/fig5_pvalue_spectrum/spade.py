@@ -208,6 +208,8 @@ def spade(spiketrains, binsize, winlen, min_spikes=2, min_occ=2,
     output_format: {'concepts', 'patterns'}
         Distinguish the format of the output (see Returns).
         Default: 'patterns'
+    ground_truth: callable
+        Function to generate ground truth surrogates.
 
     Returns
     -------
