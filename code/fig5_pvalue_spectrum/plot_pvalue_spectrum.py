@@ -58,7 +58,7 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
         vmax=1.,
         base=10.)
 
-    fig, axes = plt.subplots(2, 1, figsize=(5., 5.), sharex=True)
+    fig, axes = plt.subplots(2, 1, figsize=(5., 5.), sharex='all')
 
     # find max_occurrences to fill up with zeroes
     max_occ = []
@@ -125,7 +125,7 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
             norm=color_norm,
             cmap=cmap)
 
-    cbar_map.set_array([])
+    cbar_map.set_array(np.array([]))
     cbar = fig.colorbar(mappable=cbar_map, ax=axes)
 
     cbar.set_label('p-value')

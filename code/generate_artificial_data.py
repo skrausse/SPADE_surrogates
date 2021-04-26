@@ -55,14 +55,14 @@ def estimate_rate_deadtime(
         rate_list = [stat.instantaneous_rate(
             spiketrain=trial,
             sampling_period=sampling_period,
-            boundary_correction=True) for trial in trial_list]
+            border_correction=True) for trial in trial_list]
     else:
         rate_list = [stat.instantaneous_rate(
             spiketrain=trial,
             sampling_period=sampling_period,
             kernel=stat.kernels.GaussianKernel(
                 sigma=sigma),
-            boundary_correction=True
+            border_correction=True
         ) for trial in trial_list]
 
     # reconcatenating rates
