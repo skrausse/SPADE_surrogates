@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import quantities as pq
+import fim
+from elephant import spade
 
 from coco import coconad, estpsp, psp2bdr, patred
 print('TODO: Add Coconad to the requirements.txt')
@@ -18,8 +20,10 @@ def get_spiketrains(rate, dead_time, t_stop):
 
 def get_pattern_orig_surr(rate, dead_time, t_stop, surr_methods, dither_parameter, bin_size, n_iter=100):
     bin_size = bin_size.simplified.item()
-    patterns = np.zeros(n_iter, dtype=int)
-    surrogate_patterns = np.zeros((len(surr_methods), n_iter), dtype=int)
+    patterns_coco = np.zeros(n_iter, dtype=int)
+    patterns_fim = np.zeros(n_iter, dtype=int)
+    surrogate_patterns_coco= np.zeros((len(surr_methods), n_iter), dtype=int)
+    surrogate_patterns_fim = np.zeros((len(surr_methods), n_iter), dtype=int)
 
     surr_kwargs = \
         {'bin_shuffling': {'bin_size': bin_size*pq.s},
@@ -34,8 +38,8 @@ def get_pattern_orig_surr(rate, dead_time, t_stop, surr_methods, dither_paramete
     for real_id in range(n_iter):
         trains, trains_mag = get_spiketrains(rate, dead_time, t_stop)
 
-        # Analysis of original spike trains
-        pats = coconad(
+        # Analysis of original spike trains with coconad
+        pats_coco = coconad(
             trains=zip(range(1, len(trains_mag) + 1), trains_mag),
             supp=10,
             zmin=2,
@@ -43,8 +47,19 @@ def get_pattern_orig_surr(rate, dead_time, t_stop, surr_methods, dither_paramete
             width=bin_size,
             report="#")
 
-        if len(pats) > 0:
-            patterns[real_id] = list(pats.keys())[0][1]
+        if len(pats_coco) > 0:
+            patterns_coco[real_id] = list(pats_coco.keys())[0][1]
+
+        # Analysis of original spike trains with fpgrowth
+        pats_fim = spade.spade(spiketrains=trains,
+                               bin_size=bin_size*pq.ms,
+                               winlen=1,
+                               min_spikes=2,
+                               max_spikes=2,
+                               min_occ=10)
+
+        if len(pats_fim['patterns']) > 0:
+            patterns_fim[real_id] = len(pats_fim['patterns']['times'])
 
         for surr_id, surr_method in enumerate(surr_methods):
             # Analysis of surrogate spike trains
@@ -55,7 +70,7 @@ def get_pattern_orig_surr(rate, dead_time, t_stop, surr_methods, dither_paramete
 
             dithered_trains_mag = [train.magnitude for train in dithered_trains]
 
-            dithered_pats = coconad(
+            dithered_pats_coco = coconad(
                 trains=zip(range(1, len(dithered_trains_mag) + 1), dithered_trains_mag),
                 supp=10,
                 zmin=2,
@@ -63,11 +78,21 @@ def get_pattern_orig_surr(rate, dead_time, t_stop, surr_methods, dither_paramete
                 width=bin_size,
                 report="#")
 
-            if len(dithered_pats) > 0:
-                surrogate_patterns[surr_id, real_id] = list(dithered_pats.keys())[0][1]
+            if len(dithered_pats_coco) > 0:
+                surrogate_patterns_coco[surr_id, real_id] = list(dithered_pats_coco.keys())[0][1]
+
+            dithered_pats_fim = spade.spade(spiketrains=dithered_trains,
+                               bin_size=bin_size*pq.ms,
+                               winlen=1,
+                               min_spikes=2,
+                               max_spikes=2,
+                               min_occ=10)
+
+            if len(dithered_pats_fim['patterns']) > 0:
+                surrogate_patterns_fim[surr_id, real_id] = len(dithered_pats_fim['patterns']['times'])
 
     t_stop = t_stop.simplified.item()
-    return patterns / t_stop, surrogate_patterns / t_stop
+    return patterns_coco / t_stop, surrogate_patterns_coco / t_stop, patterns_fim /t_stop, surrogate_patterns_fim / t_stop
 
 
 if __name__ == '__main__':
@@ -81,24 +106,37 @@ if __name__ == '__main__':
                     'joint_isi_dithering', 'isi_dithering', 'bin_shuffling',
                     'trial_shifting')
 
-    mean_patterns = np.empty(shape=rates.shape)
-    std_patterns = np.empty(shape=rates.shape)
-    mean_surrogate_patterns = np.empty((len(surr_methods), rates.shape[0]))
-    std_surrogate_patterns = np.empty((len(surr_methods), rates.shape[0]))
+    mean_patterns_coco = np.empty(shape=rates.shape)
+    std_patterns_coco = np.empty(shape=rates.shape)
+    mean_surrogate_patterns_coco = np.empty((len(surr_methods), rates.shape[0]))
+    std_surrogate_patterns_coco = np.empty((len(surr_methods), rates.shape[0]))
+    mean_patterns_fim = np.empty(shape=rates.shape)
+    std_patterns_fim = np.empty(shape=rates.shape)
+    mean_surrogate_patterns_fim = np.empty((len(surr_methods), rates.shape[0]))
+    std_surrogate_patterns_fim = np.empty((len(surr_methods), rates.shape[0]))
 
     for rate_id, rate in enumerate(rates):
-        patterns, surrogate_patterns = get_pattern_orig_surr(
+        patterns_coco, surrogate_patterns_coco, patterns_fim, surrogate_patterns_fim = get_pattern_orig_surr(
             rate, dead_time, t_stop, surr_methods, dither_parameter, bin_size)
-        mean_patterns[rate_id], std_patterns[rate_id] = np.mean(patterns), np.std(patterns)
-        mean_surrogate_patterns[:, rate_id], std_surrogate_patterns[:, rate_id] = \
-            np.mean(surrogate_patterns, axis=1), np.std(surrogate_patterns, axis=1)
+        mean_patterns_coco[rate_id], std_patterns_coco[rate_id] = np.mean(patterns_coco), np.std(patterns_coco)
+        mean_surrogate_patterns_coco[:, rate_id], std_surrogate_patterns_coco[:, rate_id] = \
+            np.mean(surrogate_patterns_coco, axis=1), np.std(surrogate_patterns_coco, axis=1)
+        mean_patterns_fim[rate_id], std_patterns_fim[rate_id] = np.mean(patterns_fim), np.std(patterns_fim)
+        mean_surrogate_patterns_fim[:, rate_id], std_surrogate_patterns_fim[:, rate_id] = \
+            np.mean(surrogate_patterns_fim, axis=1), np.std(surrogate_patterns_fim, axis=1)
 
-    fig, ax = plt.subplots(figsize=(6, 6))
-    ax.plot(rates, mean_patterns)
-
+    fig, ax = plt.subplots(1,2,figsize=(6, 6))
+    ax[0].plot(rates, mean_patterns_coco, label='original')
     for surr_id, surr_method in enumerate(surr_methods):
-        ax.plot(rates, mean_surrogate_patterns[surr_id], label=surr_method)
-    ax.set_xlabel('firing rate in Hz')
-    ax.set_ylabel('Num. Synchronies per sec.')
-    ax.legend()
+        ax[0].plot(rates, mean_surrogate_patterns_coco[surr_id],
+                   label=surr_method)
+    ax[0].set_xlabel('firing rate in Hz')
+    ax[0].set_ylabel('Num. Synchronies per sec.')
+    ax[0].legend()
+    ax[1].plot(rates, mean_patterns_fim, label='original')
+    for surr_id, surr_method in enumerate(surr_methods):
+        ax[1].plot(rates, mean_surrogate_patterns_fim[surr_id],
+                   label=surr_method)
+    ax[1].set_xlabel('firing rate in Hz')
+    # ax[1].set_ylabel('Num. Synchronies per sec.')
     fig.savefig('../plots/fig_coconad')
