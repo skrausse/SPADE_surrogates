@@ -165,13 +165,13 @@ def plot_trial_firing_rate(ax, sts, gamma, ppd, neuron, max_refractory, sep,
     ax.fill_between(x, np.squeeze(np.mean(cut_trials_original, axis=0) - np.std(cut_trials_original, axis=0)),
                     np.squeeze(np.mean(cut_trials_original, axis=0) + np.std(cut_trials_original, axis=0)),
                     alpha=0.2)
-    ax.plot(np.squeeze(np.mean(cut_trials_gamma, axis=0)), label='gamma')
-    ax.fill_between(x, np.squeeze(np.mean(cut_trials_gamma, axis=0) - np.std(cut_trials_gamma, axis=0)),
-                    np.squeeze(np.mean(cut_trials_gamma, axis=0) + np.std(cut_trials_gamma, axis=0)),
-                    alpha=0.2)
     ax.plot(np.squeeze(np.mean(cut_trials_ppd, axis=0)), label='ppd')
     ax.fill_between(x, np.squeeze(np.mean(cut_trials_ppd, axis=0) - np.std(cut_trials_ppd, axis=0)),
                     np.squeeze(np.mean(cut_trials_ppd, axis=0) + np.std(cut_trials_ppd, axis=0)),
+                    alpha=0.2)
+    ax.plot(np.squeeze(np.mean(cut_trials_gamma, axis=0)), label='gamma')
+    ax.fill_between(x, np.squeeze(np.mean(cut_trials_gamma, axis=0) - np.std(cut_trials_gamma, axis=0)),
+                    np.squeeze(np.mean(cut_trials_gamma, axis=0) + np.std(cut_trials_gamma, axis=0)),
                     alpha=0.2)
     plt.ylim(min(np.squeeze(np.mean(cut_trials_ppd, axis=0) - np.std(cut_trials_ppd, axis=0))) - 10,
              max(np.squeeze(np.mean(cut_trials_ppd, axis=0) + np.std(cut_trials_ppd, axis=0))) + 10)
@@ -796,7 +796,7 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
                 sampling_period=sampling_period, epoch_length=epoch_length)
     ax03.set_xlim(0, 2)
     ax02.set_xlim(0, 0.2)
-    ax01.set_ylim(0, 30)
+    ax01.set_ylim(0, 40)
     ax04.legend(fontsize=params['legend.fontsize'])
     plt.text(x=-0.45, y=1.05, s='A', transform=ax01.transAxes, fontsize=10)
 
@@ -828,7 +828,7 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
                 tick_size=tick_size)
             ax11.set_xticklabels(surrogates_tag, rotation=45,
                                  size=tick_size)
-            ax11.set_ylim([0, 100])
+            ax11.set_ylim([0, 400])
             plt.text(x=0.45, y=1.05, s='PPD', transform=ax11.transAxes,
                      fontsize=10)
             plt.text(x=- 0.25, y=1.05, s='B', transform=ax11.transAxes,
@@ -860,7 +860,7 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
             ax21.set_xticklabels(surrogates_tag, rotation=45,
                                  size=tick_size)
             ax21.set_ylabel('')
-            ax21.set_ylim([0, 100])
+            ax21.set_ylim([0, 400])
             plt.text(x=0.45, y=1.05, s='Gamma', transform=ax21.transAxes,
                      fontsize=title_size)
             plot_inset_fps_fr(
