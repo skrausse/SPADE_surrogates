@@ -5,14 +5,175 @@ import quantities as pq
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.pylab as pylab
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+
 from generate_artificial_data import estimate_rate_deadtime, \
     create_st_list, estimate_deadtime
 import elephant
 import os
+import firing_rate_in_fps
 
 excluded_neurons = np.load(
     'analysis_artificial_data/excluded_neurons.npy',
     allow_pickle=True).item()
+
+surrogate_methods = ('ud', 'udrp', 'jisi', 'isi',
+                     'tr_shift', 'bin_shuffling')
+
+surrogates_tag = ('UD', 'UDD', 'JISI-D', 'ISI-D', 'TR-SHIFT', 'WIN-SHUFF')
+
+sessions = ['i140703-001', 'l101210-001']
+processes = ['ppd', 'gamma']
+
+COLORS = {'original': 'C0',
+          'ud': 'C1',
+          'udrp': 'C2',
+          'isi': 'C4',
+          'jisi': 'C6',
+          'tr_shift': 'C3',
+          'bin_shuffling': 'C5'}
+
+LABELS = {'original': 'original',
+          'ud': 'UD',
+          'udrp': 'UDD',
+          'isi': 'ISI-D',
+          'jisi': 'JISI-D',
+          'tr_shift': 'TR-SHIFT',
+          'bin_shuffling': 'WIN-SHUFF'}
+
+
+class BubbleChart:
+    def __init__(self, area, bubble_spacing=0):
+        """
+        Setup for bubble collapse.
+
+        Parameters
+        ----------
+        area : array-like
+            Area of the bubbles.
+        bubble_spacing : float, default: 0
+            Minimal spacing between bubbles after collapsing.
+
+        Notes
+        -----
+        If "area" is sorted, the results might look weird.
+        """
+        area = np.asarray(area)
+        r = np.sqrt(area / np.pi)
+
+        self.bubble_spacing = bubble_spacing
+        self.bubbles = np.ones((len(area), 4))
+        self.bubbles[:, 2] = r
+        self.bubbles[:, 3] = area
+        self.maxstep = 2 * self.bubbles[:, 2].max() + self.bubble_spacing
+        self.step_dist = self.maxstep / 2
+
+        # calculate initial grid layout for bubbles
+        length = np.ceil(np.sqrt(len(self.bubbles)))
+        grid = np.arange(length) * self.maxstep
+        gx, gy = np.meshgrid(grid, grid)
+        self.bubbles[:, 0] = gx.flatten()[:len(self.bubbles)]
+        self.bubbles[:, 1] = gy.flatten()[:len(self.bubbles)]
+
+        self.com = self.center_of_mass()
+
+    def center_of_mass(self):
+        return np.average(
+            self.bubbles[:, :2], axis=0, weights=self.bubbles[:, 3])
+
+    def center_distance(self, bubble, bubbles):
+        return np.hypot(bubble[0] - bubbles[:, 0],
+                        bubble[1] - bubbles[:, 1])
+
+    def outline_distance(self, bubble, bubbles):
+        center_distance = self.center_distance(bubble, bubbles)
+        return center_distance - bubble[2] - \
+            bubbles[:, 2] - self.bubble_spacing
+
+    def check_collisions(self, bubble, bubbles):
+        distance = self.outline_distance(bubble, bubbles)
+        return len(distance[distance < 0])
+
+    def collides_with(self, bubble, bubbles):
+        distance = self.outline_distance(bubble, bubbles)
+        idx_min = np.argmin(distance)
+        return idx_min if type(idx_min) == np.ndarray else [idx_min]
+
+    def collapse(self, n_iterations=50):
+        """
+        Move bubbles to the center of mass.
+
+        Parameters
+        ----------
+        n_iterations : int, default: 50
+            Number of moves to perform.
+        """
+        for _i in range(n_iterations):
+            moves = 0
+            for i in range(len(self.bubbles)):
+                rest_bub = np.delete(self.bubbles, i, 0)
+                # try to move directly towards the center of mass
+                # direction vector from bubble to the center of mass
+                dir_vec = self.com - self.bubbles[i, :2]
+
+                # shorten direction vector to have length of 1
+                dir_vec = dir_vec / np.sqrt(dir_vec.dot(dir_vec))
+
+                # calculate new bubble position
+                new_point = self.bubbles[i, :2] + dir_vec * self.step_dist
+                new_bubble = np.append(new_point, self.bubbles[i, 2:4])
+
+                # check whether new bubble collides with other bubbles
+                if not self.check_collisions(new_bubble, rest_bub):
+                    self.bubbles[i, :] = new_bubble
+                    self.com = self.center_of_mass()
+                    moves += 1
+                else:
+                    # try to move around a bubble that you collide with
+                    # find colliding bubble
+                    for colliding in self.collides_with(new_bubble, rest_bub):
+                        # calculate direction vector
+                        dir_vec = rest_bub[colliding, :2] - self.bubbles[i, :2]
+                        dir_vec = dir_vec / np.sqrt(dir_vec.dot(dir_vec))
+                        # calculate orthogonal vector
+                        orth = np.array([dir_vec[1], -dir_vec[0]])
+                        # test which direction to go
+                        new_point1 = (self.bubbles[i, :2] + orth *
+                                      self.step_dist)
+                        new_point2 = (self.bubbles[i, :2] - orth *
+                                      self.step_dist)
+                        dist1 = self.center_distance(
+                            self.com, np.array([new_point1]))
+                        dist2 = self.center_distance(
+                            self.com, np.array([new_point2]))
+                        new_point = new_point1 if dist1 < dist2 else new_point2
+                        new_bubble = np.append(new_point, self.bubbles[i, 2:4])
+                        if not self.check_collisions(new_bubble, rest_bub):
+                            self.bubbles[i, :] = new_bubble
+                            self.com = self.center_of_mass()
+
+            if moves / len(self.bubbles) < 0.1:
+                self.step_dist = self.step_dist / 2
+
+    def plot(self, ax, labels, colors):
+        """
+        Draw the bubble plot.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes
+        labels : list
+            Labels of the bubbles.
+        colors : list
+            Colors of the bubbles.
+        """
+        for i in range(len(self.bubbles)):
+            circ = plt.Circle(
+                self.bubbles[i, :2], self.bubbles[i, 2], color=colors[i])
+            ax.add_patch(circ)
+            ax.text(*self.bubbles[i, :2], labels[i],
+                    horizontalalignment='center', verticalalignment='center',
+                    fontsize=8)
 
 
 def build_dicts(st, gamma_st, ppd_st, max_refractory):
@@ -185,7 +346,7 @@ def plot_trial_firing_rate(ax, sts, gamma, ppd, neuron, max_refractory, sep,
 
 
 def plot_dead_time(
-        ax, sts, gamma, ppd, max_refractory, sampling_period, sep, fontsize):
+        ax, sts, gamma, ppd, max_refractory, fontsize):
     """
     Plot representing the dead time of all neurons of one
     dataset, for the original data, the gamma and the ppd data.
@@ -202,10 +363,6 @@ def plot_dead_time(
         list of neo spiketrains of the PPD data
     max_refractory: quantity
         maximal refractory period
-    sampling_period: quantity
-        sampling period of the recording (30.000Hz)
-    sep: quantity
-        separation time within trials
     fontsize: int
         fontsize of the legend
     """
@@ -428,8 +585,6 @@ def panelA_plot(axes, sts, gamma, ppd, neuron, max_refractory, sep,
         gamma=gamma,
         ppd=ppd,
         max_refractory=max_refractory,
-        sampling_period=sampling_period,
-        sep=sep,
         fontsize=fontsize)
 
 
@@ -620,7 +775,7 @@ def plot_inset_fps_fr(ax_fps_fr, process, sessions, surrogate_methods,
                 [x * scale for x in ax_fps_fr.get_xticks()])
 
 
-def plot_inset(ax_num_fps, index, process, sessions, surrogate_methods,
+def plot_bubble_chart(ax_num_fps, index, process, sessions, surrogate_methods,
                label_size, tick_size):
     """
     Function producing the inset left or right of fig 8 of the paper.
@@ -645,81 +800,88 @@ def plot_inset(ax_num_fps, index, process, sessions, surrogate_methods,
     tick_size: int
         tick size for x and y ticks
     """
-    for index_surr, surrogate in enumerate(surrogate_methods):
-        fps = calculate_fps(sessions=sessions,
-                            surrogate_methods=surrogate_methods)[index]
-        if process == 'ppd':
-            ax_num_fps.bar(index_surr + 1,
-                           fps[surrogate],
-                           width=0.5, color='grey', label=surrogate)
-        elif process == 'gamma':
-            ax_num_fps.bar(index_surr + 1,
-                           fps[surrogate_methods[index_surr]],
-                           width=0.5, color='grey', label=surrogate)
-        else:
-            raise ImportError('process not recognized')
-        ax_num_fps.set_ylabel('FPs', size=label_size)
-    ax_num_fps.set_ylim([0, 95])
-    ax_num_fps.set_xticks(range(1, len(surrogate_methods) + 1))
-    ax_num_fps.tick_params(axis='both', which='major',
-                           labelsize=tick_size)
+    print('Number of False positives for', process)
+    fps = calculate_fps(sessions=sessions,
+                        surrogate_methods=surrogate_methods)[index]
+    print(fps)
+    # threshold = 150 if process == 'gamma' else 100
+
+    fps_bubble_dict = {
+        'surrogates': [f'{LABELS[surrogate]}\n'
+                       f'{fps[surrogate]}' for surrogate in fps.keys()],
+        'number_fps': [np.sqrt(fps[surrogate]) for surrogate in fps.keys()],
+        'colors': [COLORS[surrogate] for surrogate in fps.keys()]
+    }
+
+    bubble_chart = BubbleChart(area=fps_bubble_dict['number_fps'],
+                               bubble_spacing=0.1)
+
+    bubble_chart.collapse()
+
+    bubble_chart.plot(
+        ax_num_fps, fps_bubble_dict['surrogates'], fps_bubble_dict['colors'])
+    # ax_num_fps.axis("off")
+    ax_num_fps.relim()
+    ax_num_fps.autoscale_view()
+    ax_num_fps.set_xticks([])
+    ax_num_fps.set_yticks([])
+    if process == 'ppd':
+        ax_num_fps.set_title('Number of FPs - PPD', y=0.95)
+    else:
+        ax_num_fps.set_title('Number of FPs - PPD', y=0.95)
 
 
-def plot_fps(axes, processes, sessions, surrogate_methods):
+def plot_number_fps(ax_num_fps, index, process, sessions, surrogate_methods,
+                    label_size, tick_size):
     """
-    Function producing the figure of panel B of fig 8 of the paper.
+    Function producing the inset left or right of fig 8 of the paper.
     It calculates the number of false positives detected across surrogate
-    techniques in all datasets, left for PPD model, and right for gamma model.
+    techniques in all datasets, either for PPD model or for gamma model.
 
     Parameters
     ----------
-    processes: list
-        list of strings of the point process models employed (e.g. ['ppd',
-        'gamma'])
+    ax_num_fps: matplotlib.pyplot.axes
+        axes where to plot the inset
+    index: int
+        index respective to the position of the results for the plotted process
+        0 for left, 1 for right
+    process: str
+        strings of the point process models employed (e.g. 'ppd' or 'gamma')
     sessions: list
         list of strings corresponding to the analyzed sessions
     surrogate_methods: list
         list of surrogate methods
+    label_size: int
+        label size for title
+    tick_size: int
+        tick size for x and y ticks
     """
-    # Plotting parameters
-    label_size = 24
-    title_size = 26
-    tick_size = 24
-    surrogates_tag = ['UD', 'Bin-Shuff', 'TR-Shift', 'UD-DT', 'J-ISI-D',
-                      'ISI-D']
-    for index, process in enumerate(processes):
-        if process == 'ppd':
-            ax_num_fps = plot_inset(ax_num_fps=axes[index],
-                                    index=index,
-                                    process=process,
-                                    sessions=sessions,
-                                    surrogate_methods=surrogate_methods,
-                                    label_size=label_size,
-                                    tick_size=tick_size)
-            ax_num_fps.set_xticks([])
-            ax_num_fps.set_xticklabels('')
-            ax_num_fps.set_title(
-                'FPs detected in artificial data \n across '
-                'surrogate techniques',
-                size=title_size)
-        if process == 'gamma':
-            ax_num_fps = plot_inset(ax_num_fps=axes[index],
-                                    index=index,
-                                    process=process,
-                                    sessions=sessions,
-                                    surrogate_methods=surrogate_methods,
-                                    label_size=label_size,
-                                    tick_size=tick_size)
-            ax_num_fps.set_xticklabels(surrogates_tag, rotation=45,
-                                       size=tick_size)
+    print('Number of False positives for', process)
+    fps = calculate_fps(sessions=sessions,
+                        surrogate_methods=surrogate_methods)[index]
+    print(fps)
+    print(fps)
+    for index_surr, surrogate in enumerate(surrogate_methods):
+        print(process, surrogate, fps[surrogate])
+        ax_num_fps.bar(index_surr + 1,
+                       fps[surrogate],
+                       width=0.5,
+                       color=COLORS[surrogate],
+                       label=LABELS[surrogate])
+
+    ax_num_fps.set_xticks(range(1, len(surrogate_methods) + 1))
+    ax_num_fps.set_xticklabels(
+        [fps[surrogate] for surrogate in surrogate_methods])
+    ax_num_fps.tick_params(axis='both', which='major',
+                           labelsize=tick_size)
+    ax_num_fps.tick_params(axis="x", pad=-15)
 
 
 def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
-                            sep, sampling_period, epoch_length, winlen,
+                            sep, sampling_period, epoch_length,
                             sessions, surrogate_methods,
-                            surrogates_tag,
                             processes,
-                            label_size, tick_size, scale):
+                            label_size, tick_size):
     """
     Function reproducing figure 8 of the paper.
     Evaluation and analysis of false positive for pattern detection with SPADE.
@@ -753,8 +915,6 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
         separation time within trials
     epoch_length: quantity
         trial duration (typically 500pq.ms)
-    winlen: int
-        window length for the spade analysis
     sampling_period: quantity
         sampling period of the recording (30.000Hz)
     sessions: list
@@ -768,8 +928,6 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
         label size for legend
     tick_size: int
         tick size for y and x axes
-    scale: int
-        scale of the firing rate (binning of the histogram)
     """
     # gridspec inside gridspec
     fig = plt.figure(figsize=(7.5, 8.75))
@@ -801,81 +959,111 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
     plt.text(x=-0.45, y=1.05, s='A', transform=ax01.transAxes, fontsize=10)
 
     # Panel B and C
-    gs1 = gridspec.GridSpecFromSubplotSpec(nrows=1, ncols=2,
-                                           subplot_spec=gs[1])
+    gs_down = gridspec.GridSpecFromSubplotSpec(
+        nrows=1, ncols=2, subplot_spec=gs[1])
 
     # ppd
+    gs_down_left = gridspec.GridSpecFromSubplotSpec(
+        nrows=3, ncols=1, subplot_spec=gs_down[0], hspace=0.3)
+    ax_b_left = fig.add_subplot(gs_down_left[0])  # Panel B left
+    ax_c_left = fig.add_subplot(gs_down_left[1])  # Panel C left
+    ax_d_left = fig.add_subplot(gs_down_left[2])  # Panel D left
 
-    gs10 = gridspec.GridSpecFromSubplotSpec(nrows=2, ncols=1,
-                                            subplot_spec=gs1[0], hspace=0.3)
-    ax11 = fig.add_subplot(gs10[0])
-    ax12 = fig.add_subplot(gs10[1])
-    gs20 = gridspec.GridSpecFromSubplotSpec(nrows=2, ncols=1,
-                                            subplot_spec=gs1[1], hspace=0.3)
-    ax21 = fig.add_subplot(gs20[0])
-    ax22 = fig.add_subplot(gs20[1])
-    # false positives
+    gs_down_right = gridspec.GridSpecFromSubplotSpec(
+        nrows=3, ncols=1, subplot_spec=gs_down[1], hspace=0.3)
+    ax_b_right = fig.add_subplot(gs_down_right[0])   # Panel B right
+    ax_c_right = fig.add_subplot(gs_down_right[1])   # Panel C right
+    ax_d_right = fig.add_subplot(gs_down_right[2])   # Panel D right
 
-    for index, process in enumerate(processes):
-        if process == 'ppd':
-            plot_inset(
-                ax_num_fps=ax11,
-                index=index,
-                process=process,
-                sessions=sessions,
-                surrogate_methods=surrogate_methods,
-                label_size=label_size,
-                tick_size=tick_size)
-            ax11.set_xticklabels(surrogates_tag, rotation=45,
-                                 size=tick_size)
-            ax11.set_ylim([0, 400])
-            plt.text(x=0.45, y=1.05, s='PPD', transform=ax11.transAxes,
-                     fontsize=10)
-            plt.text(x=- 0.25, y=1.05, s='B', transform=ax11.transAxes,
-                     fontsize=title_size)
-            plot_inset_fps_fr(
-                ax_fps_fr=ax12,
-                process=process,
-                sessions=sessions,
-                surrogate_methods=surrogate_methods,
-                surrogates_tag=surrogates_tag,
-                scale=scale,
-                binsize=binsize,
-                winlen=winlen,
-                epoch_length=epoch_length)
-            ax12.set_ylabel('distr. FPs by neuronal FR')
-            ax12.set_xlabel('firing rate (Hz)')
-            ax12.set_ylim([0, 0.15])
-            plt.text(x=-0.25, y=1.05, s='C', transform=ax12.transAxes,
-                     fontsize=title_size)
+    # bar plots for number of false positives
+    num_fps_ylims = (0, 525)
+    plt.text(x=- 0.25, y=1.05, s='B', transform=ax_b_left.transAxes,
+             fontsize=title_size)
+    plt.text(x=- 0.25, y=1.05, s='C', transform=ax_c_left.transAxes,
+             fontsize=title_size)
+    plt.text(x=- 0.25, y=1.05, s='D', transform=ax_d_left.transAxes,
+             fontsize=title_size)
+
+    for index, (process, ax_num_fps) in enumerate(
+            zip(processes, (ax_b_left, ax_b_right))):
+        plot_number_fps(
+            ax_num_fps=ax_num_fps,
+            index=index,
+            process=process,
+            sessions=sessions,
+            surrogate_methods=surrogate_methods,
+            label_size=label_size,
+            tick_size=tick_size)
+
+        # if process == 'ppd':
+        #     reduced_surrogate_methods = \
+        #         ('udrp', 'jisi', 'isi',
+        #          'tr_shift', 'bin_shuffling')
+        # else:
+        #     reduced_surrogate_methods = \
+        #         ('jisi', 'isi', 'tr_shift', 'bin_shuffling')
         if process == 'gamma':
-            plot_inset(
-                ax_num_fps=ax21,
-                index=index,
-                process=process,
-                sessions=sessions,
-                surrogate_methods=surrogate_methods,
-                label_size=label_size,
-                tick_size=tick_size)
-            ax21.set_xticklabels(surrogates_tag, rotation=45,
-                                 size=tick_size)
-            ax21.set_ylabel('')
-            ax21.set_ylim([0, 400])
-            plt.text(x=0.45, y=1.05, s='Gamma', transform=ax21.transAxes,
-                     fontsize=title_size)
-            plot_inset_fps_fr(
-                ax_fps_fr=ax22,
-                process=process,
-                sessions=sessions,
-                surrogate_methods=surrogate_methods,
-                surrogates_tag=surrogates_tag,
-                scale=scale,
-                binsize=binsize,
-                winlen=winlen,
-                epoch_length=epoch_length)
-            ax22.legend()
-            ax22.set_ylim([0, 0.15])
-            ax22.set_xlabel('firing rate (Hz)')
+            ax_num_fps.legend(fontsize='xx-small')
+        ax_num_fps.set_ylabel('FPs', size=label_size, labelpad=2.5)
+
+        if process == 'ppd':
+            ax_num_fps.set_title('PPD', y=0.95)
+        else:
+            ax_num_fps.set_title('Gamma', y=0.95)
+
+        # ax_inset = inset_axes(ax_num_fps, 0.7, 0.6, loc='upper center')
+        #
+        # plot_number_fps(
+        #     ax_num_fps=ax_inset,
+        #     index=index,
+        #     process=process,
+        #     sessions=sessions,
+        #     surrogate_methods=reduced_surrogate_methods,
+        #     label_size=label_size,
+        #     tick_size=tick_size)
+        #
+        # ax_inset.set_ylabel('FPs', size=label_size, labelpad=1.5)
+
+        # if process == 'ppd':
+        #     plot_number_fps(
+        #         ax_num_fps=ax_b_left,
+        #         index=index,
+        #         process=process,
+        #         sessions=sessions,
+        #         surrogate_methods=surrogate_methods,
+        #         label_size=label_size,
+        #         tick_size=tick_size)
+
+            # ax_b_left.set_ylim(num_fps_ylims)
+            # plt.text(x=0.45, y=1.05, s='Number of FPs - PPD', transform=ax_b_left.transAxes,
+            #          fontsize=10)
+
+        # if process == 'gamma':
+        #     plot_number_fps(
+        #         ax_num_fps=ax_b_right,
+        #         index=index,
+        #         process=process,
+        #         sessions=sessions,
+        #         surrogate_methods=surrogate_methods,
+        #         label_size=label_size,
+        #         tick_size=tick_size)
+
+            # ax_b_right.set_ylabel('')
+            # ax_b_right.set_ylim(num_fps_ylims)
+            # plt.text(x=0.45, y=1.05, s='Number of FPs - Gamma', transform=ax_b_right.transAxes,
+            #          fontsize=title_size)
+            # ax_b_right.legend()
+
+    axes_c_d = ((ax_c_left, ax_c_right), (ax_d_left, ax_d_right))
+
+    lines = firing_rate_in_fps.create_firing_rate_plots(axes=axes_c_d)
+
+    ax_c_right.legend(
+        list(lines.values()),
+        list(lines.keys()),
+        loc='lower right',
+        fontsize='xx-small')
+
     plt.savefig('../plots/fig8_artificial_data.eps')
     plt.savefig('../plots/fig8_artificial_data.png')
     plt.show()
@@ -908,36 +1096,17 @@ if __name__ == "__main__":
     ppd = np.load(f'../data/artificial_data/ppd/{session}/'
                   f'ppd_{epoch}_{trialtype}.npy', allow_pickle=True)
 
-    # surrogates list in elephant:
-    # (1) dither_spikes
-    # (2) dither_spikes_with_refractory_period
-    # (3) joint_isi_dithering
-    # (4) isi_dithering
-    # (5) trial_shifting
-    # (6) bin_shuffling
-
-    surrogate_methods = ('ud',  'udrp', 'jisi', 'isi',
-                         'tr_shift', 'bin_shuffling')
-
-    surrogates_tag = ('UD', 'UDD', 'JISI-D', 'ISI-D', 'TR-SHIFT', 'WIN-SHUFF')
-
-    sessions = ['i140703-001', 'l101210-001']
-    processes = ['ppd', 'gamma']
-
     figure8_artificial_data(
         sts=sts,
         gamma=gamma,
         ppd=ppd,
         neuron=neuron,
         max_refractory=max_refractory,
-        winlen=winlen,
         sep=sep,
         sampling_period=sampling_period,
         epoch_length=epoch_length,
         sessions=sessions,
         surrogate_methods=surrogate_methods,
-        surrogates_tag=surrogates_tag,
         processes=processes,
         label_size=label_size,
-        tick_size=tick_size,
-        scale=scale)
+        tick_size=tick_size)

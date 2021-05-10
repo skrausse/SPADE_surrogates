@@ -31,7 +31,7 @@ what_to_plot = 'rate'  # options {'rate', 'cv2'}
 markersize = 2.0
 figsize = (8., 8.)
 alpha = 0.15
-rate_limits = (-2., 67.)
+rate_limits = (-2., 69.)
 rate_ticks = np.arange(0, 61, 10)
 # if what_to_plot == 'rate':
 #     legend_loc = (0.8, 0.7)
