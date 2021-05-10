@@ -34,7 +34,7 @@ psr_param : [2, 2, 2]
 unit : 's'
 # Data being generated
 processes : ['ppd', 'gamma']
-# Firing rate threshold to exclude neurons
+# Firing rate threshold to exclude neurons in Hz
 firing_rate_threshold : 60
 # Seed for the data generation
 seed : 0
