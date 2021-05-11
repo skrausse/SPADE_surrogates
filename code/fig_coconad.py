@@ -11,6 +11,26 @@ print('TODO: Add Coconad to the requirements.txt')
 from elephant.spike_train_generation import homogeneous_poisson_process as hpp
 from elephant.spike_train_surrogates import dither_spikes, surrogates
 
+surr_methods = ('dither_spikes', 'dither_spikes_with_refractory_period',
+                'joint_isi_dithering', 'isi_dithering', 'bin_shuffling',
+                'trial_shifting')
+
+LABELS = {'original': 'original',
+          'dither_spikes': 'UD',
+          'dither_spikes_with_refractory_period': 'UDD',
+          'isi_dithering': 'ISI-D',
+          'joint_isi_dithering': 'JISI-D',
+          'trial_shifting': 'TR-SHIFT',
+          'bin_shuffling': 'WIN-SHUFF'}
+
+COLORS = {'original': 'C0',
+          'dither_spikes': 'C1',
+          'dither_spikes_with_refractory_period': 'C2',
+          'isi_dithering': 'C4',
+          'joint_isi_dithering': 'C6',
+          'trial_shifting': 'C3',
+          'bin_shuffling': 'C5'}
+
 
 def get_spiketrains(rate, dead_time, t_stop):
     trains = [hpp(rate=rate, refractory_period=dead_time, t_stop=t_stop) for _ in range(2)]
@@ -18,19 +38,21 @@ def get_spiketrains(rate, dead_time, t_stop):
     return trains, trains_mag
 
 
-def get_pattern_orig_surr(rate, dead_time, t_stop, surr_methods, dither_parameter, bin_size, n_iter=100):
-    bin_size = bin_size.simplified.item()
+def get_pattern_orig_surr(
+        rate, dead_time, t_stop, surr_methods, dither_parameter,
+        bin_size, n_iter=100):
+    coconad_bin_size = bin_size.simplified.item()/2
     patterns_coco = np.zeros(n_iter, dtype=int)
     patterns_fim = np.zeros(n_iter, dtype=int)
     surrogate_patterns_coco= np.zeros((len(surr_methods), n_iter), dtype=int)
     surrogate_patterns_fim = np.zeros((len(surr_methods), n_iter), dtype=int)
 
     surr_kwargs = \
-        {'bin_shuffling': {'bin_size': bin_size*pq.s},
+        {'bin_shuffling': {'bin_size': bin_size},
          'trial_shifting': {'trial_length': 0.5*pq.s,
                             'trial_separation': 0.*pq.s},
          'dither_spikes_with_refractory_period':
-             {'refractory_period': bin_size*pq.s},
+             {'refractory_period': bin_size},
          'dither_spikes': {},
          'joint_isi_dithering': {},
          'isi_dithering': {}}
@@ -44,7 +66,7 @@ def get_pattern_orig_surr(rate, dead_time, t_stop, surr_methods, dither_paramete
             supp=10,
             zmin=2,
             zmax=2,
-            width=bin_size,
+            width=coconad_bin_size,
             report="#")
 
         if len(pats_coco) > 0:
@@ -52,14 +74,14 @@ def get_pattern_orig_surr(rate, dead_time, t_stop, surr_methods, dither_paramete
 
         # Analysis of original spike trains with fpgrowth
         pats_fim = spade.spade(spiketrains=trains,
-                               bin_size=bin_size*pq.ms,
+                               bin_size=bin_size,
                                winlen=1,
                                min_spikes=2,
                                max_spikes=2,
                                min_occ=10)
 
         if len(pats_fim['patterns']) > 0:
-            patterns_fim[real_id] = len(pats_fim['patterns']['times'])
+            patterns_fim[real_id] = pats_fim['patterns'][0]['signature'][1]
 
         for surr_id, surr_method in enumerate(surr_methods):
             # Analysis of surrogate spike trains
@@ -75,7 +97,7 @@ def get_pattern_orig_surr(rate, dead_time, t_stop, surr_methods, dither_paramete
                 supp=10,
                 zmin=2,
                 zmax=2,
-                width=bin_size,
+                width=coconad_bin_size,
                 report="#")
 
             if len(dithered_pats_coco) > 0:
@@ -83,14 +105,14 @@ def get_pattern_orig_surr(rate, dead_time, t_stop, surr_methods, dither_paramete
 
             dithered_pats_fim = spade.spade(
                 spiketrains=dithered_trains,
-                bin_size=bin_size*pq.s,
+                bin_size=bin_size,
                 winlen=1,
                 min_spikes=2,
                 max_spikes=2,
                 min_occ=10)
 
             if len(dithered_pats_fim['patterns']) > 0:
-                surrogate_patterns_fim[surr_id, real_id] = len(dithered_pats_fim['patterns']['times'])
+                surrogate_patterns_fim[surr_id, real_id] = dithered_pats_fim['patterns'][0]['signature'][1]
 
     t_stop = t_stop.simplified.item()
     return patterns_coco / t_stop, surrogate_patterns_coco / t_stop, patterns_fim /t_stop, surrogate_patterns_fim / t_stop
@@ -126,18 +148,24 @@ if __name__ == '__main__':
         mean_surrogate_patterns_fim[:, rate_id], std_surrogate_patterns_fim[:, rate_id] = \
             np.mean(surrogate_patterns_fim, axis=1), np.std(surrogate_patterns_fim, axis=1)
 
-    fig, ax = plt.subplots(1,2,figsize=(6, 6))
-    ax[0].plot(rates, mean_patterns_coco, label='original')
+    fig, ax = plt.subplots(1, 2, figsize=(6, 3))
+    ax[0].plot(rates, mean_patterns_coco, label='original',
+               color=COLORS['original'], linewidth=2.)
     for surr_id, surr_method in enumerate(surr_methods):
         ax[0].plot(rates, mean_surrogate_patterns_coco[surr_id],
-                   label=surr_method)
-    ax[0].set_xlabel('firing rate in Hz')
+                   label=LABELS[surr_method], color=COLORS[surr_method])
     ax[0].set_ylabel('Num. Synchronies per sec.')
-    ax[0].legend()
-    ax[1].plot(rates, mean_patterns_fim, label='original')
+    ax[0].set_xlabel('firing rate in Hz', labelpad=-2.)
+    ax[0].set_title('CoCoNAD')
+    # ax[0].legend()
+    ax[1].plot(rates, mean_patterns_fim, label='original',
+               color=COLORS['original'], linewidth=2.)
     for surr_id, surr_method in enumerate(surr_methods):
         ax[1].plot(rates, mean_surrogate_patterns_fim[surr_id],
-                   label=surr_method)
-    ax[1].set_xlabel('firing rate in Hz')
+                   label=LABELS[surr_method], color=COLORS[surr_method])
+    ax[1].set_xlabel('firing rate in Hz', labelpad=-2.)
+    ax[1].set_title('FIM')
+    ax[1].legend(fontsize='x-small')
     # ax[1].set_ylabel('Num. Synchronies per sec.')
     fig.savefig('../plots/fig_coconad')
+    plt.show()
