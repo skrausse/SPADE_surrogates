@@ -688,8 +688,8 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
         loc='lower right',
         fontsize='xx-small')
 
-    plt.savefig('../plots/fig8_artificial_data.eps')
-    plt.savefig('../plots/fig8_artificial_data.png')
+    plt.savefig('../plots/fig_artificial_data.eps')
+    plt.savefig('../plots/fig_artificial_data.png')
     plt.show()
 
 

@@ -180,6 +180,9 @@ if __name__ == '__main__':
         list(legend_lines.keys()), loc=legend_loc)
 
     if WHAT_TO_PLOT == 'rate':
-        fig.savefig(f'{plot_path}firing_rates_fps')
+        fig.savefig(f'{plot_path}firing_rates_fps.png')
+        fig.savefig(f'{plot_path}firing_rates_fps.eps')
     else:
-        fig.savefig(f'{plot_path}cv2s_fps')
+        fig.savefig(f'{plot_path}cv2s_fps.png')
+        fig.savefig(f'{plot_path}cv2s_fps.eps')
+    plt.show()

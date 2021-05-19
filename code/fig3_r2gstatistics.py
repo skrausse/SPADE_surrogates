@@ -115,9 +115,8 @@ def get_cv2(isis):
     isis: list
         list of ISIs
     """
-    cv2 = np.sum([2*np.sum(np.abs(trial_isi[:-1]-trial_isi[1:]) / (trial_isi[:-1]+trial_isi[1:])) for trial_isi in isis]
-                )/np.sum([len(trial_isi)-1 if len(trial_isi) > 0 else 0 for trial_isi in isis])
-    return cv2
+    cv2s = [stat.cv2(isi, with_nan=True) for isi in isis]
+    return np.nanmean(cv2s)
 
 
 def plot_cv2(sts, ax, epoch_length, sep, show_xlabel=True,
