@@ -124,7 +124,7 @@ if __name__ == '__main__':
     dead_time = 1.6*pq.ms
     rates = np.arange(10., 101., 10.)*pq.Hz
     dither_parameter = 25.*pq.ms
-    bin_size = 5.*pq.ms
+    bin_size = 5.*pq.ms  # so 2.5 ms for CoCoNad
     surr_methods = ('dither_spikes', 'dither_spikes_with_refractory_period',
                     'joint_isi_dithering', 'isi_dithering', 'bin_shuffling',
                     'trial_shifting')
@@ -148,24 +148,33 @@ if __name__ == '__main__':
         mean_surrogate_patterns_fim[:, rate_id], std_surrogate_patterns_fim[:, rate_id] = \
             np.mean(surrogate_patterns_fim, axis=1), np.std(surrogate_patterns_fim, axis=1)
 
-    fig, ax = plt.subplots(1, 2, figsize=(6, 3))
+    fig, ax = plt.subplots(1, 2, figsize=(6, 3), sharey='all')
+    print('CoCoNAD')
+    print('rates', rates)
+    print('original', mean_patterns_coco)
     ax[0].plot(rates, mean_patterns_coco, label='original',
                color=COLORS['original'], linewidth=2.)
     for surr_id, surr_method in enumerate(surr_methods):
+        print(surr_method, mean_surrogate_patterns_coco[surr_id])
         ax[0].plot(rates, mean_surrogate_patterns_coco[surr_id],
                    label=LABELS[surr_method], color=COLORS[surr_method])
     ax[0].set_ylabel('Num. Synchronies per sec.')
     ax[0].set_xlabel('firing rate in Hz', labelpad=-2.)
     ax[0].set_title('CoCoNAD')
     # ax[0].legend()
+    print('FIM')
+    print('rates', rates)
+    print('original', mean_patterns_fim)
     ax[1].plot(rates, mean_patterns_fim, label='original',
                color=COLORS['original'], linewidth=2.)
     for surr_id, surr_method in enumerate(surr_methods):
+        print(surr_method, mean_surrogate_patterns_fim[surr_id])
         ax[1].plot(rates, mean_surrogate_patterns_fim[surr_id],
                    label=LABELS[surr_method], color=COLORS[surr_method])
     ax[1].set_xlabel('firing rate in Hz', labelpad=-2.)
     ax[1].set_title('FIM')
     ax[1].legend(fontsize='x-small')
     # ax[1].set_ylabel('Num. Synchronies per sec.')
-    fig.savefig('../plots/fig_coconad')
+    fig.savefig('../plots/fig_coconad.png')
+    fig.savefig('../plots/fig_coconad.eps')
     plt.show()
