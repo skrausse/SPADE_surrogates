@@ -207,7 +207,7 @@ def plot_spike_count_reduction(
             color=colors[dead_time_id])
     axes[0].set_xlabel(r'$\lambda$ in Hz')
     axes[0].set_ylabel(r'$1 - N_{clip}$/$N$')
-    axes[0].set_title('for PPD')
+    axes[0].set_title('PPD')
     axes[0].legend()
 
     for shape_id, shape_factor in enumerate(shape_factors):
@@ -232,7 +232,7 @@ def plot_spike_count_reduction(
             linestyle='--',
             color=colors[shape_id])
     axes[1].set_xlabel(r'$\lambda$ in Hz')
-    axes[1].set_title('for Gamma')
+    axes[1].set_title('Gamma')
     axes[1].legend()
 
     fig.savefig(plot_path, dpi=300)
