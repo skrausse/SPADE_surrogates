@@ -174,10 +174,8 @@ def plot_spike_count_reduction(
     """
     colors = ('C0', 'C1', 'C2', 'C3')
 
-    plt.rcParams.update({'figure.figsize': (5., 3.5),
-                         'text.usetex': True})
-
-    fig, axes = plt.subplots(1, 2, sharey=True)
+    fig, axes = plt.subplots(
+        1, 2, figsize=(5., 2.5), sharey='all')
 
     for dead_time_id, dead_time in enumerate(dead_times):
         spike_count_ratio = firing_rate_clipped_ppd(
@@ -205,10 +203,6 @@ def plot_spike_count_reduction(
             spike_count_reduction_surrogates,
             linestyle='--',
             color=colors[dead_time_id])
-    axes[0].set_xlabel(r'$\lambda$ in Hz')
-    axes[0].set_ylabel(r'$1 - N_{clip}$/$N$')
-    axes[0].set_title('PPD')
-    axes[0].legend()
 
     for shape_id, shape_factor in enumerate(shape_factors):
         spike_count_ratio = firing_rate_clipped_gamma(
@@ -231,12 +225,19 @@ def plot_spike_count_reduction(
             spike_count_reduction_surrogates,
             linestyle='--',
             color=colors[shape_id])
-    axes[1].set_xlabel(r'$\lambda$ in Hz')
-    axes[1].set_title('Gamma')
-    axes[1].legend()
+
+    axes[0].set_ylabel(r'$1 - N_{clip}$/$N$', labelpad=1.,
+                       fontsize='small')
+    for ax, data_type in zip(axes, ('PPD', 'Gamma')):
+        ax.set_xlabel(r'$\lambda$ in Hz', labelpad=-2.,
+                      fontsize='small')
+        ax.tick_params(axis='x', labelsize='small')
+        ax.tick_params(axis='y', labelsize='small')
+        ax.legend(fontsize='x-small')
+        ax.set_title(data_type)
 
     fig.savefig(plot_path, dpi=300)
-    # plt.show()
+    plt.show()
 
 
 if __name__ == '__main__':
@@ -249,7 +250,7 @@ if __name__ == '__main__':
     binsize = 5. * pq.ms
     deadtimes = np.arange(1.5, 3.1, 0.5) * pq.ms
     ditherparameter = 25 * pq.ms
-    plotpath = '../plots/fig4_analytical_spike_count_reduction.eps'
+    plotpath = '../plots/fig4_analytical_spike_count_reduction.svg'
 
     plot_spike_count_reduction(
         firing_rates=firingrates,
