@@ -49,9 +49,6 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
 
     size = setup1.sizes_to_analyze[0]
 
-    plt.rcParams.update({'font.size': 12,
-                         'text.usetex': True})
-
     color_norm = mcolors.SymLogNorm(
         linthresh=1e-6,
         vmin=1e-6,
@@ -129,7 +126,7 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
     cbar = fig.colorbar(mappable=cbar_map, ax=axes)
 
     cbar.set_label('p-value')
-    fig.savefig('../../plots/fig5_pvalue_spectrum.eps',
+    fig.savefig('../../plots/fig5_pvalue_spectrum.svg',
                 dpi=300)
 
 

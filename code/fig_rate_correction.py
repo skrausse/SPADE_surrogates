@@ -1,0 +1,65 @@
+import numpy as np
+import quantities as pq
+import elephant.spike_train_generation as stg
+import elephant.statistics as stat
+import matplotlib.pyplot as plt
+
+np.random.seed(0)
+
+t_start = 0.*pq.ms
+t_stop = 1000.*pq.ms
+
+shape_factor = 2.
+n_spiketrains = 1000
+sampling_period = 0.1 * pq.ms
+
+rate = 50.*pq.Hz
+
+trial_list = stg.StationaryGammaProcess(
+    rate=rate, shape_factor=shape_factor, t_start=t_start, t_stop=t_stop,
+    equilibrium=True
+).generate_n_spiketrains(n_spiketrains)
+
+# using Shinomoto rate estimation
+
+fig, ax = plt.subplots(figsize=(4, 4))
+for corr_id, CORRECTION in enumerate((False, True)):
+    rates = [stat.instantaneous_rate(
+            spiketrain=trial,
+            sampling_period=sampling_period,
+            kernel='auto',
+            border_correction=CORRECTION)
+            for trial in trial_list]  # calculate instaneous rate,
+
+    if corr_id == 0:
+        ax.plot(rates[0].times, np.repeat(rate, len(rates[0])),
+                label='original rate')
+
+        n_bins = 10
+        hist, bars = np.histogram(
+            np.hstack(trial_list),
+            bins=n_bins,
+            range=(t_start.item(), t_stop.item()))
+
+        ax.plot(bars[1:] - (bars[1] - bars[0]) / 2,
+                hist / n_spiketrains * (n_bins / t_stop.rescale(pq.s).item()),
+                label="PSTH")
+
+    if not CORRECTION:
+        # plot estimated rate
+        ax.plot(rates[0].times, np.mean(rates, axis=0)[:, 0],
+                label='rate estimation')
+
+    if CORRECTION:
+        ax.plot(rates[0].times, np.mean(rates, axis=0)[:, 0],
+                label='rate estimation corrected')
+
+ax.set_ylabel('rate in Hz')
+ax.set_xlabel('time in ms')
+ax.set_ylim(25, 55)
+ax.legend()
+
+# ax.set_title('Difference rate vs. estimation')
+fig.savefig('../plots/fig_rate_estimation_corrected.png')
+fig.savefig('../plots/fig_rate_estimation_corrected.eps')
+plt.show()

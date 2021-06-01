@@ -177,21 +177,10 @@ def get_cv2(spiketrain, sep):
         spiketrain_list = create_st_list(spiketrain, sep=sep)
         isis = [np.diff(st.magnitude)
                 for st in spiketrain_list
-                if len(st) > 1]
-        denominator = np.sum([len(trial_isi) - 1 if len(trial_isi) > 0 else 0
-                    for trial_isi in isis])
-        if denominator == 0:
-            cv2 = 1.
-        else:
-            cv2 = np.sum(
-                [2 * np.sum(
-                    np.abs(trial_isi[:-1] - trial_isi[1:]) /
-                    (trial_isi[:-1] + trial_isi[1:]))
-                 for trial_isi in isis]
-            ) / np.sum([len(trial_isi) - 1 if len(trial_isi) > 0 else 0
-                        for trial_isi in isis])
-        return cv2
-    return 1.
+                if len(st) > 2]
+        cv2_list = [stat.cv2(isi, with_nan=True) for isi in isis]
+        return np.nanmean(cv2_list)
+    return np.nan
 
 
 def get_cv2_from_shape_factor(shape_factor):
@@ -418,11 +407,11 @@ if __name__ == '__main__':
 
                 print("Generating data")
                 ppd, gamma, cv2s = \
-                        generate_artificial_data(data=sts,
-                                                 seed=seed,
-                                                 max_refractory=max_refractory,
-                                                 processes=processes,
-                                                 sep=sep)
+                    generate_artificial_data(data=sts,
+                                             seed=seed,
+                                             max_refractory=max_refractory,
+                                             processes=processes,
+                                             sep=sep)
 
                 print('Finished data generation')
 
