@@ -1,4 +1,5 @@
 # The sessions to analyze
+#sessions : ['i140703-001','l101210-001']
 sessions : ['i140703-001','l101210-001']
 # The 5 epochs to analyze
 epochs : ['start', 'cue1', 'earlydelay', 'latedelay', 'movement', 'hold']
@@ -42,4 +43,3 @@ seed : 0
 SNR_thresh : 2.5
 # size for removal of synchrofacts from data
 synchsize : 2
-
