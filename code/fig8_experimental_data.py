@@ -291,9 +291,9 @@ def plot_experimental_data_results(surrogates, tag_surrogates,
                              fontsize=8)
 
     fig_mean_stat.savefig('../../figures/'
-                          '/fig9_experimental_data.eps', dpi=300)
+                          '/fig8_experimental_data.eps', dpi=300)
     fig_mean_stat.savefig('../../figures/'
-                          '/fig9_experimental_data.png', dpi=300)
+                          '/fig8_experimental_data.png', dpi=300)
 
 
 if __name__ == "__main__":

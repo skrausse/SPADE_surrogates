@@ -57,7 +57,7 @@ capitalized_processes = {'ppd': 'PPD', 'gamma': 'Gamma'}
 
 
 def create_firing_rate_plots(axes, what_to_plot='rate'):
-    xlabel = r'$\lambda$ in Hz' if what_to_plot == 'rate' else 'CV2'
+    xlabel = r'$\lambda$ (Hz)' if what_to_plot == 'rate' else 'CV2'
     color_for_combination = {
         'all': 'C0', 'only UD': 'C1',
         'UD & UDD': 'C2', 'other': 'C3'}

@@ -17,7 +17,7 @@ if not os.path.exists(DATA_PATH):
 if not os.path.exists(PLOT_PATH):
     os.makedirs(PLOT_PATH)
 
-FIG_NAME = 'Fig7_surrogate_statistics.eps'
+FIG_NAME = 'fig5_surrogate_statistics.eps'
 
 #  data generation
 

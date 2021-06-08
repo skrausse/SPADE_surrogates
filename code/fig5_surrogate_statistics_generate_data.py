@@ -17,7 +17,7 @@ from elephant import statistics as stat
 from elephant import spike_train_generation as stg
 from elephant import spike_train_surrogates as surr
 
-import fig7_surrogate_statistics_config as cf
+import fig5_surrogate_statistics_config as cf
 
 DATA_PATH = cf.DATA_PATH
 

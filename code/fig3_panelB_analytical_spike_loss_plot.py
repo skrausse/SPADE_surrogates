@@ -175,7 +175,8 @@ def plot_spike_count_reduction(
     colors = ('C0', 'C1', 'C2', 'C3')
 
     fig, axes = plt.subplots(
-        1, 2, figsize=(5., 2.5), sharey='all')
+        1, 2, figsize=(3.5, 2.5), sharey='all')
+    fig.subplots_adjust(left=0.17, bottom=0.17, wspace=0.1, right=0.98)
 
     for dead_time_id, dead_time in enumerate(dead_times):
         spike_count_ratio = firing_rate_clipped_ppd(
@@ -226,10 +227,10 @@ def plot_spike_count_reduction(
             linestyle='--',
             color=colors[shape_id])
 
-    axes[0].set_ylabel(r'$1 - N_{clip}$/$N$', labelpad=1.,
+    axes[0].set_ylabel(r'$1 - N_{clip}$/$N$', labelpad=1.5,
                        fontsize='small')
     for ax, data_type in zip(axes, ('PPD', 'Gamma')):
-        ax.set_xlabel(r'$\lambda$ in Hz', labelpad=-2.,
+        ax.set_xlabel(r'$\lambda$ (Hz)', labelpad=1.5,
                       fontsize='small')
         ax.tick_params(axis='x', labelsize='small')
         ax.tick_params(axis='y', labelsize='small')
@@ -250,7 +251,7 @@ if __name__ == '__main__':
     binsize = 5. * pq.ms
     deadtimes = np.arange(1.5, 3.1, 0.5) * pq.ms
     ditherparameter = 25 * pq.ms
-    plotpath = '../plots/fig4_analytical_spike_count_reduction.svg'
+    plotpath = '../plots/fig3_panelB_analytical_spike_count_reduction.svg'
 
     plot_spike_count_reduction(
         firing_rates=firingrates,

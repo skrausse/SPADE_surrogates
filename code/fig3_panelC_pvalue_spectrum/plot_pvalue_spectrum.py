@@ -55,7 +55,8 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
         vmax=1.,
         base=10.)
 
-    fig, axes = plt.subplots(2, 1, figsize=(5., 5.), sharex='all')
+    fig, axes = plt.subplots(2, 1, figsize=(3.5, 5.), sharex='all')
+    fig.subplots_adjust(hspace=0.32, right=0.85, top=0.95, bottom=0.1)
 
     # find max_occurrences to fill up with zeroes
     max_occ = []
@@ -110,7 +111,7 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
 
         if axis_id == 1:
             axis.set_xlabel('number of occurrences')
-        axis.set_ylabel('duration')
+        axis.set_ylabel('duration', labelpad=1.8)
         if axis_id == 0:
             axis.set_title('Ground Truth')
         else:
@@ -126,8 +127,9 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
     cbar = fig.colorbar(mappable=cbar_map, ax=axes)
 
     cbar.set_label('p-value')
-    fig.savefig('../../plots/fig5_pvalue_spectrum.svg',
+    fig.savefig('../../plots/fig3_panelC_pvalue_spectrum.svg',
                 dpi=300)
+    plt.show()
 
 
 def plot_flattened_pvalue_spectra(setup1, setup2):

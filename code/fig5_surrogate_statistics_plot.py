@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import quantities as pq
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
-import fig7_surrogate_statistics_config as cf
+import fig5_surrogate_statistics_config as cf
 
 DATA_PATH = cf.DATA_PATH
 PLOT_PATH = cf.PLOT_PATH
@@ -84,7 +84,7 @@ def plot_clipped_firing_rate(axes_clip):
                 color=COLORS[surr_method],
                 linestyle=LINE_STYLES[surr_method])
 
-        axes_clip[type_id].set_xlabel(r'$\lambda$ in Hz',
+        axes_clip[type_id].set_xlabel(r'$\lambda$ (Hz)',
                                       labelpad=XLABELPAD)
 
 
@@ -138,7 +138,7 @@ def _plot_ac_cc(axes_ac, axes_cc, type_id, data_type,
 def _label_axes(axes_isi, axes_ac, axes_cc):
     for axis_isi, axis_cc in zip(axes_isi, axes_cc):
         for axis in (axis_isi, axis_cc):
-            axis.set_xlabel(r'$\tau$ in ms', labelpad=XLABELPAD)
+            axis.set_xlabel(r'$\tau$ (ms)', labelpad=XLABELPAD)
 
     for axis_ac, axis_cc in zip(axes_ac, axes_cc):
         axis_ac.set_ylim(bottom=AC_BOTTOM * FIRING_RATE,
@@ -223,8 +223,8 @@ def plot_firing_rate_change(axis):
                   label=surr_method, color=COLORS[surr_method],
                   linestyle=LINE_STYLES[surr_method])
 
-    axis.set_xlabel(r't in ms', labelpad=XLABELPAD)
-    axis.set_ylabel(r'$\lambda(t)$ in Hz', labelpad=YLABELPAD)
+    axis.set_xlabel(r't (ms)', labelpad=XLABELPAD)
+    axis.set_ylabel(r'$\lambda(t)$ (Hz)', labelpad=YLABELPAD)
 
     t_stop = DURATION_RATES_STEP.rescale(pq.ms).magnitude
     axis.set_xticks([0., 1/3 * t_stop, 2/3 * t_stop, t_stop])
@@ -265,7 +265,7 @@ def plot_eff_moved(axis):
             color=COLORS[surr_method],
             linestyle=LINE_STYLES[surr_method])
 
-    axis.set_xlabel(r'$\lambda$ in Hz', labelpad=XLABELPAD)
+    axis.set_xlabel(r'$\lambda$ (Hz)', labelpad=XLABELPAD)
     axis.set_ylabel(r'$N_{moved}/N$', labelpad=YLABELPAD)
 
     maximal_rate = RATES[-1]
@@ -365,9 +365,9 @@ def plot_statistics_overview():
     axis_cv, axis_moved, axis_step = lower_axes
 
     axes_clip[0].set_ylabel(r'$1 - N_{clip}/N$', labelpad=YLABELPAD)
-    axes_isi[0].set_ylabel(r'$p(\tau)$ in 1/s', labelpad=YLABELPAD)
-    axes_ac[0].set_ylabel('ACH in 1/s', labelpad=YLABELPAD)
-    axes_cc[0].set_ylabel('CCH in 1/s', labelpad=YLABELPAD)
+    axes_isi[0].set_ylabel(r'$p(\tau)$ (1/s)', labelpad=YLABELPAD)
+    axes_ac[0].set_ylabel('ACH (1/s)', labelpad=YLABELPAD)
+    axes_cc[0].set_ylabel('CCH (1/s)', labelpad=YLABELPAD)
 
     plot_clipped_firing_rate(axes_clip)
 
@@ -419,6 +419,7 @@ def plot_statistics_overview():
     frame.set_edgecolor('0.9')
 
     fig.savefig(f'{PLOT_PATH}/{FIG_NAME}', dpi=300)
+    plt.show()
 
 
 if __name__ == '__main__':
