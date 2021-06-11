@@ -189,7 +189,7 @@ def plot_experimental_data_results(surrogates, tag_surrogates,
     title_size = 10
     tick_size = 8
     # Initializing the figure
-    fig_mean_stat = plt.figure(figsize=(6, 5.5))
+    fig_mean_stat = plt.figure(figsize=(4, 5.5))
     fig_mean_stat.subplots_adjust(
         left=.083,
         right=.98,
@@ -241,23 +241,23 @@ def plot_experimental_data_results(surrogates, tag_surrogates,
                         ax_num_patt.bar(epoch_id + 1,
                                         num_patt[session_name][behav_context],
                                         width=0.5, color=tt_colors[tt_idx],
-                                        bottom=bar_bottom, label=label)
+                                        bottom=bar_bottom)
                     else:
                         ax_num_patt.bar(epoch_id + 1,
                                         num_patt[session_name][behav_context],
                                         width=0.5, color=tt_colors[tt_idx],
-                                        bottom=bar_bottom)
+                                        bottom=bar_bottom, label=label)
                     # Updating height of the bar to stack number of patterns
                     bar_bottom += num_patt[session_name][behav_context]
 
             if index == 0:
                 if session_name == 'l101210-001':
                     ax_num_patt.set_title(
-                        'Monkey L - session l101210-001', size=title_size)
+                        'Monkey L\nsession l101210-001', size=title_size)
+                    ax_num_patt.legend(loc=2, fontsize=7)
                 if session_name == 'i140703-001':
                     ax_num_patt.set_title(
-                        'Monkey N - session i140703-001', size=title_size)
-                    ax_num_patt.legend(loc=2, fontsize=7)
+                        'Monkey N\nsession i140703-001', size=title_size)
 
             num_subplots += 1
 
@@ -289,7 +289,7 @@ def plot_experimental_data_results(surrogates, tag_surrogates,
                              verticalalignment='top',
                              transform=ax_num_patt.transAxes,
                              fontsize=8)
-    plt.align_ylabels()
+    fig_mean_stat.align_ylabels()
 
     fig_mean_stat.savefig('../../figures/'
                           '/fig8_experimental_data.eps', dpi=300)
