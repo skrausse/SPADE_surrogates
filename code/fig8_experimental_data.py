@@ -191,7 +191,7 @@ def plot_experimental_data_results(surrogates, tag_surrogates,
     # Initializing the figure
     fig_mean_stat = plt.figure(figsize=(4, 5.5))
     fig_mean_stat.subplots_adjust(
-        left=.083,
+        left=.15,
         right=.98,
         wspace=0,
         hspace=0.1,
