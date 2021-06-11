@@ -640,13 +640,13 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
 
     # ppd
     gs_down_left = gridspec.GridSpecFromSubplotSpec(
-        nrows=3, ncols=1, subplot_spec=gs_down[0], hspace=0.3)
+        nrows=3, ncols=1, subplot_spec=gs_down[0], hspace=0.45)
     ax_b_left = fig.add_subplot(gs_down_left[0])  # Panel B left
     ax_c_left = fig.add_subplot(gs_down_left[1])  # Panel C left
     ax_d_left = fig.add_subplot(gs_down_left[2])  # Panel D left
 
     gs_down_right = gridspec.GridSpecFromSubplotSpec(
-        nrows=3, ncols=1, subplot_spec=gs_down[1], hspace=0.3)
+        nrows=3, ncols=1, subplot_spec=gs_down[1], hspace=0.45)
     ax_b_right = fig.add_subplot(gs_down_right[0])   # Panel B right
     ax_c_right = fig.add_subplot(gs_down_right[1])   # Panel C right
     ax_d_right = fig.add_subplot(gs_down_right[2])   # Panel D right
