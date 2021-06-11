@@ -72,9 +72,10 @@ SHAPE_FACTOR = get_shape_factor_from_cv2(CV2)
 
 #  plotting
 
-FIGSIZE = (7.5, 8.75)
+FIGSIZE = (7.5, 4.5)
 XLABELPAD = -0.5
 YLABELPAD = -0.5
+YLABELPAD2 = -2.5   # for formulae with subscript
 ORIGINAL_LINEWIDTH = 2.2
 SURROGATES_LINEWIDTH = 0.75
 FONTSIZE = 10
@@ -114,3 +115,21 @@ CC_TOP = 1.6
 
 # AC/ CC xlim relative to dither
 AC_CC_XLIM = 2.1
+
+# Parameters for subplot placement
+distance_left_border = 0.06
+distance_right_border = 0.02
+
+distance_horizontal_panels = 0.07
+width_figure = (1. - (distance_left_border + distance_right_border
+                      + distance_horizontal_panels)) / 4
+
+distance_top_border = 0.05
+distance_bottom_border = 0.09
+
+distance_vertical_panels = 0.09
+
+height_figure = (1. - (distance_top_border + distance_bottom_border
+                       + 2. * distance_vertical_panels)) / 4
+
+height_side_figure = 0.15
