@@ -11,44 +11,6 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 import fig5_surrogate_statistics_config as cf
 
-DATA_PATH = cf.DATA_PATH
-PLOT_PATH = cf.PLOT_PATH
-
-FIG_NAME = cf.FIG_NAME
-
-SURR_METHODS = cf.SURR_METHODS
-DATA_TYPES = cf.DATA_TYPES
-
-STEP_DATA_TYPE = cf.STEP_DATA_TYPE
-
-FIRING_RATE = cf.FIRING_RATE
-RATES = cf.RATES
-
-DURATION_RATES_STEP = cf.DURATION_RATES_STEP
-
-DITHER = cf.DITHER
-
-FIGSIZE = cf.FIGSIZE
-XLABELPAD = cf.XLABELPAD
-YLABELPAD = cf.YLABELPAD
-ORIGINAL_LINEWIDTH = cf.ORIGINAL_LINEWIDTH
-SURROGATES_LINEWIDTH = cf.SURROGATES_LINEWIDTH
-FONTSIZE = cf.FONTSIZE
-
-LABELS = cf.LABELS
-COLORS = cf.COLORS
-
-LINE_STYLES = cf.LINE_STYLES
-
-LETTERS = cf.LETTERS
-
-AC_BOTTOM = cf.AC_BOTTOM
-AC_TOP = cf.AC_TOP
-CC_BOTTOM = cf.CC_BOTTOM
-CC_TOP = cf.CC_TOP
-
-AC_CC_XLIM = cf.AC_CC_XLIM
-
 
 def plot_clipped_firing_rate(axes_clip):
     """
@@ -63,66 +25,66 @@ def plot_clipped_firing_rate(axes_clip):
     None
     """
     results = np.load(
-        f'{DATA_PATH}/clipped_rates.npy', allow_pickle=True).item()
+        f'{cf.DATA_PATH}/clipped_rates.npy', allow_pickle=True).item()
     rates = results['rates']
     ratio_clipped = results['ratio_clipped']
     ratio_clipped_surr = results['ratio_clipped_surr']
 
-    for type_id, data_type in enumerate(DATA_TYPES):
+    for type_id, data_type in enumerate(cf.DATA_TYPES):
         axes_clip[type_id].plot(
             rates[data_type], 1. - np.array(ratio_clipped[data_type]),
             label='original',
-            linewidth=ORIGINAL_LINEWIDTH,
-            color=COLORS['original'],
-            linestyle=LINE_STYLES['original']
+            linewidth=cf.ORIGINAL_LINEWIDTH,
+            color=cf.COLORS['original'],
+            linestyle=cf.LINE_STYLES['original']
         )
-        for surr_method in SURR_METHODS:
+        for surr_method in cf.SURR_METHODS:
             axes_clip[type_id].plot(
                 rates[data_type],
                 1. - np.array(ratio_clipped_surr[data_type][surr_method]),
                 label=surr_method,
-                color=COLORS[surr_method],
-                linestyle=LINE_STYLES[surr_method])
+                color=cf.COLORS[surr_method],
+                linestyle=cf.LINE_STYLES[surr_method])
 
         axes_clip[type_id].set_xlabel(r'$\lambda$ (Hz)',
-                                      labelpad=XLABELPAD)
+                                      labelpad=cf.XLABELPAD,)
 
 
 def _plot_isi(axes_isi, axes_insets, data_type, type_id, surr_method):
     results = np.load(
-        f'{DATA_PATH}/isi_{data_type}_{surr_method}.npy',
+        f'{cf.DATA_PATH}/isi_{data_type}_{surr_method}.npy',
         allow_pickle=True).item()
 
     bin_edges = results['bin_edges']
     hist = results['hist']
 
-    linewidth = ORIGINAL_LINEWIDTH if surr_method == 'original' else 1.
+    linewidth = cf.ORIGINAL_LINEWIDTH if surr_method == 'original' else 1.
 
-    label = LABELS[surr_method] if type_id == 0 else None
+    label = cf.LABELS[surr_method] if type_id == 0 else None
 
     axes_isi[type_id].plot(
         bin_edges[:-1] + bin_edges[0] / 2,
         hist,
         linewidth=linewidth,
         label=label,
-        color=COLORS[surr_method],
-        linestyle=LINE_STYLES[surr_method])
+        color=cf.COLORS[surr_method],
+        linestyle=cf.LINE_STYLES[surr_method])
 
     axes_insets[type_id].plot(
         bin_edges[:-1] + bin_edges[0] / 2,
         hist,
         linewidth=linewidth,
         label=label,
-        color=COLORS[surr_method],
-        linestyle=LINE_STYLES[surr_method])
+        color=cf.COLORS[surr_method],
+        linestyle=cf.LINE_STYLES[surr_method])
 
 
 def _plot_ac_cc(axes_ac, axes_cc, type_id, data_type,
                 surr_method):
-    linewidth = ORIGINAL_LINEWIDTH if surr_method == 'original' else 1.
+    linewidth = cf.ORIGINAL_LINEWIDTH if surr_method == 'original' else 1.
     for axes, corr_type in zip((axes_ac, axes_cc), ('ac', 'cc')):
         results = np.load(
-            f'{DATA_PATH}/{corr_type}_{data_type}_{surr_method}.npy',
+            f'{cf.DATA_PATH}/{corr_type}_{data_type}_{surr_method}.npy',
             allow_pickle=True).item()
 
         hist_times = results['hist_times']
@@ -131,27 +93,28 @@ def _plot_ac_cc(axes_ac, axes_cc, type_id, data_type,
         axes[type_id].plot(
             hist_times,
             hist,
-            label=surr_method, linewidth=linewidth, color=COLORS[surr_method],
-            linestyle=LINE_STYLES[surr_method])
+            label=surr_method, linewidth=linewidth, color=cf.COLORS[surr_method],
+            linestyle=cf.LINE_STYLES[surr_method])
 
 
 def _label_axes(axes_isi, axes_ac, axes_cc):
     for axis_isi, axis_cc in zip(axes_isi, axes_cc):
         for axis in (axis_isi, axis_cc):
-            axis.set_xlabel(r'$\tau$ (ms)', labelpad=XLABELPAD)
+            axis.set_xlabel(r'$\tau$ (ms)',
+                            labelpad=cf.XLABELPAD,)
 
     for axis_ac, axis_cc in zip(axes_ac, axes_cc):
-        axis_ac.set_ylim(bottom=AC_BOTTOM * FIRING_RATE,
-                         top=AC_TOP * FIRING_RATE)
-        axis_ac.set_xlim(left=-AC_CC_XLIM * DITHER,
-                         right=AC_CC_XLIM * DITHER)
+        axis_ac.set_ylim(bottom=cf.AC_BOTTOM * cf.FIRING_RATE,
+                         top=cf.AC_TOP * cf.FIRING_RATE)
+        axis_ac.set_xlim(left=-cf.AC_CC_XLIM * cf.DITHER,
+                         right=cf.AC_CC_XLIM * cf.DITHER)
 
     for axis_cc in axes_cc:
-        axis_cc.set_ylim(bottom=CC_BOTTOM * FIRING_RATE,
-                         top=CC_TOP * FIRING_RATE)
-        axis_cc.set_xlim(left=-AC_CC_XLIM * DITHER,
-                         right=AC_CC_XLIM * DITHER)
-        axis_cc.set_xticks([-DITHER.magnitude, 0., DITHER.magnitude])
+        axis_cc.set_ylim(bottom=cf.CC_BOTTOM * cf.FIRING_RATE,
+                         top=cf.CC_TOP * cf.FIRING_RATE)
+        axis_cc.set_xlim(left=-cf.AC_CC_XLIM * cf.DITHER,
+                         right=cf.AC_CC_XLIM * cf.DITHER)
+        axis_cc.set_xticks([-cf.DITHER.magnitude, 0., cf.DITHER.magnitude])
 
 
 def plot_statistical_analysis_of_single_rate(
@@ -171,20 +134,24 @@ def plot_statistical_analysis_of_single_rate(
     None
     """
     axes_insets = []
-    for type_id, data_type in enumerate(DATA_TYPES):
+    for type_id, data_type in enumerate(cf.DATA_TYPES):
         axes_insets.append(
-            inset_axes(axes_isi[type_id], 0.7, 0.6))  # (0.7, 0.5)
+            inset_axes(axes_isi[type_id], 0.7, 0.4))  # (0.7, 0.5)
         axes_insets[type_id].set_xlim(-0.5, 5.5)        # (0., 7.5)
         axes_insets[type_id].set_ylim(
-            0.5 * FIRING_RATE, 1.1*FIRING_RATE)
+            0.5 * cf.FIRING_RATE, 1.1*cf.FIRING_RATE)
+        axes_insets[type_id].set_xticks([1, 3, 5])
+        axes_insets[type_id].tick_params(axis='both',
+                                         pad=0.5,
+                                         labelsize='x-small')
 
-    for type_id, data_type in enumerate(DATA_TYPES):
+    for type_id, data_type in enumerate(cf.DATA_TYPES):
         _plot_isi(axes_isi, axes_insets,
                   data_type, type_id, surr_method='original')
         _plot_ac_cc(axes_ac, axes_cc, type_id, data_type,
                     surr_method='original')
 
-        for surr_method in SURR_METHODS:
+        for surr_method in cf.SURR_METHODS:
             _plot_isi(
                 axes_isi, axes_insets, data_type, type_id, surr_method)
 
@@ -209,24 +176,26 @@ def plot_firing_rate_change(axis):
     -------
     None
     """
-    results = np.load(f'{DATA_PATH}/rate_step.npy', allow_pickle=True).item()
+    results = np.load(f'{cf.DATA_PATH}/rate_step.npy', allow_pickle=True).item()
 
     rate_original = results['original']
     axis.plot(rate_original.times, rate_original.simplified.magnitude,
-              label='original', linewidth=ORIGINAL_LINEWIDTH,
-              color=COLORS['original'], linestyle=LINE_STYLES['original'])
+              label='original', linewidth=cf.ORIGINAL_LINEWIDTH,
+              color=cf.COLORS['original'], linestyle=cf.LINE_STYLES['original'])
 
-    for surr_method in SURR_METHODS:
+    for surr_method in cf.SURR_METHODS:
         rate_dithered = results[surr_method]
 
         axis.plot(rate_dithered.times, rate_dithered.simplified.magnitude,
-                  label=surr_method, color=COLORS[surr_method],
-                  linestyle=LINE_STYLES[surr_method])
+                  label=surr_method, color=cf.COLORS[surr_method],
+                  linestyle=cf.LINE_STYLES[surr_method])
 
-    axis.set_xlabel(r't (ms)', labelpad=XLABELPAD)
-    axis.set_ylabel(r'$\lambda(t)$ (Hz)', labelpad=YLABELPAD)
+    axis.set_xlabel(r't (ms)',
+                    labelpad=cf.XLABELPAD,)
+    axis.set_ylabel(r'$\lambda(t)$ (Hz)',
+                    labelpad=cf.YLABELPAD,)
 
-    t_stop = DURATION_RATES_STEP.rescale(pq.ms).magnitude
+    t_stop = cf.DURATION_RATES_STEP.rescale(pq.ms).magnitude
     axis.set_xticks([0., 1/3 * t_stop, 2/3 * t_stop, t_stop])
 
 
@@ -245,32 +214,35 @@ def plot_eff_moved(axis):
     None
     """
     results = np.load(
-        f'{DATA_PATH}/clipped_rates.npy', allow_pickle=True).item()
+        f'{cf.DATA_PATH}/clipped_rates.npy', allow_pickle=True).item()
 
     rates = results['rates']
     ratio_indep_moved = results['ratio_indep_moved']
     ratio_moved = results['ratio_moved']
 
     axis.plot(
-        rates[STEP_DATA_TYPE], ratio_indep_moved[STEP_DATA_TYPE],
+        rates[cf.STEP_DATA_TYPE], ratio_indep_moved[cf.STEP_DATA_TYPE],
         label='indep.',
-        linewidth=ORIGINAL_LINEWIDTH,
-        color=COLORS['original'],
-        linestyle=LINE_STYLES['original'])
-    for surr_method in SURR_METHODS:
+        linewidth=cf.ORIGINAL_LINEWIDTH,
+        color=cf.COLORS['original'],
+        linestyle=cf.LINE_STYLES['original'])
+    for surr_method in cf.SURR_METHODS:
         axis.plot(
-            rates[STEP_DATA_TYPE],
-            ratio_moved[STEP_DATA_TYPE][surr_method],
+            rates[cf.STEP_DATA_TYPE],
+            ratio_moved[cf.STEP_DATA_TYPE][surr_method],
             label=surr_method,
-            color=COLORS[surr_method],
-            linestyle=LINE_STYLES[surr_method])
+            color=cf.COLORS[surr_method],
+            linestyle=cf.LINE_STYLES[surr_method])
 
-    axis.set_xlabel(r'$\lambda$ (Hz)', labelpad=XLABELPAD)
-    axis.set_ylabel(r'$N_{moved}/N$', labelpad=YLABELPAD)
+    axis.set_xlabel(r'$\lambda$ (Hz)',
+                    labelpad=cf.XLABELPAD,)
+    axis.set_ylabel(r'$N_{moved}/N$',
+                    labelpad=cf.YLABELPAD2,)
 
-    maximal_rate = RATES[-1]
+    maximal_rate = cf.RATES[-1]
     axis.set_xticks([1/4 * maximal_rate, 2/4 * maximal_rate,
                      3/4 * maximal_rate, 4/4 * maximal_rate])
+    axis.set_yticks([0.5, 0.7, 0.9])
 
 
 def plot_cv_change(axis):
@@ -287,19 +259,21 @@ def plot_cv_change(axis):
     -------
     None
     """
-    results = np.load(f'{DATA_PATH}/cv_change.npy', allow_pickle=True).item()
+    results = np.load(f'{cf.DATA_PATH}/cv_change.npy', allow_pickle=True).item()
 
     cvs_real = results['cvs_real']
-    axis.plot(cvs_real, cvs_real, linewidth=ORIGINAL_LINEWIDTH,
-              color=COLORS['original'], linestyle=LINE_STYLES['original'])
+    axis.plot(cvs_real, cvs_real, linewidth=cf.ORIGINAL_LINEWIDTH,
+              color=cf.COLORS['original'], linestyle=cf.LINE_STYLES['original'])
 
-    for surr_method in SURR_METHODS:
+    for surr_method in cf.SURR_METHODS:
         cvs_dithered = results[surr_method]
         axis.plot(cvs_real, cvs_dithered, label=surr_method,
-                  color=COLORS[surr_method],
-                  linestyle=LINE_STYLES[surr_method])
-    axis.set_xlabel('CV - original', labelpad=XLABELPAD)
-    axis.set_ylabel('CV - surrogate', labelpad=YLABELPAD)
+                  color=cf.COLORS[surr_method],
+                  linestyle=cf.LINE_STYLES[surr_method])
+    axis.set_xlabel('CV - original',
+                    labelpad=cf.XLABELPAD,)
+    axis.set_ylabel('CV - surrogate',
+                    labelpad=cf.YLABELPAD,)
 
 
 def _hide_x_ticks(axis):
@@ -327,47 +301,56 @@ def plot_statistics_overview():
     -------
     None
     """
-    plt.rcParams.update({'font.size': FONTSIZE,
-                         'text.usetex': True,
-                         'lines.linewidth': SURROGATES_LINEWIDTH,
-                         'figure.figsize': FIGSIZE})
-    start_down = 0.05
-    height_figure = 0.12
-    epsilon = 0.05
-    delta_down = 0.05 + height_figure + epsilon
-    delta_up = 0.05
-    epsilons = [2*epsilon, epsilon, 0, 0]
-    eta = 0.025
-    left_move = -0.085
+    plt.rcParams.update(
+        {'lines.linewidth': cf.SURROGATES_LINEWIDTH,
+         'xtick.labelsize': 'small',
+         'axes.labelsize': 'small'})
 
-    fig = plt.figure()
-
+    fig = plt.figure(figsize=cf.FIGSIZE)
     axes = [[
         fig.add_axes(
-            rect=[left_move + delta_down + (1-(delta_down+delta_up))/3*x,
-                  delta_down + (1-(delta_down+delta_up)-2*epsilon)/4*(3-y)
-                  + epsilons[y],
-                  (1-(delta_down+delta_up))/3,
-                  (1-(delta_down+delta_up)-2*epsilon)/4])
-        for x in range(3)] for y in range(4)]
+            rect=[  # left
+                  cf.distance_left_border + cf.width_figure * left_to_right_id,
+                    # bottom
+                  cf.distance_bottom_border
+                  - (top_to_bottom_id-3)
+                  * (cf.height_figure + cf.distance_vertical_panels)
+                  # sign is only zero in the last case, allowing to have zero
+                  # distance between the panels
+                  + np.sign(top_to_bottom_id-3) * cf.distance_vertical_panels,
+                    # width
+                  cf.width_figure,
+                    # height
+                  cf.height_figure])
+        for left_to_right_id in range(3)] for top_to_bottom_id in range(4)]
 
-    lower_axes = \
+    right_side_axes = \
         [fig.add_axes(
-            rect=[left_move + delta_down
-                  + (1-(delta_down+delta_up + 2*epsilon))/3*x + epsilon * x
-                  + eta/2*x,
-                  start_down,
-                  (1-(delta_down+delta_up + 2*epsilon))/3 - eta,
-                  height_figure])
-         for x in range(3)]
+            rect=[cf.distance_left_border + cf.width_figure * 3
+                  + cf.distance_horizontal_panels,  # left
+                  cf.distance_bottom_border
+                  - (top_to_bottom_id - 2)
+                  * (cf.height_side_figure + cf.distance_vertical_panels),  # bottom
+                  cf.width_figure,  # width
+                  cf.height_side_figure  # height
+                  ])
+         for top_to_bottom_id in range(3)]
 
     axes_clip, axes_isi, axes_ac, axes_cc = axes
-    axis_cv, axis_moved, axis_step = lower_axes
+    axis_cv, axis_moved, axis_step = right_side_axes
 
-    axes_clip[0].set_ylabel(r'$1 - N_{clip}/N$', labelpad=YLABELPAD)
-    axes_isi[0].set_ylabel(r'$p(\tau)$ (1/s)', labelpad=YLABELPAD)
-    axes_ac[0].set_ylabel('ACH (1/s)', labelpad=YLABELPAD)
-    axes_cc[0].set_ylabel('CCH (1/s)', labelpad=YLABELPAD)
+    axes_clip[0].set_ylabel(r'$1 - N_{clip}/N$',
+                            labelpad=cf.YLABELPAD2,
+                            )
+    axes_isi[0].set_ylabel(r'$p(\tau)$ (1/s)',
+                           labelpad=cf.YLABELPAD,
+                           )
+    axes_ac[0].set_ylabel('   ACH (1/s)',
+                          labelpad=cf.YLABELPAD,
+                          )
+    axes_cc[0].set_ylabel('CCH (1/s)      ',
+                          labelpad=cf.YLABELPAD,
+                          )
 
     plot_clipped_firing_rate(axes_clip)
 
@@ -378,21 +361,21 @@ def plot_statistics_overview():
     plot_eff_moved(axis_moved)
     plot_cv_change(axis_cv)
 
-    for data_id, data_type in enumerate(DATA_TYPES):
+    for data_id, data_type in enumerate(cf.DATA_TYPES):
         axes[0][data_id].set_title(data_type)
 
     for axis_id, axis in enumerate(axes):
         letter_pos_x = -0.25
-        letter_pos_y = 1.05 if axis_id < 3 else 0.85
+        letter_pos_y = 1.05 if axis_id < 3 else 0.8
         axis[0].text(
-            letter_pos_x, letter_pos_y, LETTERS[axis_id],
+            letter_pos_x, letter_pos_y, cf.LETTERS[axis_id],
             transform=axis[0].transAxes, fontsize=15)
         _hide_y_ticks(axis[1])
         _hide_y_ticks(axis[2])
 
-    for axis_id, axis in enumerate(lower_axes):
+    for axis_id, axis in enumerate(right_side_axes):
         axis.text(
-            -0.15, 1.05, LETTERS[len(axes) + axis_id],
+            -0.15, 1.05, cf.LETTERS[len(axes) + axis_id],
             transform=axis.transAxes, fontsize=15)
 
     for axis in axes_ac:
@@ -407,18 +390,15 @@ def plot_statistics_overview():
             axis.set_ylim(ylim)
 
     handles, labels = axes_isi[0].get_legend_handles_labels()
-    pos_x, pos_y = 2, 0
-    legend_loc = (
-        left_move + delta_down + (1-(delta_down+delta_up))/3*pos_x
-        + (1-(delta_down+delta_up))/3 + 0.003,
-        delta_down + (1-(delta_down+delta_up)-2*epsilon)/4*(3-pos_y)
-        + epsilons[pos_y] + 0.02)  # loc=(x, y)
-    legend = fig.legend(handles, labels, fontsize=8., loc=legend_loc)
+
+    legend = fig.legend(handles, labels, fontsize='x-small',
+                        bbox_to_anchor=(0.93,  # x
+                                        0.98))  # y
     frame = legend.get_frame()
     frame.set_facecolor('0.9')
     frame.set_edgecolor('0.9')
 
-    fig.savefig(f'{PLOT_PATH}/{FIG_NAME}', dpi=300)
+    fig.savefig(f'{cf.PLOT_PATH}/{cf.FIG_NAME}', dpi=300)
     plt.show()
 
 
