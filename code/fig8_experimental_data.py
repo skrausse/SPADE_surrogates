@@ -289,6 +289,7 @@ def plot_experimental_data_results(surrogates, tag_surrogates,
                              verticalalignment='top',
                              transform=ax_num_patt.transAxes,
                              fontsize=8)
+    plt.align_ylabels()
 
     fig_mean_stat.savefig('../../figures/'
                           '/fig8_experimental_data.eps', dpi=300)
@@ -298,7 +299,7 @@ def plot_experimental_data_results(surrogates, tag_surrogates,
 
 if __name__ == "__main__":
     # Loading general parameters
-    with open("../configfile.yaml", 'r') as stream:
+    with open("./configfile.yaml", 'r') as stream:
         param = yaml.load(stream, Loader=Loader)
     binsize = (param['binsize'] * pq.s).rescale(pq.ms)
     winlen = param['winlen']

@@ -663,7 +663,8 @@ def fig_2(folder, sessions, epoch, trialtype, dither, binsize, n_surr,
             fontsize=fontsize)
     ax14.set_ylabel('')
     plt.setp(ax14.get_yticklabels(), visible=False)
-
+    plt.figtext(
+        x=0.04, y=0.25, s='C', fontsize=12, multialignment='center')
     fig.align_ylabels()
 
     plt.savefig('../plots/fig2_spikeloss_r2gstats.png')

@@ -206,7 +206,7 @@ def plot_dead_time(
         ax.hist(rp_dict[key], bins=bins, alpha=1, label=key, histtype='step')
     ax.legend(loc='upper right', fontsize=fontsize - 4)
     ax.set_title('Dead time of all units', fontsize=fontsize)
-    ax.set_ylabel('Count', fontsize=fontsize)
+    ax.set_ylabel('Count', fontsize=fontsize, labelpad=0.1)
     ax.set_xlabel('DT (ms)', fontsize=fontsize)
     ax.set_ylim(
         [0, max([max(np.histogram(rp_dict[key], bins)[0])
@@ -246,7 +246,7 @@ def plot_isi(ax, sts, gamma, ppd, neuron, fontsize):
         ax.hist(isi_dict[key], bins, alpha=1, label=key, histtype='step')
 
     ax.set_xlabel('ISI (s)', fontsize=fontsize)
-    ax.set_ylabel('Count', fontsize=fontsize)
+    ax.set_ylabel('Count', fontsize=fontsize, labelpad=0.1)
     ax.set_title('Single unit ISI', fontsize=fontsize)
 
 
@@ -289,7 +289,7 @@ def plot_cv2(ax, sts, gamma, ppd, sep, fontsize):
     for key in cv2_dict.keys():
         ax.hist(cv2_dict[key], bins, alpha=1, label=key, histtype='step')
     ax.set_title('CV2 of all units', fontsize=fontsize)
-    ax.set_ylabel('Count', fontsize=fontsize)
+    ax.set_ylabel('Count', fontsize=fontsize, labelpad=0.1)
     ax.set_xlabel('CV2', fontsize=fontsize)
 
 
@@ -605,9 +605,10 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
         tick size for y and x axes
     """
     # gridspec inside gridspec
-    fig = plt.figure(figsize=(7.5, 8.75))
+    fig = plt.figure(figsize=(5.2, 6.5))
+    plt.subplots_adjust(top=0.95, bottom=0.07, left=0.12, right=0.95)
     params = {'legend.fontsize': 8,
-              'figure.figsize': (7.5, 8.75),
+              'figure.figsize': (6, 7),
               'axes.labelsize': 10,
               'axes.titlesize': 10,
               'xtick.labelsize': 8,
@@ -631,7 +632,7 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
     ax02.set_xlim(0, 0.2)
     ax01.set_ylim(0, 40)
     ax04.legend(fontsize=params['legend.fontsize'])
-    plt.text(x=-0.45, y=1.05, s='A', transform=ax01.transAxes, fontsize=10)
+    plt.text(x=-0.55, y=1.05, s='A', transform=ax01.transAxes, fontsize=10)
 
     # Panel B and C
     gs_down = gridspec.GridSpecFromSubplotSpec(
@@ -669,14 +670,14 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
             tick_size=tick_size)
 
         if process == 'gamma':
-            ax_num_fps.legend(fontsize='xx-small')
+            ax_num_fps.legend(fontsize='xx-small', ncol=2)
         ax_num_fps.set_ylabel('FPs per dataset',
                               size=label_size, labelpad=2.5)
 
         if process == 'ppd':
-            ax_num_fps.set_title('PPD', y=0.95)
+            ax_num_fps.set_title('PPD', y=0.95, size=label_size)
         else:
-            ax_num_fps.set_title('Gamma', y=0.95)
+            ax_num_fps.set_title('Gamma', y=0.95, size=label_size)
 
     axes_c_d = ((ax_c_left, ax_c_right), (ax_d_left, ax_d_right))
 
@@ -702,7 +703,7 @@ if __name__ == "__main__":
     epoch_length = 500 * pq.ms
     sampling_period = 0.1 * pq.ms
     neuron = 39
-    label_size = 10
+    label_size = 8
     title_size = 10
     tick_size = 8
 
