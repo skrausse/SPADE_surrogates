@@ -1,5 +1,4 @@
 import itertools
-import os
 import numpy as np
 import matplotlib.pyplot as plt
 import quantities as pq
@@ -168,9 +167,12 @@ def calculate_residuals(sts, dither, binsize,
     return firing_rates, mean_residuals, std_residuals
 
 
-def plot_loss_top_panel(ax, sts, dither, binsize,
-                        n_surr, epoch_length,
-                        winlen, fontsize):
+def plot_loss_top_panel(
+        ax_loss,
+        ax_residuals,
+        sts, dither, binsize,
+        n_surr, epoch_length,
+        winlen, fontsize):
     """
     Function producing the top panel of figure 2, representing the spike
     count reduction resulting by clipping and UD surrogate generation.
@@ -186,8 +188,10 @@ def plot_loss_top_panel(ax, sts, dither, binsize,
 
     Parameters
     ----------
-    ax: plt.axes
-        ax of the panel
+    ax_loss: plt.axes
+        ax of the spike count reduction panel
+    ax_residuals: plt.axes
+        ax of the residuals panel
     sts: list of neo.SpikeTrains
         spiketrains of the data set
     dither: pq.quantities
@@ -238,19 +242,32 @@ def plot_loss_top_panel(ax, sts, dither, binsize,
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
               '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
               '#bcbd22', '#17becf']
-    ax.scatter(firing_rates, binned_loss, label='Original + clipping',
-               color=colors[0], marker='x')
+    ax_loss.scatter(firing_rates, binned_loss, label='Original + clipping',
+                    color=colors[0], marker='x')
 
-    ax.errorbar(firing_rates, mean_loss_dither, yerr=std_loss_dither,
-                fmt='o', label='UD Surrogate + clipping', color=colors[1],
-                marker='x')
-    ax.set_ylabel('Spike count decrease %', fontsize=fontsize)
+    ax_loss.errorbar(firing_rates, mean_loss_dither, yerr=std_loss_dither,
+                     fmt='o', label='UD Surrogate + clipping', color=colors[1],
+                     marker='x')
+    ax_loss.set_ylabel('Spike count decrease %', fontsize=fontsize)
     # ax.set_xlim(left=2. / epoch_length.magnitude)
-    ax.set_xlim(left=2. / epoch_length.magnitude, right=65)
-    ax.set_ylim(bottom=-0.01, top=0.17)
-    ax.tick_params(axis="x", labelsize=8)
-    ax.tick_params(axis="y", labelsize=8)
-    ax.legend(fontsize=fontsize - 2)
+    ax_loss.set_xlim(left=2. / epoch_length.magnitude, right=65)
+    ax_loss.set_ylim(bottom=-0.01, top=0.17)
+    ax_loss.tick_params(axis="x", labelsize=8)
+    ax_loss.tick_params(axis="y", labelsize=8)
+    ax_loss.legend(fontsize=fontsize - 2)
+
+    ax_residuals.errorbar(
+        firing_rates, -binned_loss+mean_loss_dither,  yerr=std_loss_dither,
+        fmt='o', label='UD Surrogate + clipping', color='grey',
+        marker='x')
+
+    ax_residuals.set_xlabel('Average Firing rate (Hz)', fontsize=fontsize)
+    ax_residuals.set_ylabel('Residuals', fontsize=fontsize)
+    ax_residuals.set_xlim(left=0, right=65)
+    ax_residuals.set_ylim(bottom=-0.05, top=0.125)
+    ax_residuals.tick_params(axis="x", labelsize=8)
+    ax_residuals.tick_params(axis="y", labelsize=8)
+    ax_residuals.set_xticks(np.arange(0, 65, 20))
 
 
 def plot_residuals(ax, sts, dither, binsize, fontsize, epoch_length,
@@ -522,7 +539,9 @@ def fig_2(folder, sessions, epoch, trialtype, dither, binsize, n_surr,
                                            subplot_spec=gs[0], hspace=0,
                                            height_ratios=[2, 1])
     ax01 = fig.add_subplot(gs0[0])
-    plot_loss_top_panel(ax=ax01,
+    ax02 = fig.add_subplot(gs0[1], sharex=ax01)
+    plot_loss_top_panel(ax_loss=ax01,
+                        ax_residuals=ax02,
                         sts=sts_N,
                         binsize=binsize,
                         dither=dither*pq.s,
@@ -532,16 +551,16 @@ def fig_2(folder, sessions, epoch, trialtype, dither, binsize, n_surr,
                         fontsize=fontsize)
     # hide ticklabels of first ISI figure
     plt.setp(ax01.get_xticklabels(), visible=False)
-    ax02 = fig.add_subplot(gs0[1], sharex=ax01)
-    plot_residuals(ax=ax02,
-                   sts=sts_N,
-                   binsize=binsize,
-                   dither=dither,
-                   epoch_length=epoch_length,
-                   winlen=winlen,
-                   n_surr=n_surr,
 
-                   fontsize=fontsize)
+    # plot_residuals(ax=ax02,
+    #                sts=sts_N,
+    #                binsize=binsize,
+    #                dither=dither,
+    #                epoch_length=epoch_length,
+    #                winlen=winlen,
+    #                n_surr=n_surr,
+    #
+    #                fontsize=fontsize)
     title = f'Monkey N'
     plt.figtext(
         x=0.24, y=0.9, s=title, fontsize=10, multialignment='center')
@@ -556,7 +575,9 @@ def fig_2(folder, sessions, epoch, trialtype, dither, binsize, n_surr,
                                            subplot_spec=gs[1], hspace=0,
                                            height_ratios=[2, 1])
     ax11 = fig.add_subplot(gs1[0])
-    plot_loss_top_panel(ax=ax11,
+    ax12 = fig.add_subplot(gs1[1], sharex=ax11)
+    plot_loss_top_panel(ax_loss=ax11,
+                        ax_residuals=ax12,
                         sts=sts_L,
                         binsize=binsize,
                         dither=dither*pq.s,
@@ -568,15 +589,15 @@ def fig_2(folder, sessions, epoch, trialtype, dither, binsize, n_surr,
     ax11.get_legend().remove()
     # hide ticklabels of first ISI figure
     plt.setp(ax11.get_xticklabels(), visible=False)
-    ax12 = fig.add_subplot(gs1[1], sharex=ax11)
-    plot_residuals(ax=ax12,
-                   sts=sts_L,
-                   binsize=binsize,
-                   dither=dither,
-                   epoch_length=epoch_length,
-                   winlen=winlen,
-                   n_surr=n_surr,
-                   fontsize=fontsize)
+
+    # plot_residuals(ax=ax12,
+    #                sts=sts_L,
+    #                binsize=binsize,
+    #                dither=dither,
+    #                epoch_length=epoch_length,
+    #                winlen=winlen,
+    #                n_surr=n_surr,
+    #                fontsize=fontsize)
     ax12.set_ylabel('')
     title = f'Monkey L'
     plt.figtext(
