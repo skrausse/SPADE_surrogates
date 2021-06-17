@@ -148,7 +148,7 @@ if __name__ == '__main__':
         mean_surrogate_patterns_fim[:, rate_id], std_surrogate_patterns_fim[:, rate_id] = \
             np.mean(surrogate_patterns_fim, axis=1), np.std(surrogate_patterns_fim, axis=1)
 
-    fig, ax = plt.subplots(1, 2, figsize=(6, 3), sharey='all')
+    fig, ax = plt.subplots(1, 2, figsize=(6, 3), sharey='all', dpi=300)
     print('CoCoNAD')
     print('rates', rates)
     print('original', mean_patterns_coco)

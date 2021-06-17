@@ -13,7 +13,7 @@ from generate_artificial_data import get_cv2
 spiketrain_path = '../data/artificial_data/'
 results_path = '../results/artificial_data/'
 
-plot_path = '../plots/fp_firing_distribution/'
+plot_path = '../plots/'
 
 if not os.path.exists(plot_path):
     os.mkdir(plot_path)
@@ -169,7 +169,7 @@ def create_firing_rate_plots(axes, what_to_plot='rate'):
 if __name__ == '__main__':
     fig, axes22 = plt.subplots(
             nrows=len(config['sessions']), ncols=len(config['processes']),
-            sharex='all', sharey='all', figsize=figsize)
+            sharex='all', sharey='all', figsize=figsize, dpi=300)
 
     legend_lines = create_firing_rate_plots(
         axes22,
@@ -177,12 +177,16 @@ if __name__ == '__main__':
 
     fig.legend(
         list(legend_lines.values()),
-        list(legend_lines.keys()), loc=legend_loc)
+        list(legend_lines.keys()), loc=legend_loc, fontsize='small')
 
-    if WHAT_TO_PLOT == 'rate':
-        fig.savefig(f'{plot_path}firing_rates_fps.png')
-        fig.savefig(f'{plot_path}firing_rates_fps.eps')
-    else:
-        fig.savefig(f'{plot_path}cv2s_fps.png')
-        fig.savefig(f'{plot_path}cv2s_fps.eps')
     plt.show()
+    if WHAT_TO_PLOT == 'rate':
+        save_name = 'firing_rates_fps'
+    else:
+        save_name = 'cv2s_fps'
+
+    fig.savefig(f'{plot_path}{save_name}.png')
+    # convert manually to eps
+    # inkscape cv2s_fps.pdf --export-eps=cv2s_fps.eps
+    fig.savefig(f'{plot_path}{save_name}.pdf')
+

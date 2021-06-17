@@ -175,7 +175,7 @@ def plot_spike_count_reduction(
     colors = ('C0', 'C1', 'C2', 'C3')
 
     fig, axes = plt.subplots(
-        1, 2, figsize=(3.5, 2.5), sharey='all')
+        1, 2, figsize=(3.5, 2.5), sharey='all', dpi=300)
     fig.subplots_adjust(left=0.17, bottom=0.17, wspace=0.1, right=0.98)
 
     for dead_time_id, dead_time in enumerate(dead_times):

@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.pylab as pylab
 
-from fig2_panelB_r2gstatistics import get_cv2
+from fig2_spikeloss_r2gstats import get_cv2
 from generate_artificial_data import estimate_rate_deadtime, \
     create_st_list, estimate_deadtime
 import elephant
@@ -605,7 +605,7 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
         tick size for y and x axes
     """
     # gridspec inside gridspec
-    fig = plt.figure(figsize=(5.2, 6.5))
+    fig = plt.figure(figsize=(5.2, 6.5), dpi=300)
     plt.subplots_adjust(top=0.95, bottom=0.07, left=0.12, right=0.95)
     params = {'legend.fontsize': 8,
               'figure.figsize': (6, 7),

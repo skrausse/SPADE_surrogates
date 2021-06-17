@@ -23,6 +23,7 @@ trial_list = stg.StationaryGammaProcess(
 # using Shinomoto rate estimation
 
 fig, ax = plt.subplots(figsize=(2.5, 2.5), dpi=300)
+fig.tight_layout()
 fig.subplots_adjust(left=0.2, bottom=0.2)
 for corr_id, CORRECTION in enumerate((False, True)):
     rates = [stat.instantaneous_rate(
@@ -57,12 +58,13 @@ for corr_id, CORRECTION in enumerate((False, True)):
 
 ax.set_ylabel('rate (Hz)', fontsize=8)
 ax.set_xlabel('time (ms)', fontsize=8)
-ax.set_ylim(25, 55)
+ax.set_ylim(25, 52.5)
 ax.tick_params(axis='x', labelsize=8)
 ax.tick_params(axis='y', labelsize=8)
-ax.legend(fontsize=7)
+ax.legend(fontsize='xx-small')
 
 # ax.set_title('Difference rate vs. estimation')
+plt.show()
 fig.savefig('../plots/fig_rate_estimation_corrected.png')
 fig.savefig('../plots/fig_rate_estimation_corrected.eps')
-plt.show()
+
