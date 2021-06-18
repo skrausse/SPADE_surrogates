@@ -9,6 +9,8 @@ import elephant.statistics as stat
 import elephant.spike_train_surrogates as surrogates
 import matplotlib.gridspec as gridspec
 
+XLABELPAD = -0.25
+
 
 def _total_count(binned_st):
     """
@@ -262,7 +264,10 @@ def plot_loss_top_panel(
         fmt='o', label='UD Surrogate + clipping', color='grey',
         marker='x')
 
-    ax_residuals.set_xlabel('Average Firing rate (Hz)', fontsize=fontsize)
+    ax_residuals.set_xlabel(
+        'Average Firing rate (Hz)',
+        fontsize=fontsize,
+        labelpad=XLABELPAD)
     ax_residuals.set_ylabel('Residuals',
                             fontsize=fontsize)
     ax_residuals.set_xlim(left=0, right=65)
@@ -309,7 +314,10 @@ def plot_residuals(ax, sts, dither, binsize, fontsize, epoch_length,
     ax.errorbar(firing_rates, mean_residuals, yerr=std_residuals,
                 fmt='o', label='UD Surrogate + clipping', color='grey',
                 marker='x', alpha=0.8)
-    ax.set_xlabel('Average Firing rate (Hz)', fontsize=fontsize)
+    ax.set_xlabel(
+        'Average Firing rate (Hz)',
+        fontsize=fontsize,
+        labelpad=XLABELPAD)
     ax.set_ylabel('Residuals', fontsize=fontsize)
     ax.set_xlim(left=0, right=65)
     ax.set_ylim(bottom=0, top=100)
@@ -377,7 +385,10 @@ def plot_isi_surr(st, ax, dither, num_surr=500, show_ylabel=True,
     ax.tick_params(axis="x", labelsize=8)
     ax.tick_params(axis="y", labelsize=8)
     if show_xlabel:
-        ax.set_xlabel('ISI (s)', fontsize=fontsize)
+        ax.set_xlabel(
+            'ISI (s)',
+            fontsize=fontsize,
+            labelpad=XLABELPAD)
     if show_ylabel:
         ax.set_ylabel('Count', fontsize=fontsize)
     ax.set_ylim(-1, 81)
@@ -458,15 +469,18 @@ def plot_cv2(sts, ax, epoch_length, sep, show_xlabel=True,
         cv2 = get_cv2(isis)
         cv2_list.append(cv2)
 
-    bin_width = 0.05
+    bin_width = 0.1
     bins = np.arange(0, 2, bin_width)
     ax.hist(cv2_list, bins, alpha=1)
     ax.set_xticks(np.arange(0, 1.9, 0.5))
-    ax.set_xlim(0, 1.5)
+    ax.set_xlim(0.2, 1.5)
     ax.tick_params(axis="x", labelsize=8)
     ax.tick_params(axis="y", labelsize=8)
     if show_xlabel:
-        ax.set_xlabel('CV2', fontsize=fontsize)
+        ax.set_xlabel(
+            'CV2',
+            fontsize=fontsize,
+            labelpad=XLABELPAD)
     if show_ylabel:
         ax.set_ylabel('Count', fontsize=fontsize)
 
@@ -515,7 +529,10 @@ def plot_dt(sts, ax, sorting_dead_time, sep, max_refractory=4 * pq.ms,
     ax.tick_params(axis="y", labelsize=8)
     ax.axvline(x=sorting_dead_time, color='grey', linestyle='--')
     if show_xlabel:
-        ax.set_xlabel(r'd (ms)', fontsize=fontsize)
+        ax.set_xlabel(
+            r'd (ms)',
+            fontsize=fontsize,
+            labelpad=XLABELPAD)
     if show_ylabel:
         ax.set_ylabel('Count', fontsize=fontsize)
     ax.set_xlim(-0.2, 3.5)
@@ -527,7 +544,7 @@ def fig_2(folder, sessions, epoch, trialtype, dither, binsize, n_surr,
     # big gridspec
     fig = plt.figure(figsize=(5., 5), dpi=300)
     gsfig = gridspec.GridSpec(
-        nrows=3, ncols=1, figure=fig, hspace=0.35, wspace=0.2,
+        nrows=3, ncols=1, figure=fig, hspace=0.4, wspace=0.2,
         left=0.13, right=0.99, bottom=0.075, top=0.95,
         height_ratios=(1.25, 1., 0.75))
 
@@ -662,12 +679,8 @@ def fig_2(folder, sessions, epoch, trialtype, dither, binsize, n_surr,
     plot_dt(sts_N, ax04, sorting_dead_time=sorting_deadtime['N'],
             sep=sep, fontsize=fontsize)
     ax04.set_ylabel('')
-    # plt.setp(ax04.get_yticklabels(), visible=False)
 
     # figure Lilou
-
-    # gs1 = gridspec.GridSpecFromSubplotSpec(nrows=2, ncols=1,
-    #                                        subplot_spec=gs[1], hspace=0.4)
 
     # figures ISI distribution of 2 example neurons
 
@@ -705,7 +718,7 @@ def fig_2(folder, sessions, epoch, trialtype, dither, binsize, n_surr,
     plot_dt(sts_L, ax14, sorting_dead_time=sorting_deadtime['L'],
             sep=sep, fontsize=fontsize)
     ax14.set_ylabel('')
-    # plt.setp(ax14.get_yticklabels(), visible=False)
+
     plt.figtext(
         x=0.055, y=0.25, s='C', fontsize=12, multialignment='center')
     fig.align_ylabels()
