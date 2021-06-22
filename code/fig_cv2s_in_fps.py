@@ -181,7 +181,7 @@ if __name__ == '__main__':
         list(legend_lines.keys()),
         fontsize=fontsize_title,
         fancybox=True, shadow=True, ncol=5, loc="lower left",
-        mode="expand", borderaxespad=1, fontsize='small')
+        mode="expand", borderaxespad=1)
 
     plt.show()
     if WHAT_TO_PLOT == 'rate':
