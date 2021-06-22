@@ -27,7 +27,7 @@ epoch_length = 0.5  # in s
 WHAT_TO_PLOT = 'cv2'  # options {'rate', 'cv2'}
 
 markersize = 2.0
-figsize = (6., 4.)
+figsize = (5.2, 3.2)
 alpha = 0.15
 rate_limits = (-2., 69.)
 rate_ticks = np.arange(0, 61, 10)
@@ -170,6 +170,7 @@ if __name__ == '__main__':
     fig, axes22 = plt.subplots(
             nrows=len(config['sessions']), ncols=len(config['processes']),
             sharex='all', sharey='all', figsize=figsize)
+    plt.subplots_adjust(bottom=0.2, top=0.9, right=0.95)
 
     legend_lines = create_firing_rate_plots(
         axes22,
@@ -177,7 +178,10 @@ if __name__ == '__main__':
 
     fig.legend(
         list(legend_lines.values()),
-        list(legend_lines.keys()), loc=legend_loc)
+        list(legend_lines.keys()),
+        fontsize=fontsize_title,
+        fancybox=True, shadow=True, ncol=5, loc="lower left",
+        mode="expand", borderaxespad=1)
 
     if WHAT_TO_PLOT == 'rate':
         fig.savefig(f'{plot_path}firing_rates_fps.png')
