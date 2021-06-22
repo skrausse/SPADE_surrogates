@@ -74,7 +74,7 @@ def create_dictionaries_statistics(surrogate, results, sessions, trialtypes,
     # Initialize histograms
     hist_lags = {}
     hist_spikes = {}
-    results_orig = results
+
     for session_name in sessions:
 
         # Loading patt time histogram
@@ -141,13 +141,15 @@ def create_dictionaries_statistics(surrogate, results, sessions, trialtypes,
             # Making histogram of lags for all epochs
             if len(lags[session_name][epoch]) > 0:
                 hist_lags[session_name] += np.histogram(
-                lags[session_name][epoch], bins=np.arange(
-                    0, (winlen + 1) * binsize.magnitude, binsize.magnitude))[0]
+                    lags[session_name][epoch],
+                    bins=np.arange(
+                        0, (winlen + 1) * binsize.magnitude, binsize.magnitude)
+                )[0]
                 hist_spikes[session_name] += np.histogram(
                     num_spikes[session_name][epoch], bins=np.arange(0, 10))[0]
 
     return num_patt, lags, num_spikes, length, max_patt_per_ep, hist_spikes, \
-           hist_lags
+        hist_lags
 
 
 def plot_experimental_data_results(surrogates, tag_surrogates,
@@ -189,7 +191,7 @@ def plot_experimental_data_results(surrogates, tag_surrogates,
     title_size = 10
     tick_size = 8
     # Initializing the figure
-    fig_mean_stat = plt.figure(figsize=(4, 5.5))
+    fig_mean_stat = plt.figure(figsize=(4, 5.5), dpi=300)
     fig_mean_stat.subplots_adjust(
         left=.15,
         right=.98,
@@ -204,15 +206,15 @@ def plot_experimental_data_results(surrogates, tag_surrogates,
     num_subplots = 1
     for index, surrogate in enumerate(surrogates):
         results = 'results_' + surrogate
-        num_patt, lags, num_spikes, length, max_patt_per_ep, \
-        hist_spikes, hist_lags = \
-            create_dictionaries_statistics(surrogate=surrogate,
-                                           results=results,
-                                           sessions=sessions,
-                                           trialtypes=trialtypes,
-                                           epoch_tags=epoch_tags,
-                                           binsize=binsize,
-                                           winlen=winlen)
+        num_patt, lags, num_spikes, length, max_patt_per_ep,\
+            hist_spikes, hist_lags = \
+                create_dictionaries_statistics(surrogate=surrogate,
+                                               results=results,
+                                               sessions=sessions,
+                                               trialtypes=trialtypes,
+                                               epoch_tags=epoch_tags,
+                                               binsize=binsize,
+                                               winlen=winlen)
         for session_index, session_name in enumerate(sessions):
             # Dictionary to keep track of which trial type has already been plotted
             label_already_assigned = dict([(tt, False) for tt in trialtypes])

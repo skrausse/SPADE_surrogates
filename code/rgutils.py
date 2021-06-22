@@ -408,19 +408,24 @@ def load_epoch_as_lists(session_name, epoch, trialtypes=None, SNRthresh=0,
         for st in seg.filter({'sua': True}):
             # Check the SNR
             if st.annotations['SNR'] > SNRthresh:
-                st.annotations['trial_id'] = seg.annotations[
-                    'trial_id']
-                st.annotations['trial_type'] = seg.annotations[
-                    'belongs_to_trialtype']
-                st.annotate(trial_id_trialtype=seg_id)
-                el = st.annotations['channel_id']
-                sua = st.annotations['unit_id']
-                sua_id = el * 100 + sua * 1
+                sua_id = check_snr(st, seg, seg_id)
                 try:
                     data[sua_id].append(st)
-                except:
+                except KeyError:
                     data[sua_id] = [st]
     return data
+
+
+def check_snr(st, seg, seg_id):
+    st.annotations['trial_id'] = seg.annotations[
+        'trial_id']
+    st.annotations['trial_type'] = seg.annotations[
+        'belongs_to_trialtype']
+    st.annotate(trial_id_trialtype=seg_id)
+    el = st.annotations['channel_id']
+    sua = st.annotations['unit_id']
+    sua_id = el * 100 + sua * 1
+    return sua_id
 
 
 def load_epoch_concatenated_trials(

@@ -1,4 +1,3 @@
-import numpy as np
 import quantities as pq
 import matplotlib.pyplot as plt
 import neo
@@ -41,21 +40,14 @@ cut_trial_block.segments = cut_segment_by_epoch(
     data_segment, epoch, reset_time=True)
 selected_trial_segments = cut_trial_block.filter(
     targdict={'belongs_to_trialtype': trialtypes}, objects=neo.Segment)
-data = {}
+
 seg_id = 0
 seg = selected_trial_segments[seg_id]
 data = []
 for st in seg.filter({'sua': True}):
     # Check the SNR
     if st.annotations['SNR'] > 2.5:
-        st.annotations['trial_id'] = seg.annotations[
-            'trial_id']
-        st.annotations['trial_type'] = seg.annotations[
-            'belongs_to_trialtype']
-        st.annotate(trial_id_trialtype=seg_id)
-        el = st.annotations['channel_id']
-        sua = st.annotations['unit_id']
-        sua_id = el * 100 + sua * 1
+        rgutils.check_snr(st, seg, seg_id)
         data.append(st.rescale(pq.ms) - t_pre)
 
 # List of event labels that we want to consider
@@ -67,7 +59,7 @@ ev_idx = [i for i, val in enumerate(all_events.array_annotations['trial_event_la
                                     ) if val in set(event_name_to_plot)]
 events = all_events[ev_idx].rescale(pq.ms)
 
-fig, axes = plt.subplots(1,1,figsize=(5.5,2.8))
+fig, axes = plt.subplots(1, 1, figsize=(5.5, 2.8), dpi=300)
 fig.subplots_adjust(top=0.8, hspace=0.6, bottom=0.2)
 SMALL_SIZE = 8
 plt.rc('font', size=SMALL_SIZE)
@@ -77,27 +69,27 @@ markersize = 0.02
 events.labels = event_name_to_plot
 events.times.rescale(pq.ms)
 
-#epochs
+# epochs
 # start
-axes.axvspan(events[0] - 250*pq.ms, events[0] + 250*pq.ms, alpha=1, color='red', fill=False,
-             linewidth=3,ymin=0.01, ymax=0.98)
+axes.axvspan(events[0] - 250 * pq.ms, events[0] + 250 * pq.ms, alpha=1, color='red', fill=False,
+             linewidth=3, ymin=0.01, ymax=0.98)
 # cue1
-axes.axvspan(events[1] - 0.25*pq.s, events[1] + 0.25*pq.s, alpha=1, color='orange', fill=False,
-             linewidth=3,ymin=0.01, ymax=0.98)
+axes.axvspan(events[1] - 0.25 * pq.s, events[1] + 0.25 * pq.s, alpha=1, color='orange', fill=False,
+             linewidth=3, ymin=0.01, ymax=0.98)
 # early delay
-axes.axvspan(events[2] - 0*pq.s, events[2] + 0.5*pq.s, alpha=1, color='yellow', fill=False,
-             linewidth=3,ymin=0.01, ymax=0.98)
+axes.axvspan(events[2] - 0 * pq.s, events[2] + 0.5 * pq.s, alpha=1, color='yellow', fill=False,
+             linewidth=3, ymin=0.01, ymax=0.98)
 # late delay
-axes.axvspan(events[4] - 0.5*pq.s, events[4] + 0.*pq.s, alpha=1, color='green', fill=False,
-             linewidth=3,ymin=0.01, ymax=0.98)
-#movement
-axes.axvspan(events[5] - 0.2*pq.s, events[5] + 0.3*pq.s, alpha=1, color='blue', fill=False,
-             linewidth=3,ymin=0.01, ymax=0.98)
-#purple
-axes.axvspan(events[6] - 0.5*pq.s, events[6] + 0.0*pq.s, alpha=1, color='purple', fill=False,
-             linewidth=3,ymin=0.01, ymax=0.98)
+axes.axvspan(events[4] - 0.5 * pq.s, events[4] + 0. * pq.s, alpha=1, color='green', fill=False,
+             linewidth=3, ymin=0.01, ymax=0.98)
+# movement
+axes.axvspan(events[5] - 0.2 * pq.s, events[5] + 0.3 * pq.s, alpha=1, color='blue', fill=False,
+             linewidth=3, ymin=0.01, ymax=0.98)
+# purple
+axes.axvspan(events[6] - 0.5 * pq.s, events[6] + 0.0 * pq.s, alpha=1, color='purple', fill=False,
+             linewidth=3, ymin=0.01, ymax=0.98)
 
-#plots
+# plots
 rasterplot(data, axes=axes, s=markersize, color='k')
 add_event(axes=axes, event=events, key=None)
 axes.set_ylabel('Neurons', fontsize=8)

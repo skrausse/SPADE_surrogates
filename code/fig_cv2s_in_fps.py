@@ -13,7 +13,7 @@ from generate_artificial_data import get_cv2
 spiketrain_path = '../data/artificial_data/'
 results_path = '../results/artificial_data/'
 
-plot_path = '../plots/fp_firing_distribution/'
+plot_path = '../plots/'
 
 if not os.path.exists(plot_path):
     os.mkdir(plot_path)
@@ -181,12 +181,15 @@ if __name__ == '__main__':
         list(legend_lines.keys()),
         fontsize=fontsize_title,
         fancybox=True, shadow=True, ncol=5, loc="lower left",
-        mode="expand", borderaxespad=1)
+        mode="expand", borderaxespad=1, fontsize='small')
 
-    if WHAT_TO_PLOT == 'rate':
-        fig.savefig(f'{plot_path}firing_rates_fps.png')
-        fig.savefig(f'{plot_path}firing_rates_fps.eps')
-    else:
-        fig.savefig(f'{plot_path}cv2s_fps.png')
-        fig.savefig(f'{plot_path}cv2s_fps.eps')
     plt.show()
+    if WHAT_TO_PLOT == 'rate':
+        save_name = 'firing_rates_fps'
+    else:
+        save_name = 'cv2s_fps'
+
+    fig.savefig(f'{plot_path}{save_name}.png')
+    # convert manually to eps
+    # inkscape cv2s_fps.pdf --export-eps=cv2s_fps.eps
+    fig.savefig(f'{plot_path}{save_name}.pdf')

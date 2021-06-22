@@ -306,7 +306,7 @@ def plot_statistics_overview():
          'xtick.labelsize': 'small',
          'axes.labelsize': 'small'})
 
-    fig = plt.figure(figsize=cf.FIGSIZE)
+    fig = plt.figure(figsize=cf.FIGSIZE, dpi=300)
     axes = [[
         fig.add_axes(
             rect=[  # left
