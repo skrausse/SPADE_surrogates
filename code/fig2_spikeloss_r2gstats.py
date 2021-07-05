@@ -9,6 +9,24 @@ import elephant.statistics as stat
 import elephant.spike_train_surrogates as surrogates
 import matplotlib.gridspec as gridspec
 
+CNS = False
+if CNS:
+    cns_figwidth = 4.
+    import seaborn as sns
+
+    sns.despine(trim=True)
+    sns.color_palette()
+    sns.set()
+    plt.rcParams.update(
+        {'axes.labelsize': 9,
+         'legend.fontsize': 9,
+         'xtick.labelsize': 8,
+         'ytick.labelsize': 8,
+         'xtick.major.pad': 0,
+         'ytick.major.pad': 0,
+         })
+
+
 XLABELPAD = -0.25
 
 
@@ -244,20 +262,22 @@ def plot_loss_top_panel(
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
               '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
               '#bcbd22', '#17becf']
-    ax_loss.scatter(firing_rates, binned_loss, label='Original + clipping',
+    ax_loss.scatter(firing_rates, binned_loss, label='Original',
                     color=colors[0], marker='x')
 
     ax_loss.errorbar(firing_rates, mean_loss_dither, yerr=std_loss_dither,
-                     fmt='o', label='UD Surrogate + clipping', color=colors[1],
+                     fmt='o', label='UD Surrogate', color=colors[1],
                      marker='x')
-    ax_loss.set_ylabel('Spike count\ndecrease', fontsize=fontsize)
+    if not CNS:
+        ax_loss.set_ylabel('Spike count\ndecrease', fontsize=fontsize)
 
     ax_loss.set_xlim(left=2. / epoch_length.magnitude, right=65)
     ax_loss.set_ylim(bottom=-0.01, top=0.23)
     ax_loss.tick_params(axis="x", labelsize=8)
     ax_loss.tick_params(axis="y", labelsize=8)
-    ax_loss.legend(fontsize=fontsize - 2,
-                   loc='upper right')
+    if not CNS:
+        ax_loss.legend(fontsize=fontsize - 2,
+                       loc='upper right')
 
     ax_residuals.errorbar(
         firing_rates, -binned_loss + mean_loss_dither, yerr=std_loss_dither,
@@ -730,6 +750,64 @@ def fig_2(folder, sessions, epoch, trialtype, dither, binsize, n_surr,
     fig.savefig('../plots/fig2_spikeloss_r2gstats.pdf')
 
 
+def plot_cns_figure():
+    # settings for the CNS poster
+    fontsize = 10
+
+    fig_loss, ax_loss = plt.subplots(
+        nrows=1, ncols=1,
+        gridspec_kw=dict(
+            # hspace=0.,
+            # height_ratios=(2., 1.),
+            top=0.98,
+            bottom=0.21,
+            left=0.15,
+            right=0.98,
+        ),
+        figsize=(cns_figwidth, 2.),
+    )
+    fig_residual, ax_residual = plt.subplots()
+
+    extra_part = f'{data_type}_' if data_type != 'original' else ''
+    file_nikos = f'{sts_folder}{sessions[0]}/{extra_part}{epoch}_{trialtype}.npy'
+    sts_N = np.load(
+        file_nikos,
+        allow_pickle=True)
+
+    plot_loss_top_panel(
+        ax_loss=ax_loss,
+        ax_residuals=ax_residual,
+        sts=sts_N,
+        binsize=binsize,
+        dither=dither * pq.s,
+        n_surr=n_surr,
+        epoch_length=epoch_length,
+        winlen=winlen,
+        fontsize=fontsize
+    )
+    ax_loss.set_ylabel(
+        'Count decrease',
+        # fontsize=fontsize
+    )
+
+    ax_loss.set_yticks(
+        (0.0, 0.05, 0.1, 0.15))
+    ax_loss.set_ylim(-0.005, 0.155)
+    # ax_loss[0].set_xticks([])
+
+    ax_loss.set_xticks([0, 10, 20, 30, 40, 50, 60])
+    ax_loss.set_xlim(0, 52)
+    ax_loss.set_xlabel(
+        'Average firing rate (Hz)',
+        # fontsize=fontsize
+    )
+    ax_loss.legend(loc='upper left')
+
+    plt.close(fig=fig_residual)
+    plt.show()
+    fig_loss.savefig('../plots/poster_spike_loss.pdf', dpi=300)
+
+
 if __name__ == '__main__':
     import yaml
     from yaml import Loader
@@ -784,6 +862,10 @@ if __name__ == '__main__':
         else:
             sts_folder = f'../data/artificial_data/{data_type}/'
 
-        fig_2(sts_folder, sessions, epoch, trialtype, dither, binsize, n_surr,
-              winlen, epoch_length, sorting_deadtime, sep, fontsize,
-              data_type='original')
+        if not CNS:
+            fig_2(sts_folder, sessions, epoch, trialtype, dither, binsize,
+                  n_surr, winlen, epoch_length, sorting_deadtime, sep,
+                  fontsize, data_type='original')
+        else:
+            plot_cns_figure()
+

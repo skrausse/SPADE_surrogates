@@ -11,6 +11,23 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 import fig5_surrogate_statistics_config as cf
 
+CNS = False
+if CNS:
+    cns_figwidth = 4.
+    import seaborn as sns
+
+    sns.despine(trim=True)
+    sns.color_palette()
+    sns.set()
+    plt.rcParams.update(
+        {'axes.labelsize': 9,
+         'legend.fontsize': 6,
+         'xtick.labelsize': 8,
+         'ytick.labelsize': 8,
+         'xtick.major.pad': -2,
+         'ytick.major.pad': -2,
+         })
+
 
 def plot_clipped_firing_rate(axes_clip):
     """
@@ -135,8 +152,12 @@ def plot_statistical_analysis_of_single_rate(
     """
     axes_insets = []
     for type_id, data_type in enumerate(cf.DATA_TYPES):
+        if not CNS:
+            width, heigth = 0.7, 0.4
+        else:
+            width, heigth = 0.35, 0.3
         axes_insets.append(
-            inset_axes(axes_isi[type_id], 0.7, 0.4))  # (0.7, 0.5)
+            inset_axes(axes_isi[type_id], width, heigth))  # (0.7, 0.5)
         axes_insets[type_id].set_xlim(-0.5, 5.5)        # (0., 7.5)
         axes_insets[type_id].set_ylim(
             0.5 * cf.FIRING_RATE, 1.1*cf.FIRING_RATE)
@@ -402,5 +423,82 @@ def plot_statistics_overview():
     plt.show()
 
 
+def plot_cns_figure():
+    plt.rcParams.update(
+        {'lines.linewidth': cf.SURROGATES_LINEWIDTH,})
+
+    fig, (axes_clip, axes_isi) = plt.subplots(
+        nrows=2, ncols=3,
+        figsize=(cns_figwidth, 2.5),
+        gridspec_kw=dict(
+            wspace=0.,
+            hspace=0.6,
+            bottom=0.15,
+            right=0.78
+        )
+    )
+
+    plot_clipped_firing_rate(axes_clip)
+
+    fig_stub, axes_stub = plt.subplots(
+        nrows=2, ncols=3, )
+
+    plot_statistical_analysis_of_single_rate(
+        axes_isi=axes_isi,
+        axes_ac=axes_stub[0],
+        axes_cc=axes_stub[1]
+    )
+    plt.close(fig=fig_stub)
+
+    for data_type, ax_clip in zip(
+            cf.DATA_TYPES, axes_clip):
+        ax_clip.set_title(data_type)
+        ax_clip.set_xlim(5, 60)
+        ax_clip.set_ylim(0., 0.15)
+
+    for ax_isi in axes_isi:
+        ax_isi.set_yticks([25, 50])
+        ax_isi.set_xticks([0, 20, 40])
+
+    for ax_clip in axes_clip:
+        ax_clip.set_yticks([0., 0.1])
+        ax_clip.set_xticks([10, 30, 50])
+
+    for axes in (axes_clip, axes_isi):
+        for ax in axes[1:]:
+            _hide_y_ticks(ax)
+
+    axes_clip[0].set_ylabel(
+        'Count decrease',
+        labelpad=cf.YLABELPAD, )
+
+    axes_isi[0].set_ylabel(
+        'ISI distribution (1/s)',
+        labelpad=cf.YLABELPAD, )
+
+    # for ax_id, ax_isi in enumerate(axes_isi):
+    #     ax_isi.set_xticks([0, 20, 40])
+    #     if ax_id > 0:
+    #         ax_isi.set_yticks([25, 50], visible=False)
+
+    handles, labels = axes_isi[0].get_legend_handles_labels()
+    legend = fig.legend(handles, labels,
+                        # fontsize='xxx-small',
+                        bbox_to_anchor=(0.995,  # x
+                                        0.75))  # y
+    frame = legend.get_frame()
+    frame.set_facecolor('0.9')
+    frame.set_edgecolor('0.9')
+
+    plt.show()
+    fig.savefig(
+        '../plots/poster_clipped_isi.pdf',
+        dpi=300)
+
+
 if __name__ == '__main__':
-    plot_statistics_overview()
+    if not CNS:
+        plot_statistics_overview()
+    if CNS:
+        plot_cns_figure()
+
