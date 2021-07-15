@@ -53,7 +53,7 @@ def plot_clipped_firing_rate(axes_clip):
             label='original',
             linewidth=cf.ORIGINAL_LINEWIDTH,
             color=cf.COLORS['original'],
-            linestyle=cf.LINE_STYLES['original']
+            linestyle=cf.LINE_STYLES['original'],
         )
         for surr_method in cf.SURR_METHODS:
             axes_clip[type_id].plot(
@@ -61,7 +61,8 @@ def plot_clipped_firing_rate(axes_clip):
                 1. - np.array(ratio_clipped_surr[data_type][surr_method]),
                 label=surr_method,
                 color=cf.COLORS[surr_method],
-                linestyle=cf.LINE_STYLES[surr_method])
+                linestyle=cf.LINE_STYLES[surr_method],
+            )
 
         axes_clip[type_id].set_xlabel(r'$\lambda$ (Hz)',
                                       labelpad=cf.XLABELPAD,)
@@ -75,7 +76,8 @@ def _plot_isi(axes_isi, axes_insets, data_type, type_id, surr_method):
     bin_edges = results['bin_edges']
     hist = results['hist']
 
-    linewidth = cf.ORIGINAL_LINEWIDTH if surr_method == 'original' else 1.
+    linewidth = cf.ORIGINAL_LINEWIDTH \
+        if surr_method == 'original' else cf.SURROGATES_LINEWIDTH
 
     label = cf.LABELS[surr_method] if type_id == 0 else None
 
@@ -100,42 +102,61 @@ def _plot_ac_cc(axes_ac, axes_cc, type_id, data_type,
                 surr_method):
     linewidth = cf.ORIGINAL_LINEWIDTH if surr_method == 'original' else 1.
     for axes, corr_type in zip((axes_ac, axes_cc), ('ac', 'cc')):
-        results = np.load(
-            f'{cf.DATA_PATH}/{corr_type}_{data_type}_{surr_method}.npy',
-            allow_pickle=True).item()
+        if axes is axes_ac:
+            results = np.load(
+                f'{cf.DATA_PATH}/{corr_type}_{data_type}_{surr_method}.npy',
+                allow_pickle=True).item()
 
-        hist_times = results['hist_times']
-        hist = results['hist']
+            hist_times = results['hist_times']
+            hist = results['hist']
 
-        axes[type_id].plot(
-            hist_times,
-            hist,
-            label=surr_method, linewidth=linewidth, color=cf.COLORS[surr_method],
-            linestyle=cf.LINE_STYLES[surr_method])
+            axes[type_id].plot(
+                hist_times,
+                hist,
+                label=surr_method, linewidth=linewidth, color=cf.COLORS[surr_method],
+                linestyle=cf.LINE_STYLES[surr_method])
 
 
-def _label_axes(axes_isi, axes_ac, axes_cc):
-    for axis_isi, axis_cc in zip(axes_isi, axes_cc):
+def _plot_ac(axes_corr, type_id, data_type,
+             surr_method, corr_type='ac'):
+    linewidth = cf.ORIGINAL_LINEWIDTH\
+        if surr_method == 'original' else cf.SURROGATES_LINEWIDTH
+
+    results = np.load(
+        f'{cf.DATA_PATH}/{corr_type}_{data_type}_{surr_method}.npy',
+        allow_pickle=True).item()
+
+    hist_times = results['hist_times']
+    hist = results['hist']
+
+    axes_corr[type_id].plot(
+        hist_times,
+        hist,
+        label=surr_method, linewidth=linewidth, color=cf.COLORS[surr_method],
+        linestyle=cf.LINE_STYLES[surr_method])
+
+
+def _label_axes(axes_isi, axes_ac):
+    for axis_isi, axis_cc in zip(axes_isi, axes_ac):
         for axis in (axis_isi, axis_cc):
             axis.set_xlabel(r'$\tau$ (ms)',
                             labelpad=cf.XLABELPAD,)
 
-    for axis_ac, axis_cc in zip(axes_ac, axes_cc):
+    for axis_ac in axes_ac:
         axis_ac.set_ylim(bottom=cf.AC_BOTTOM * cf.FIRING_RATE,
                          top=cf.AC_TOP * cf.FIRING_RATE)
         axis_ac.set_xlim(left=-cf.AC_CC_XLIM * cf.DITHER,
                          right=cf.AC_CC_XLIM * cf.DITHER)
 
-    for axis_cc in axes_cc:
-        axis_cc.set_ylim(bottom=cf.CC_BOTTOM * cf.FIRING_RATE,
-                         top=cf.CC_TOP * cf.FIRING_RATE)
-        axis_cc.set_xlim(left=-cf.AC_CC_XLIM * cf.DITHER,
-                         right=cf.AC_CC_XLIM * cf.DITHER)
-        axis_cc.set_xticks([-cf.DITHER.magnitude, 0., cf.DITHER.magnitude])
+    # for axis_cc in axes_cc:
+    #     axis_cc.set_ylim(bottom=cf.CC_BOTTOM * cf.FIRING_RATE,
+    #                      top=cf.CC_TOP * cf.FIRING_RATE)
+    #     axis_cc.set_xlim(left=-cf.AC_CC_XLIM * cf.DITHER,
+    #                      right=cf.AC_CC_XLIM * cf.DITHER)
+    #     axis_cc.set_xticks([-cf.DITHER.magnitude, 0., cf.DITHER.magnitude])
 
 
-def plot_statistical_analysis_of_single_rate(
-        axes_isi, axes_ac, axes_cc):
+def plot_statistical_analysis_of_single_rate(axes_isi, axes_ac):
     """
     Plot the ISI-distribution, autocorrelation, cross-correlation for original
     data and its surrogates.
@@ -144,7 +165,6 @@ def plot_statistical_analysis_of_single_rate(
     ----------
     axes_isi : Generator of matplotlib.axes.Axes
     axes_ac : Generator of matplotlib.axes.Axes
-    axes_cc : Generator of matplotlib.axes.Axes
 
     Returns
     -------
@@ -169,17 +189,17 @@ def plot_statistical_analysis_of_single_rate(
     for type_id, data_type in enumerate(cf.DATA_TYPES):
         _plot_isi(axes_isi, axes_insets,
                   data_type, type_id, surr_method='original')
-        _plot_ac_cc(axes_ac, axes_cc, type_id, data_type,
-                    surr_method='original')
+        _plot_ac(axes_ac, type_id, data_type,
+                 surr_method='original')
 
         for surr_method in cf.SURR_METHODS:
             _plot_isi(
                 axes_isi, axes_insets, data_type, type_id, surr_method)
 
-            _plot_ac_cc(axes_ac, axes_cc, type_id, data_type,
-                        surr_method)
+            _plot_ac(axes_ac, type_id, data_type,
+                     surr_method)
 
-    _label_axes(axes_isi, axes_ac, axes_cc)
+    _label_axes(axes_isi, axes_ac)
 
 
 def plot_firing_rate_change(axis):
@@ -325,6 +345,7 @@ def plot_statistics_overview():
     plt.rcParams.update(
         {'lines.linewidth': cf.SURROGATES_LINEWIDTH,
          'xtick.labelsize': 'small',
+         'ytick.labelsize': 'small',
          'axes.labelsize': 'small'})
 
     fig = plt.figure(figsize=cf.FIGSIZE, dpi=300)
@@ -334,16 +355,13 @@ def plot_statistics_overview():
                   cf.distance_left_border + cf.width_figure * left_to_right_id,
                     # bottom
                   cf.distance_bottom_border
-                  - (top_to_bottom_id-3)
-                  * (cf.height_figure + cf.distance_vertical_panels)
-                  # sign is only zero in the last case, allowing to have zero
-                  # distance between the panels
-                  + np.sign(top_to_bottom_id-3) * cf.distance_vertical_panels,
+                  - (top_to_bottom_id-2)
+                  * (cf.height_figure + cf.distance_vertical_panels),
                     # width
                   cf.width_figure,
                     # height
                   cf.height_figure])
-        for left_to_right_id in range(3)] for top_to_bottom_id in range(4)]
+        for left_to_right_id in range(3)] for top_to_bottom_id in range(3)]
 
     right_side_axes = \
         [fig.add_axes(
@@ -357,7 +375,7 @@ def plot_statistics_overview():
                   ])
          for top_to_bottom_id in range(3)]
 
-    axes_clip, axes_isi, axes_ac, axes_cc = axes
+    axes_clip, axes_isi, axes_ac = axes
     axis_cv, axis_moved, axis_step = right_side_axes
 
     axes_clip[0].set_ylabel(r'$1 - N_{clip}/N$',
@@ -369,14 +387,13 @@ def plot_statistics_overview():
     axes_ac[0].set_ylabel('   ACH (1/s)',
                           labelpad=cf.YLABELPAD,
                           )
-    axes_cc[0].set_ylabel('CCH (1/s)      ',
-                          labelpad=cf.YLABELPAD,
-                          )
+    # axes_cc[0].set_ylabel('CCH (1/s)      ',
+    #                       labelpad=cf.YLABELPAD,
+    #                       )
 
     plot_clipped_firing_rate(axes_clip)
 
-    plot_statistical_analysis_of_single_rate(
-        axes_isi, axes_ac, axes_cc)
+    plot_statistical_analysis_of_single_rate(axes_isi, axes_ac)
 
     plot_firing_rate_change(axis_step)
     plot_eff_moved(axis_moved)
@@ -400,7 +417,8 @@ def plot_statistics_overview():
             transform=axis.transAxes, fontsize=15)
 
     for axis in axes_ac:
-        _hide_x_ticks(axis)
+        axis.set_xticks((-40, -20, 0, 20, 40))
+    #     _hide_x_ticks(axis)
 
     for axes_in_row in axes:
         ylims = [axis.get_ylim() for axis in axes_in_row]
@@ -412,9 +430,15 @@ def plot_statistics_overview():
 
     handles, labels = axes_isi[0].get_legend_handles_labels()
 
-    legend = fig.legend(handles, labels, fontsize='x-small',
-                        bbox_to_anchor=(0.93,  # x
-                                        0.98))  # y
+    legend = fig.legend(
+        handles, labels, fontsize='x-small',
+        bbox_to_anchor=(
+            cf.distance_left_border + cf.width_figure * 4
+            + cf.distance_horizontal_panels,  # x
+            cf.distance_bottom_border
+            + 2.75
+            * (cf.height_figure + cf.distance_vertical_panels)), # y
+        ncol=2)
     frame = legend.get_frame()
     frame.set_facecolor('0.9')
     frame.set_edgecolor('0.9')
@@ -446,7 +470,6 @@ def plot_cns_figure():
     plot_statistical_analysis_of_single_rate(
         axes_isi=axes_isi,
         axes_ac=axes_stub[0],
-        axes_cc=axes_stub[1]
     )
     plt.close(fig=fig_stub)
 

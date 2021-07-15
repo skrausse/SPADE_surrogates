@@ -74,10 +74,10 @@ SHAPE_FACTOR = get_shape_factor_from_cv2(CV2)
 
 FIGSIZE = (7.5, 4.5)
 XLABELPAD = -0.5
-YLABELPAD = -0.5
-YLABELPAD2 = -2.5   # for formulae with subscript
-ORIGINAL_LINEWIDTH = 2.2
-SURROGATES_LINEWIDTH = 0.75
+YLABELPAD = 0.5
+YLABELPAD2 = 0.5   # for formulae with subscript
+ORIGINAL_LINEWIDTH = 2.2 * 3/4
+SURROGATES_LINEWIDTH = 0.75 * 3/4
 FONTSIZE = 10
 
 LABELS = {'original': 'original',
@@ -130,6 +130,7 @@ distance_bottom_border = 0.09
 distance_vertical_panels = 0.09
 
 height_figure = (1. - (distance_top_border + distance_bottom_border
-                       + 2. * distance_vertical_panels)) / 4
+                       + 2. * distance_vertical_panels)) / 3
+
 
 height_side_figure = 0.15
