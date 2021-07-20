@@ -98,27 +98,66 @@ def _plot_isi(axes_isi, axes_insets, data_type, type_id, surr_method):
         linestyle=cf.LINE_STYLES[surr_method])
 
 
-def _plot_ac_cc(axes_ac, axes_cc, type_id, data_type,
-                surr_method):
-    linewidth = cf.ORIGINAL_LINEWIDTH if surr_method == 'original' else 1.
-    for axes, corr_type in zip((axes_ac, axes_cc), ('ac', 'cc')):
-        if axes is axes_ac:
-            results = np.load(
-                f'{cf.DATA_PATH}/{corr_type}_{data_type}_{surr_method}.npy',
-                allow_pickle=True).item()
+def _plot_displacement(axes_displacement, data_type, surr_method, type_id):
+    results = np.load(
+        f'{cf.DATA_PATH}/displacement_{data_type}_{surr_method}.npy',
+        allow_pickle=True).item()
 
-            hist_times = results['hist_times']
-            hist = results['hist']
+    bin_edges = results['bin_edges']
+    hist = results['hist']
 
-            axes[type_id].plot(
-                hist_times,
-                hist,
-                label=surr_method, linewidth=linewidth, color=cf.COLORS[surr_method],
-                linestyle=cf.LINE_STYLES[surr_method])
+    linewidth = cf.ORIGINAL_LINEWIDTH \
+        if surr_method == 'original' else cf.SURROGATES_LINEWIDTH
+
+    label = cf.LABELS[surr_method] if type_id == 0 else None
+
+    axes_displacement[type_id].plot(
+        bin_edges[:-1] + (bin_edges[1]-bin_edges[0]) / 2,
+        hist,
+        linewidth=linewidth,
+        label=label,
+        color=cf.COLORS[surr_method],
+        linestyle=cf.LINE_STYLES[surr_method])
 
 
-def _plot_ac(axes_corr, type_id, data_type,
-             surr_method, corr_type='ac'):
+def plot_displacement():
+    fig_displacement, axes_displacement = plt.subplots(
+        1, ncols=len(cf.DATA_TYPES), figsize=(7.5, 2.5),
+        gridspec_kw=dict(bottom=0.2, wspace=0.4, right=0.99, left=0.1))
+    for type_id, data_type in enumerate(cf.DATA_TYPES):
+        axes_displacement[type_id].set_title(data_type)
+        axes_displacement[type_id].set_xlabel(r'$\tau$ in ms')
+        axes_displacement[type_id].set_ylabel(r'p.d.f in 1/s')
+
+        for surr_method in cf.SURR_METHODS:
+            _plot_displacement(
+                axes_displacement, data_type, surr_method, type_id)
+
+    fig_displacement.savefig('../plots/displacement_non_stationary.png', dpi=300)
+
+
+def plot_correlation():
+    fig_cch, axes_cch = plt.subplots(
+        1, ncols=len(cf.DATA_TYPES), figsize=(7.5, 2.5),
+        gridspec_kw=dict(bottom=0.2, wspace=0.4, right=0.99, left=0.1))
+    for type_id, data_type in enumerate(cf.DATA_TYPES):
+        axes_cch[type_id].set_title(data_type)
+        axes_cch[type_id].set_xlabel(r'$\tau$ in ms')
+        axes_cch[type_id].set_ylabel('CCH in 1/s')
+        axes_cch[type_id].set_ylim(55, 130)
+
+        _plot_corr(axes_cch, type_id, data_type,
+                   surr_method='original', corr_type='cc')
+
+        for surr_method in cf.SURR_METHODS:
+            _plot_corr(axes_cch, type_id, data_type,
+                       surr_method, corr_type='cc')
+
+    fig_cch.savefig('../plots/cch_non_stationary_surrogate_original.png', dpi=300)
+
+
+def _plot_corr(axes_corr, type_id, data_type,
+               surr_method, corr_type='ac'):
     linewidth = cf.ORIGINAL_LINEWIDTH\
         if surr_method == 'original' else cf.SURROGATES_LINEWIDTH
 
@@ -136,9 +175,9 @@ def _plot_ac(axes_corr, type_id, data_type,
         linestyle=cf.LINE_STYLES[surr_method])
 
 
-def _label_axes(axes_isi, axes_ac):
-    for axis_isi, axis_cc in zip(axes_isi, axes_ac):
-        for axis in (axis_isi, axis_cc):
+def _label_axes(axes_isi, axes_ac, axes_cc):
+    for axis_isi, axis_ac, axis_cc in zip(axes_isi, axes_ac, axes_cc):
+        for axis in (axis_isi, axis_ac, axis_cc):
             axis.set_xlabel(r'$\tau$ (ms)',
                             labelpad=cf.XLABELPAD,)
 
@@ -147,16 +186,17 @@ def _label_axes(axes_isi, axes_ac):
                          top=cf.AC_TOP * cf.FIRING_RATE)
         axis_ac.set_xlim(left=-cf.AC_CC_XLIM * cf.DITHER,
                          right=cf.AC_CC_XLIM * cf.DITHER)
+        axis_ac.set_xticks([-40, -20, 0, 20, 40])
 
-    # for axis_cc in axes_cc:
-    #     axis_cc.set_ylim(bottom=cf.CC_BOTTOM * cf.FIRING_RATE,
-    #                      top=cf.CC_TOP * cf.FIRING_RATE)
-    #     axis_cc.set_xlim(left=-cf.AC_CC_XLIM * cf.DITHER,
-    #                      right=cf.AC_CC_XLIM * cf.DITHER)
-    #     axis_cc.set_xticks([-cf.DITHER.magnitude, 0., cf.DITHER.magnitude])
+    for axis_cc in axes_cc:
+        axis_cc.set_ylim(bottom=cf.CC_BOTTOM * cf.FIRING_RATE,
+                         top=cf.CC_TOP * cf.FIRING_RATE)
+        axis_cc.set_xlim(left=-cf.AC_CC_XLIM * cf.DITHER,
+                         right=cf.AC_CC_XLIM * cf.DITHER)
+        axis_cc.set_xticks([-40, -20, 0, 20, 40])
 
 
-def plot_statistical_analysis_of_single_rate(axes_isi, axes_ac):
+def plot_statistical_analysis_of_single_rate(axes_isi, axes_ac, axes_cc):
     """
     Plot the ISI-distribution, autocorrelation, cross-correlation for original
     data and its surrogates.
@@ -165,6 +205,7 @@ def plot_statistical_analysis_of_single_rate(axes_isi, axes_ac):
     ----------
     axes_isi : Generator of matplotlib.axes.Axes
     axes_ac : Generator of matplotlib.axes.Axes
+    axes_cc : Generator of matplotlib.axes.Axes
 
     Returns
     -------
@@ -173,7 +214,7 @@ def plot_statistical_analysis_of_single_rate(axes_isi, axes_ac):
     axes_insets = []
     for type_id, data_type in enumerate(cf.DATA_TYPES):
         if not CNS:
-            width, heigth = 0.7, 0.4
+            width, heigth = 0.7, 0.3
         else:
             width, heigth = 0.35, 0.3
         axes_insets.append(
@@ -189,17 +230,21 @@ def plot_statistical_analysis_of_single_rate(axes_isi, axes_ac):
     for type_id, data_type in enumerate(cf.DATA_TYPES):
         _plot_isi(axes_isi, axes_insets,
                   data_type, type_id, surr_method='original')
-        _plot_ac(axes_ac, type_id, data_type,
-                 surr_method='original')
+        _plot_corr(axes_cc, type_id, data_type,
+                   surr_method='original', corr_type='cc')
+        _plot_corr(axes_ac, type_id, data_type,
+                   surr_method='original', corr_type='ac')
 
         for surr_method in cf.SURR_METHODS:
             _plot_isi(
                 axes_isi, axes_insets, data_type, type_id, surr_method)
 
-            _plot_ac(axes_ac, type_id, data_type,
-                     surr_method)
+            _plot_corr(axes_cc, type_id, data_type,
+                       surr_method, corr_type='cc')
+            _plot_corr(axes_ac, type_id, data_type,
+                       surr_method, corr_type='ac')
 
-    _label_axes(axes_isi, axes_ac)
+    _label_axes(axes_isi, axes_ac, axes_cc)
 
 
 def plot_firing_rate_change(axis):
@@ -355,13 +400,13 @@ def plot_statistics_overview():
                   cf.distance_left_border + cf.width_figure * left_to_right_id,
                     # bottom
                   cf.distance_bottom_border
-                  - (top_to_bottom_id-2)
+                  - (top_to_bottom_id-3)
                   * (cf.height_figure + cf.distance_vertical_panels),
                     # width
                   cf.width_figure,
                     # height
                   cf.height_figure])
-        for left_to_right_id in range(3)] for top_to_bottom_id in range(3)]
+        for left_to_right_id in range(3)] for top_to_bottom_id in range(4)]
 
     right_side_axes = \
         [fig.add_axes(
@@ -375,7 +420,7 @@ def plot_statistics_overview():
                   ])
          for top_to_bottom_id in range(3)]
 
-    axes_clip, axes_isi, axes_ac = axes
+    axes_clip, axes_isi, axes_cc, axes_ac = axes
     axis_cv, axis_moved, axis_step = right_side_axes
 
     axes_clip[0].set_ylabel(r'$1 - N_{clip}/N$',
@@ -387,13 +432,13 @@ def plot_statistics_overview():
     axes_ac[0].set_ylabel('   ACH (1/s)',
                           labelpad=cf.YLABELPAD,
                           )
-    # axes_cc[0].set_ylabel('CCH (1/s)      ',
-    #                       labelpad=cf.YLABELPAD,
-    #                       )
+    axes_cc[0].set_ylabel('CCH (1/s)      ',
+                          labelpad=cf.YLABELPAD,
+                          )
 
     plot_clipped_firing_rate(axes_clip)
 
-    plot_statistical_analysis_of_single_rate(axes_isi, axes_ac)
+    plot_statistical_analysis_of_single_rate(axes_isi, axes_ac, axes_cc)
 
     plot_firing_rate_change(axis_step)
     plot_eff_moved(axis_moved)
@@ -404,7 +449,7 @@ def plot_statistics_overview():
 
     for axis_id, axis in enumerate(axes):
         letter_pos_x = -0.25
-        letter_pos_y = 1.05 if axis_id < 3 else 0.8
+        letter_pos_y = 1.05  # if axis_id < 3 else 0.8
         axis[0].text(
             letter_pos_x, letter_pos_y, cf.LETTERS[axis_id],
             transform=axis[0].transAxes, fontsize=15)
@@ -434,9 +479,9 @@ def plot_statistics_overview():
         handles, labels, fontsize='x-small',
         bbox_to_anchor=(
             cf.distance_left_border + cf.width_figure * 4
-            + cf.distance_horizontal_panels,  # x
+            + cf.distance_horizontal_panels + 0.006,  # x
             cf.distance_bottom_border
-            + 2.75
+            + 3.6
             * (cf.height_figure + cf.distance_vertical_panels)), # y
         ncol=2)
     frame = legend.get_frame()
@@ -470,6 +515,7 @@ def plot_cns_figure():
     plot_statistical_analysis_of_single_rate(
         axes_isi=axes_isi,
         axes_ac=axes_stub[0],
+        axes_cc=axes_stub[1]
     )
     plt.close(fig=fig_stub)
 
@@ -520,6 +566,8 @@ def plot_cns_figure():
 
 
 if __name__ == '__main__':
+    # plot_correlation()
+    # plot_displacement()
     if not CNS:
         plot_statistics_overview()
     if CNS:

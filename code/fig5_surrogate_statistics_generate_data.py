@@ -68,45 +68,75 @@ def _create_spiketrain(data_type, rate, t_start, t_stop):
     return spiketrain
 
 
-def _get_dithered_spiketrains(spiketrain, surr_method, n_surrogates):
-    if surr_method == 'UD':
-        dithered_spiketrains = \
-            surr.dither_spikes(
-                spiketrain=spiketrain,
-                dither=DITHER, n_surrogates=n_surrogates)
-    elif surr_method == 'UDD':
-        dithered_spiketrains = \
-            surr.dither_spikes(
-                spiketrain=spiketrain,
-                n_surrogates=n_surrogates,
-                dither=DITHER,
-                refractory_period=10 * pq.ms)
-    elif surr_method == 'JISI-D':
-        dithered_spiketrains = surr.JointISI(
-            spiketrain=spiketrain, dither=DITHER, method='window',
-            cutoff=False, refractory_period=0., sigma=0.
-        ).dithering(n_surrogates=n_surrogates)
-    elif surr_method == 'ISI-D':
-        dithered_spiketrains = surr.JointISI(
-            spiketrain=spiketrain, dither=DITHER, method='window',
-            isi_dithering=True,
-            cutoff=False, refractory_period=0., sigma=0.
-        ).dithering(n_surrogates=n_surrogates)
-    elif surr_method == 'SHIFT-ST':
-        dithered_spiketrains = surr.surrogates(
-            method='trial_shifting',
-            spiketrain=spiketrain, dt=DITHER, trial_length=TRIAL_LENGTH,
-            trial_separation=TRIAL_SEPARATION, n_surrogates=n_surrogates
-        )
-    elif surr_method == 'BIN-SHUFF':
-        dithered_spiketrains = surr.surrogates(
-            method='bin_shuffling',
-            spiketrain=spiketrain,
-            dt=DITHER, bin_size=SPADE_BIN_SIZE,
-            n_surrogates=n_surrogates
-        )
+def _create_non_stationary_spiketrain(data_type, rate, t_start, t_stop):
+    sampling_period = 1.*pq.ms
+    wavelength = 100.*pq.ms
+
+    signal = rate.item() + rate.item() * \
+        np.sin(2.*np.pi *
+               np.arange(
+                   0., t_stop.rescale(pq.ms).item(), sampling_period.item())
+               / wavelength.item())
+
+    rate = neo.AnalogSignal(
+        signal=signal * pq.Hz, t_start=t_start, t_stop=t_stop,
+        sampling_period=sampling_period)
+
+    if data_type == 'Poisson':
+        spiketrain = stg.inhomogeneous_poisson_process(
+            rate=rate)
+    elif data_type == 'PPD':
+        spiketrain = stg.inhomogeneous_poisson_process(
+            rate=rate,
+            refractory_period=DEAD_TIME)
+    elif data_type == 'Gamma':
+        spiketrain = stg.inhomogeneous_gamma_process(
+            rate=rate, shape_factor=SHAPE_FACTOR)
     else:
-        raise ValueError('surr_method is unknown')
+        raise ValueError('data_type should be one of Poisson, PPD, or Gamma')
+    return spiketrain
+
+
+def _get_dithered_spiketrains(spiketrains, surr_method):
+    dithered_spiketrains = []
+    for spiketrain in spiketrains:
+        if surr_method == 'UD':
+            dithered_spiketrain = \
+                surr.dither_spikes(
+                    spiketrain=spiketrain,
+                    dither=DITHER)[0]
+        elif surr_method == 'UDD':
+            dithered_spiketrain = \
+                surr.dither_spikes(
+                    spiketrain=spiketrain,
+                    dither=DITHER,
+                    refractory_period=10 * pq.ms)[0]
+        elif surr_method == 'JISI-D':
+            dithered_spiketrain = surr.JointISI(
+                spiketrain=spiketrain, dither=DITHER, method='window',
+                cutoff=False, refractory_period=0., sigma=0.
+            ).dithering()[0]
+        elif surr_method == 'ISI-D':
+            dithered_spiketrain = surr.JointISI(
+                spiketrain=spiketrain, dither=DITHER, method='window',
+                isi_dithering=True,
+                cutoff=False, refractory_period=0., sigma=0.
+            ).dithering()[0]
+        elif surr_method == 'SHIFT-ST':
+            dithered_spiketrain = surr.surrogates(
+                method='trial_shifting',
+                spiketrain=spiketrain, dt=DITHER, trial_length=TRIAL_LENGTH,
+                trial_separation=TRIAL_SEPARATION,
+            )[0]
+        elif surr_method == 'BIN-SHUFF':
+            dithered_spiketrain = surr.surrogates(
+                method='bin_shuffling',
+                spiketrain=spiketrain,
+                dt=DITHER, bin_size=SPADE_BIN_SIZE,
+            )[0]
+        else:
+            raise ValueError('surr_method is unknown')
+        dithered_spiketrains.append(dithered_spiketrain)
     return dithered_spiketrains
 
 
@@ -128,8 +158,35 @@ def _isi(spiketrain, data_type, surr_method):
     np.save(f'{DATA_PATH}/isi_{data_type}_{surr_method}.npy', results)
 
 
+def _displacement(spiketrain, dithered_spiketrain, data_type, surr_method):
+    spiketrain_mag = spiketrain.rescale(pq.ms).magnitude
+    dithered_spiketrain_mag = np.sort(dithered_spiketrain.rescale(pq.ms).magnitude)
+
+    if len(spiketrain_mag) == len(dithered_spiketrain_mag):
+        displacement = dithered_spiketrain_mag - spiketrain_mag
+    else:
+        displacement = \
+            dithered_spiketrain_mag - spiketrain_mag[:len(dithered_spiketrain_mag)]
+
+    dither_mag = DITHER.rescale(pq.ms).item()
+    hist, bin_edges = np.histogram(
+        a=displacement,
+        bins=np.arange(
+            -dither_mag, dither_mag,
+            BIN_SIZE.rescale(pq.ms).magnitude)
+    )
+
+    # do a proper normalization in 1/s
+    hist = hist * 1000. / len(displacement)
+
+    results = {'hist': hist,
+               'bin_edges': bin_edges}
+
+    np.save(f'{DATA_PATH}/displacement_{data_type}_{surr_method}.npy', results)
+
+
 def _ac_cc(spiketrain, t_stop, data_type, surr_method,
-           spiketrain2=None):
+           spiketrain2):
     binned_st = conv.BinnedSpikeTrain(spiketrain, bin_size=BIN_SIZE)
     ac_hist = corr.cross_correlation_histogram(
         binned_spiketrain_i=binned_st,
@@ -151,12 +208,6 @@ def _ac_cc(spiketrain, t_stop, data_type, surr_method,
 
     np.save(f'{DATA_PATH}/ac_{data_type}_{surr_method}.npy',
             results)
-
-    # no CC is calculated for the original spike train
-    if spiketrain2 is None:
-        np.save(f'{DATA_PATH}/cc_{data_type}_{surr_method}.npy',
-                results)
-        return
 
     binned_st2 = conv.BinnedSpikeTrain(spiketrain2, bin_size=BIN_SIZE)
 
@@ -245,7 +296,7 @@ def _single_clipped_rate_and_eff_moved(rate):
             random.seed(0)
 
             dithered_spiketrain = _get_dithered_spiketrains(
-                spiketrain, surr_method, n_surrogates=1)[0]
+                (spiketrain, ), surr_method)[0]
 
             _clipped_rates_and_eff_moved(
                 spiketrain, dithered_spiketrain,
@@ -271,12 +322,15 @@ def statistical_analysis_of_single_rate():
         random.seed(1)
 
         time_start = time.time()
-        spiketrain = _create_spiketrain(data_type, FIRING_RATE,
-                                        t_start, t_stop)
+        spiketrain = _create_spiketrain(
+            data_type, FIRING_RATE, t_start, t_stop)
+        spiketrain2 = _create_spiketrain(
+            data_type, FIRING_RATE, t_start, t_stop)
 
         _isi(spiketrain, data_type, surr_method='original')
 
-        _ac_cc(spiketrain, t_stop, data_type, surr_method='original')
+        _ac_cc(spiketrain, t_stop, data_type, surr_method='original',
+               spiketrain2=spiketrain)
 
         time_stop = time.time()
         print('orig.', data_type, time_stop - time_start)
@@ -288,12 +342,16 @@ def statistical_analysis_of_single_rate():
             time_start = time.time()
             dithered_spiketrain, dithered_spiketrain2 = \
                 _get_dithered_spiketrains(
-                    spiketrain, surr_method, n_surrogates=2)
+                    (spiketrain, spiketrain2), surr_method)
 
             _isi(dithered_spiketrain, data_type, surr_method)
 
             _ac_cc(dithered_spiketrain, t_stop, data_type, surr_method,
-                   spiketrain2=dithered_spiketrain2)
+                   spiketrain2=spiketrain)
+
+            _displacement(spiketrain, dithered_spiketrain,
+                          data_type, surr_method)
+
             time_stop = time.time()
             print(surr_method, data_type, time_stop-time_start)
 
@@ -533,8 +591,7 @@ def cv_change():
     np.random.seed(1)
     for surr_method in SURR_METHODS:
         dithered_spiketrains = \
-            [_get_dithered_spiketrains(spiketrain, surr_method,
-                                       n_surrogates=1)[0]
+            [_get_dithered_spiketrains((spiketrain,), surr_method,)[0]
              for spiketrain in spiketrains]
         cvs_dithered = [stat.cv(np.diff(spiketrain))
                         for spiketrain in dithered_spiketrains]
@@ -544,10 +601,10 @@ def cv_change():
 
 if __name__ == '__main__':
     print('clipped firing rate and eff_moved')
-    clipped_rates_and_eff_moved()
+    # clipped_rates_and_eff_moved()
     print('statistical analysis of single rate')
     statistical_analysis_of_single_rate()
     print('firing rate change')
-    firing_rate_change()
+    # firing_rate_change()
     print('cv_change')
-    cv_change()
+    # cv_change()

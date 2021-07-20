@@ -130,7 +130,7 @@ distance_bottom_border = 0.09
 distance_vertical_panels = 0.09
 
 height_figure = (1. - (distance_top_border + distance_bottom_border
-                       + 2. * distance_vertical_panels)) / 3
+                       + 3. * distance_vertical_panels)) / 4
 
 
 height_side_figure = 0.15
