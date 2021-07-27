@@ -59,11 +59,11 @@ capitalized_processes = {'ppd': 'PPD', 'gamma': 'Gamma'}
 def create_firing_rate_plots(axes, what_to_plot='rate'):
     xlabel = r'$\lambda$ (Hz)' if what_to_plot == 'rate' else 'CV2'
     color_for_combination = {
-        'all': 'C0', 'only UD': 'C1',
-        'UD & UDD': 'C2', 'other': 'C3'}
+        'all': 'C0', 'UD': 'C1',
+        'UD&\nUDD': 'C2', 'other': 'C3'}
 
-    lines = {'all': None, 'only UD': None,
-             'UD & UDD': None, 'other': None}
+    lines = {'all': None, 'UD': None,
+             'UD&\nUDD': None, 'other': None}
 
     for row_id, (axes_row, session) in enumerate(zip(axes, config['sessions'])):
 
@@ -149,11 +149,11 @@ def create_firing_rate_plots(axes, what_to_plot='rate'):
                     if len(combination) == len(surr_methods):
                         combination = 'all'
                     elif len(combination) == 1 and combination[0] == 'ud':
-                        combination = 'only UD'
+                        combination = 'UD'
                     elif len(combination) == 2 and \
                             combination[1] == 'udrp' and \
                             combination[0] == 'ud':
-                        combination = 'UD & UDD'
+                        combination = 'UD&\nUDD'
                     else:
                         combination = 'other'
 

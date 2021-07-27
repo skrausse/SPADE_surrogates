@@ -660,7 +660,7 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
     ax03.set_xlim(0, 2)
     ax02.set_xlim(0, 0.2)
     ax01.set_ylim(0, 40)
-    ax04.legend(fontsize=params['legend.fontsize'])
+    ax04.legend(fontsize='xx-small')
     plt.text(x=-0.55, y=1.05, s='A', transform=ax01.transAxes, fontsize=10)
 
     # Panel B and C
@@ -718,7 +718,9 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
         loc='lower right',
         fontsize='xx-small')
 
-    plt.savefig('../plots/fig_artificial_data.eps')
+    # convert manually to eps
+    # inkscape fig_artificial_data.pdf --export-eps=fig_artificial_data.eps
+    plt.savefig('../plots/fig_artificial_data.pdf')
     plt.savefig('../plots/fig_artificial_data.png')
     plt.show()
 
