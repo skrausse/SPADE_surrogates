@@ -592,7 +592,7 @@ def cv_change():
     np.random.seed(1)
     for surr_method in SURR_METHODS:
         dithered_spiketrains = \
-            [_get_dithered_spiketrains((spiketrain,), surr_method,)[0]
+            [_get_dithered_spiketrains((spiketrain,), surr_method)[0]
              for spiketrain in spiketrains]
         cvs_dithered = [stat.cv(np.diff(spiketrain))
                         for spiketrain in dithered_spiketrains]

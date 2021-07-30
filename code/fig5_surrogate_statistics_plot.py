@@ -65,7 +65,7 @@ def plot_clipped_firing_rate(axes_clip):
             )
 
         axes_clip[type_id].set_xlabel(r'$\lambda$ (Hz)',
-                                      labelpad=cf.XLABELPAD,)
+                                      labelpad=cf.XLABELPAD)
 
 
 def _plot_isi(axes_isi, axes_insets, data_type, type_id, surr_method):
@@ -143,7 +143,7 @@ def _label_axes(axes_isi, axes_ac, axes_cc):
     for axis_isi, axis_ac, axis_cc in zip(axes_isi, axes_ac, axes_cc):
         for axis in (axis_isi, axis_ac, axis_cc):
             axis.set_xlabel(r'$\tau$ (ms)',
-                            labelpad=cf.XLABELPAD,)
+                            labelpad=cf.XLABELPAD)
 
     for axis_ac in axes_ac:
         axis_ac.set_ylim(bottom=cf.AC_BOTTOM * cf.FIRING_RATE,
@@ -243,9 +243,9 @@ def plot_firing_rate_change(axis):
                   linestyle=cf.LINE_STYLES[surr_method])
 
     axis.set_xlabel(r't (ms)',
-                    labelpad=cf.XLABELPAD,)
+                    labelpad=cf.XLABELPAD)
     axis.set_ylabel(r'$\lambda(t)$ (Hz)',
-                    labelpad=cf.YLABELPAD,)
+                    labelpad=cf.YLABELPAD)
 
     t_stop = cf.DURATION_RATES_STEP.rescale(pq.ms).magnitude
     axis.set_xticks([0., 1/3 * t_stop, 2/3 * t_stop, t_stop])
@@ -287,9 +287,9 @@ def plot_eff_moved(axis):
             linestyle=cf.LINE_STYLES[surr_method])
 
     axis.set_xlabel(r'$\lambda$ (Hz)',
-                    labelpad=cf.XLABELPAD,)
+                    labelpad=cf.XLABELPAD)
     axis.set_ylabel(r'$N_{moved}/N$',
-                    labelpad=cf.YLABELPAD2,)
+                    labelpad=cf.YLABELPAD2)
 
     maximal_rate = cf.RATES[-1]
     axis.set_xticks([1/4 * maximal_rate, 2/4 * maximal_rate,
@@ -325,9 +325,9 @@ def plot_cv_change(axis):
                   color=cf.COLORS[surr_method],
                   linestyle=cf.LINE_STYLES[surr_method])
     axis.set_xlabel('CV - original',
-                    labelpad=cf.XLABELPAD,)
+                    labelpad=cf.XLABELPAD)
     axis.set_ylabel('CV - surrogate',
-                    labelpad=cf.YLABELPAD,)
+                    labelpad=cf.YLABELPAD)
 
 
 def _hide_x_ticks(axis):
