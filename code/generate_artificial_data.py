@@ -1,16 +1,24 @@
+"""
+This script creates the ad-hoc modeled artificial data mimicking experimental
+data's features
+"""
 # -*- coding: utf-8 -*-
 import sys
 import os
+
 import numpy as np
 import quantities as pq
 import elephant.spike_train_generation as stg
 import elephant.statistics as stat
-sys.path.insert(0, '../data/multielectrode_grasp/code/python-neo')
-import neo
-sys.path.append('./')
+
 from scipy.special import gamma as gamma_function
 from scipy.optimize import brentq
 from tqdm import tqdm
+
+sys.path.insert(0, '../data/multielectrode_grasp/code/python-neo')
+import neo
+
+sys.path.append('./')
 
 
 def estimate_rate_deadtime(
@@ -53,12 +61,12 @@ def estimate_rate_deadtime(
     # using Shinomoto rate estimation
     if all(len(trial) > 10 for trial in trial_list):
         rate_list = [stat.instantaneous_rate(
-            spiketrain=trial,
+            spiketrains=trial,
             sampling_period=sampling_period,
             border_correction=True) for trial in trial_list]
     else:
         rate_list = [stat.instantaneous_rate(
-            spiketrain=trial,
+            spiketrains=trial,
             sampling_period=sampling_period,
             kernel=stat.kernels.GaussianKernel(
                 sigma=sigma),
@@ -91,7 +99,7 @@ def estimate_rate_deadtime(
 def estimate_deadtime(spiketrain, max_dead_time):
     """
     Function to calculate the dead time of one spike train.
-    
+
     Parameters
     ----------
     spiketrain : neo.SpikeTrain
@@ -244,11 +252,13 @@ def get_cv_operational_time(spiketrain, rate_list, sep):
             # indices where between which points in real time the spikes lie
             indices = np.searchsorted(real_time, trial)
 
-            # Operational time corresponds to the integral of the firing rate over time
+            # Operational time corresponds to the integral
+            # of the firing rate over time
             operational_time = np.cumsum(
                 (rate*rate.sampling_period).simplified.magnitude)
             operational_time = np.hstack((0., operational_time))
-            # In real time the spikes are first aligned to the left border of the bin.
+            # In real time the spikes are first aligned
+            # to the left border of the bin.
             trial_operational_time = operational_time[indices - 1]
             # the relative position of the spikes in the operational time bins
             positions_in_bins = \
@@ -272,8 +282,7 @@ def get_cv_operational_time(spiketrain, rate_list, sep):
 
         variance_isi = np.sum(
             [np.sum((trial_isi - mean_isi) ** 2) for trial_isi
-             in isis_operational_time]) / \
-                       number_of_isis
+             in isis_operational_time]) / number_of_isis
         cv = np.sqrt(variance_isi) / mean_isi
 
     return cv
@@ -319,7 +328,7 @@ def generate_artificial_data(data, seed, max_refractory, processes,
     gamma_spiketrains = []
     cv2s = []
 
-    for index, spiketrain in tqdm(enumerate(data)):
+    for spiketrain in tqdm(data):
         # estimate statistics
         rate, refractory_period, rate_list = \
             estimate_rate_deadtime(spiketrain=spiketrain,
@@ -342,8 +351,8 @@ def generate_artificial_data(data, seed, max_refractory, processes,
 
         if 'gamma' in processes:
             cv = get_cv_operational_time(spiketrain=spiketrain,
-                                                      rate_list=rate_list,
-                                                      sep=sep)
+                                         rate_list=rate_list,
+                                         sep=sep)
             shape_factor = 1/(cv)**2
             print('cv = ', cv, 'shape_factor = ', shape_factor)
             if np.count_nonzero(rate) != 0:

@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct 15 19:39:08 2014
+Utility functions for Reach-to-Grasp data.
 """
-
-import time
 import os
 import sys
 
 import numpy as np
 import quantities as pq
+
 sys.path.insert(0, '../data/multielectrode_grasp/code/python-neo')
 sys.path.insert(0, '../data/multielectrode_grasp/code/python-odml')
 import neo
+
 sys.path.insert(0, '../data/multielectrode_grasp/code/reachgraspio')
 import reachgraspio as rgio
+
 sys.path.insert(0, '../data/multielectrode_grasp/code')
 from neo_utils import add_epoch, cut_segment_by_epoch, get_events
 
@@ -34,11 +35,11 @@ def data_path(session):
         the path of the given session
 
     """
-    if type(session) == str:
+    if isinstance(session, str):
         path = os.path.dirname(os.getcwd()) + \
                '/data/multielectrode_grasp/datasets/'
-        #path = '../data/multielectrode_grasp/datasets/'
-    elif type(session) == rgio.ReachGraspIO:
+        # path = '../data/multielectrode_grasp/datasets/'
+    elif isinstance(session, rgio.ReachGraspIO):
         fullpath = session.filename
         path = ''
         for s in fullpath.split('/')[:-1]:
@@ -63,10 +64,10 @@ def odml_path(session):
         the path of the given session odml
 
     """
-    if type(session) == str:
+    if isinstance(session, str):
         path = os.path.dirname(os.getcwd()) + \
                '/data/multielectrode_grasp/datasets/'
-        #path = '../data/multielectrode_grasp/datasets/'
+        # path = '../data/multielectrode_grasp/datasets/'
     return path
 
 
@@ -91,6 +92,7 @@ def _session(session_name):
     path_odml = odml_path(session_name)
     session = rgio.ReachGraspIO(path + session_name, odml_directory=path_odml)
     return session
+
 
 def st_id(spiketrain):
     """
@@ -166,7 +168,8 @@ def calc_spiketrains_SNR(session, units='all'):
     """
     session = _session(session)
 
-    block = session.read_block(channel_list=list(range(1, 97)), nsx=[2], units=[],
+    block = session.read_block(
+        channel_list=list(range(1, 97)), nsx=[2], units=[],
         waveforms=True)
 
     sts = [st for st in block.segments[0].spiketrains]
@@ -191,8 +194,9 @@ def calc_spiketrains_SNR(session, units='all'):
 # ==========================================================================
 
 
-def load_session_sts(session_name, units='sua', SNRthresh=0, synchsize=0, dt=None,
-                     dt2=None, verbose=False):
+def load_session_sts(
+        session_name, units='sua', SNRthresh=0, synchsize=0, dt=None,
+        dt2=None, verbose=False):
     """
     Load SUA spike trains of a full specific session from Lilou's data.
 
@@ -233,9 +237,9 @@ def load_session_sts(session_name, units='sua', SNRthresh=0, synchsize=0, dt=Non
         print(('Load data (session: %s)...' % session_name))
 
     block = session.read_block(channels=list(range(1, 97)), nsx_to_load=None,
-                                    units='all', load_waveforms=False)
+                               units='all', load_waveforms=False)
 
-    sts = [st for st in block.segments[0].spiketrains]
+    sts = list(block.segments[0].spiketrains)
 
     if units == 'sua':
         sts = [st for st in sts if st.annotations['sua']]
@@ -247,11 +251,13 @@ def load_session_sts(session_name, units='sua', SNRthresh=0, synchsize=0, dt=Non
         Dt = time_unit if dt is None else dt
         Dt2 = time_unit if dt2 is None else dt2
         if verbose:
-            print('  > remove synchrofacts (precision=%s) of size %d' % \
-                (Dt, synchsize))
-            print('    and their neighbours at distance <= %s...' % Dt2)
-            print('    (# synch. spikes before removal: %d)' % \
-                len(find_synchrofact_spikes(sts, n=synchsize, dt=Dt)[1]))
+            print(f'  > remove synchrofacts (precision={Dt})'
+                  f' of size {synchsize:d}')
+            print(f'    and their neighbours at distance <= {Dt2}...')
+            print(
+                f'    (# synch. spikes before removal: '
+                f'{len(find_synchrofact_spikes(sts, n=synchsize, dt=Dt)[1]):d}'
+                f')')
 
         sts_new = remove_synchrofact_spikes(sts, n=synchsize, dt=Dt, dt2=Dt2)
 
@@ -390,7 +396,8 @@ def load_epoch_as_lists(session_name, epoch, trialtypes=None, SNRthresh=0,
         data_segment,
         properties={
             'trial_event_labels': trigger,
-            'performance_in_trial': session.performance_codes['correct_trial']})
+            'performance_in_trial': session.performance_codes[
+                'correct_trial']})
     start_event = start_events[0]
     epoch = add_epoch(
         data_segment,
@@ -408,7 +415,7 @@ def load_epoch_as_lists(session_name, epoch, trialtypes=None, SNRthresh=0,
         for st in seg.filter({'sua': True}):
             # Check the SNR
             if st.annotations['SNR'] > SNRthresh:
-                sua_id = check_snr(st, seg, seg_id)
+                sua_id = _check_snr(st, seg, seg_id)
                 try:
                     data[sua_id].append(st)
                 except KeyError:
@@ -416,7 +423,7 @@ def load_epoch_as_lists(session_name, epoch, trialtypes=None, SNRthresh=0,
     return data
 
 
-def check_snr(st, seg, seg_id):
+def _check_snr(st, seg, seg_id):
     st.annotations['trial_id'] = seg.annotations[
         'trial_id']
     st.annotations['trial_type'] = seg.annotations[
@@ -429,8 +436,8 @@ def check_snr(st, seg, seg_id):
 
 
 def load_epoch_concatenated_trials(
-    session, epoch, trialtypes=None, SNRthresh=0, synchsize=0, dt=None,
-    dt2=None, sep=100*pq.ms, verbose=False):
+        session, epoch, trialtypes=None, SNRthresh=0, synchsize=0, dt=None,
+        dt2=None, sep=100 * pq.ms, verbose=False):
     """
     Load a slice of Lilou's spike train data in a specified epoch
     (corresponding to a trigger and a time segment aroun it), select spike
@@ -500,8 +507,8 @@ def load_epoch_concatenated_trials(
     Returns:
     --------
     data : list
-        a list of SpikeTrains, each obtained by concatenating all trials of the desired
-        type(s) and during the specified epoch for that SUA.
+        a list of SpikeTrains, each obtained by concatenating all trials
+        of the desired type(s) and during the specified epoch for that SUA.
     """
     # Load the data as a dictionary of SUA_id: [list of trials]
     data = load_epoch_as_lists(session, epoch, trialtypes=trialtypes,
@@ -512,13 +519,15 @@ def load_epoch_concatenated_trials(
     t_pre = abs(list(data.values())[0][0].t_start)
     t_post = abs(list(data.values())[0][0].t_stop)
     if not all([np.all([abs(st.t_start) == t_pre
-        for st in st_list]) for st_list in list(data.values())]):
-            raise ValueError(
-                'SpikeTrains have not same t_pre; cannot be concatenated')
+                        for st in st_list])
+                for st_list in list(data.values())]):
+        raise ValueError(
+            'SpikeTrains have not same t_pre; cannot be concatenated')
     if not all([np.all([abs(st.t_stop) == t_post
-        for st in st_list]) for st_list in list(data.values())]):
-            raise ValueError(
-                'SpikeTrains have not same t_post; cannot be concatenated')
+                        for st in st_list])
+                for st_list in list(data.values())]):
+        raise ValueError(
+            'SpikeTrains have not same t_post; cannot be concatenated')
 
     # Define time unit (nev_unit), trial duration, trial IDs to consider
     time_unit = list(data.values())[0][0].units
@@ -546,9 +555,10 @@ def load_epoch_concatenated_trials(
             trials_to_concatenate = np.hstack(trials_to_concatenate)
 
         # Re-transform the concatenated spikes into a SpikeTrain
-        st = neo.SpikeTrain(trials_to_concatenate * time_unit,
-            t_stop=trial_duration * max(trial_ids_of_chosen_types) +
-                   trial_duration).rescale(pq.s)
+        st = neo.SpikeTrain(
+            trials_to_concatenate * time_unit,
+            t_stop=trial_duration * max(trial_ids_of_chosen_types)
+            + trial_duration).rescale(pq.s)
 
         # Copy into the SpikeTrain the original annotations
         for key, value in list(data[sua_id][0].annotations.items()):
@@ -561,19 +571,23 @@ def load_epoch_concatenated_trials(
         Dt = time_unit if dt is None else dt
         Dt2 = time_unit if dt2 is None else dt2
         if verbose:
-            print('  > remove synchrofacts (precision=%s) of size %d' % \
-                (Dt, synchsize))
-            print('    and their neighbours at distance <= %s...' % Dt2)
-            print('    (# synch. spikes before removal: %d)' % \
-                len(find_synchrofact_spikes(conc_data, n=synchsize, dt=Dt)[1]))
+            sync_spikes_before_removal = len(
+                find_synchrofact_spikes(conc_data, n=synchsize, dt=Dt)[1])
+            print(f'  > remove synchrofacts (precision={Dt}) of'
+                  f' size {synchsize:d}')
+            print(f'    and their neighbours at distance <= {Dt2}...')
+            print(
+                f'    (# synch. spikes before removal: '
+                f'{sync_spikes_before_removal:d})')
 
         sts = remove_synchrofact_spikes(conc_data, n=synchsize, dt=Dt, dt2=Dt2)
-        for i in range(len(conc_data)):
-            sts[i].annotations = conc_data[i].annotations
+        for i, conc_st in enumerate(conc_data):
+            sts[i].annotations = conc_st.annotations
     else:
         sts = conc_data
     # Return the list of SpikeTrains
     return sts
+
 
 # ==========================================================================
 # routines to remove synchrofacts
@@ -620,8 +634,9 @@ def sts2gdf(sts, ids=[]):
     # Rescale all spike trains to that time unit, extract the magnitude
     # and add to the gdf
     for st_idx, st in zip(ids, sts):
-        to_be_added = np.array([[st_idx] * len(st),
-            st.view(pq.Quantity).rescale(time_unit).magnitude]).T
+        to_be_added = np.array(
+            [[st_idx] * len(st),
+             st.view(pq.Quantity).rescale(time_unit).magnitude]).T
         gdf = np.vstack([gdf, to_be_added])
 
     # Eliminate first row in gdf and sort the others by increasing spike times
@@ -632,7 +647,7 @@ def sts2gdf(sts, ids=[]):
     return gdf, time_unit
 
 
-def find_synchrofact_spikes(sts, n=2, dt=0*pq.ms, ids=[]):
+def find_synchrofact_spikes(sts, n=2, dt=0 * pq.ms, ids=[]):
     """
     Given a list *sts* of spike trains, finds spike times composing
     synchronous events (up to a time lag dt) of size n or higher.
@@ -678,23 +693,30 @@ def find_synchrofact_spikes(sts, n=2, dt=0*pq.ms, ids=[]):
 
     idx_synch = []
     time = gdf[0, 1]  # Set the init time for synchrony search to 1st spiketime
-    idx_start, idx_stop = 0, 0                             # starting from the very first spike in the gdf
-    while idx_stop < gdf.shape[0]-2:                       # until end of gdf is reached,
-        while time <= gdf[idx_stop+1,1] < time+dt_dimless: # Until the next spike falls in [time, time+dt)
-            idx_stop += 1                                  # Include that spike in the transaction
-            if idx_stop + 1>= gdf.shape[0]: break             # And stop if end of gdf reached
-        if idx_stop >= idx_start + n - 1:                  # If at least n spikes fall between idx_start and idx_stop
-            idx_synch.extend(                              # extend the range of indexes of synch spikes
+    # starting from the very first spike in the gdf
+    idx_start, idx_stop = 0, 0
+    # until end of gdf is reached,
+    while idx_stop < gdf.shape[0] - 2:
+        # Until the next spike falls in [time, time+dt)
+        while time <= gdf[idx_stop + 1, 1] < time + dt_dimless:
+            # Include that spike in the transaction
+            idx_stop += 1
+            # And stop if end of gdf reached
+            if idx_stop + 1 >= gdf.shape[0]:
+                break
+        # If at least n spikes fall between idx_start and idx_stop
+        if idx_stop >= idx_start + n - 1:
+            idx_synch.extend(  # extend the range of indexes of synch spikes
                 list(range(idx_start, idx_stop + 1)))
-        idx_start += 1                                     # Set new idx_start to the next spike
-        idx_stop = idx_start                               # and idx_stop to idx_start
-        time = gdf[idx_stop, 1]                            # and set the new corresponding spike time
+        idx_start += 1  # Set new idx_start to the next spike
+        idx_stop = idx_start  # and idx_stop to idx_start
+        time = gdf[idx_stop, 1]  # and set the new corresponding spike time
     idx_synch = np.array(np.unique(idx_synch), dtype=int)
 
     # Return transactions of >=n synchronous spikes, and the times of these
     # transactions (first spike time in each transaction)
-    return gdf[idx_synch][:, 0], gdf[idx_synch][:, 1] * time_unit, \
-        dt_dimless * time_unit
+    return (gdf[idx_synch][:, 0], gdf[idx_synch][:, 1] * time_unit,
+            dt_dimless * time_unit)
 
 
 def find_synchronous_events(sts, n, dt, ids=[]):
@@ -755,23 +777,29 @@ def find_synchronous_events(sts, n, dt, ids=[]):
     idx_synch = []
     time = gdf[0, 1]  # Set the init time for synchrony search to 1st spiketime
     event_ids = np.array([])
-    idx_start, idx_stop, event_id = 0, 0, 0                # starting from the very first spike in the gdf
-    while idx_stop < gdf.shape[0]-2:                       # until end of gdf is reached,
-        while time <= gdf[idx_stop+1,1] < time+dt_dimless: # Until the next spike falls in [time, time+dt)
-            idx_stop += 1                                  # Include that spike in the transaction
-            if idx_stop >= gdf.shape[0]: break             # And stop if end of gdf reached
-        if idx_stop >= idx_start + n - 1:                  # If at least n spikes fall between idx_start and idx_stop
-            idx_synch.extend(                              # extend the range of indexes of synch spikes
+    # starting from the very first spike in the gdf
+    idx_start, idx_stop, event_id = 0, 0, 0
+    while idx_stop < gdf.shape[0] - 2:  # until end of gdf is reached,
+        # Until the next spike falls in [time, time+dt)
+        while time <= gdf[idx_stop + 1, 1] < time + dt_dimless:
+            idx_stop += 1  # Include that spike in the transaction
+            # And stop if end of gdf reached
+            if idx_stop >= gdf.shape[0]:
+                break
+        # If at least n spikes fall between idx_start and idx_stop
+        if idx_stop >= idx_start + n - 1:
+            idx_synch.extend(  # extend the range of indexes of synch spikes
                 list(range(idx_start, idx_stop + 1)))
-            event_ids = np.hstack(                      # and the indexes of synchronous events
-                [event_ids, [event_id]*(idx_stop + 1 - idx_start)])
-            event_id += 1                                  # and increase the event id
-        idx_start = max(idx_stop, idx_start + 1)           # Set new idx_start to the next spike
-        idx_stop = idx_start                               # and idx_stop to idx_start
-        time = gdf[idx_stop, 1]                            # and set the new corresponding spike time
+            event_ids = np.hstack(  # and the indexes of synchronous events
+                [event_ids, [event_id] * (idx_stop + 1 - idx_start)])
+            event_id += 1  # and increase the event id
+        # Set new idx_start to the next spike
+        idx_start = max(idx_stop, idx_start + 1)
+        idx_stop = idx_start  # and idx_stop to idx_start
+        time = gdf[idx_stop, 1]  # and set the new corresponding spike time
     idx_synch = np.array(np.unique(idx_synch), dtype=int)
-    return gdf[idx_synch][:, 0], event_ids, gdf[idx_synch][:, 1] * time_unit, \
-        dt_dimless * time_unit
+    return (gdf[idx_synch][:, 0], event_ids, gdf[idx_synch][:, 1] * time_unit,
+            dt_dimless * time_unit)
 
 
 def remove_synchrofact_spikes(sts, n=2, dt=0 * pq.ms, dt2=0 * pq.ms):
@@ -810,9 +838,10 @@ def remove_synchrofact_spikes(sts, n=2, dt=0 * pq.ms, dt2=0 * pq.ms):
     # Return "cleaned" spike trains
     if len(times) == 0:
         return sts
-    else:
-        sts2 = []      # initialize the list of new spike trains
-        for st in sts: # and copy in it the original ones devoided of the synchrony times
-            t_0 = time.time()
-            sts2.append(st.take(np.where([np.abs(t-times).min()>dt2 for t in st])[0]))
-        return sts2
+
+    sts2 = []  # initialize the list of new spike trains
+    # and copy in it the original ones devoided of the synchrony times
+    for st in sts:
+        sts2.append(st.take(np.where(
+            [np.abs(t - times).min() > dt2 for t in st])[0]))
+    return sts2

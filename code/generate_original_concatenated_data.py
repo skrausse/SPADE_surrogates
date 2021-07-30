@@ -1,3 +1,7 @@
+"""
+This script loads the experimental spike train data from the 'multielectrode
+grasp' folder and saves them as concatenated spike trains.
+"""
 import os
 
 import numpy as np

@@ -54,7 +54,7 @@ data = []
 for st in seg.filter({'sua': True}):
     # Check the SNR
     if st.annotations['SNR'] > 2.5:
-        rgutils.check_snr(st, seg, seg_id)
+        rgutils._check_snr(st, seg, seg_id)
         data.append(st.rescale(pq.ms) - t_pre)
 
 # List of event labels that we want to consider

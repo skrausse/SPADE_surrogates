@@ -1,7 +1,9 @@
+"""
+Basic test if the exclusion of too high rate neurons work.
+"""
 import numpy as np
 import yaml
 import quantities as pq
-import itertools
 
 with open("configfile.yaml", 'r') as stream:
     config = yaml.load(stream, Loader=yaml.Loader)
@@ -28,29 +30,3 @@ excluded_neurons_experimental = np.load(
 
 print(excluded_neurons_artificial)
 print(excluded_neurons_experimental)
-
-# for process, session, epoch, trialtype \
-#         in itertools.product(processes, sessions, epochs, trialtypes):
-#     # Loading data
-#     sts = np.load(f'../data/artificial_data/{process}/{session}'
-#                   f'/{process}_{epoch}_{trialtype}.npy',
-#                   allow_pickle=True)
-#     sts = list(sts)
-#
-#     # Generate dict annotations
-#     annotations_dict = {}
-#     for st_idx, st in enumerate(sts):
-#         annotations_dict[st_idx] = st.annotations
-#
-#     # pop neurons out if there is a firing rate threshold
-#     if firing_rate_threshold is not None:
-#         try:
-#             excluded_neurons = np.load('excluded_neurons.npy',
-#                                    allow_pickle=True).item()[session]
-#             for neuron in excluded_neurons:
-#                 sts.pop(int(neuron))
-#         except FileNotFoundError:
-#             print('excluded neurons list is not yet computed: '
-#                   'run estimate_number_occurrences script')
-#     print(process, session, epoch, trialtype)
-#     print(len(sts))
