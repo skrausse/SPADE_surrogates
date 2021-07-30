@@ -562,10 +562,10 @@ def fig_2(folder, sessions, epoch, trialtype, dither, binsize, n_surr,
           winlen, epoch_length, sorting_deadtime, sep, fontsize,
           data_type='original'):
     # big gridspec
-    fig = plt.figure(figsize=(5., 5), dpi=300)
+    fig = plt.figure(figsize=(5.2, 5.5), dpi=300)
     gsfig = gridspec.GridSpec(
         nrows=3, ncols=1, figure=fig, hspace=0.4, wspace=0.2,
-        left=0.13, right=0.99, bottom=0.075, top=0.95,
+        left=0.12, right=0.97, bottom=0.075, top=0.95,
         height_ratios=(1.25, 1., 0.75))
 
     # ################### Panel A ####################
