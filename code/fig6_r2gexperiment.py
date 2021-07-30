@@ -1,10 +1,17 @@
+"""
+Script to create Fig 6 which explains the segmentation of the experimental
+data.
+"""
 import quantities as pq
-import matplotlib.pyplot as plt
 import neo
+from neo.utils import add_epoch, cut_segment_by_epoch, get_events
+
+import matplotlib.pyplot as plt
 from viziphant.rasterplot import rasterplot
 from viziphant.events import add_event
+
 import rgutils
-from neo.utils import add_epoch, cut_segment_by_epoch, get_events
+
 
 trialtypes = 'PGHF'
 
@@ -51,12 +58,14 @@ for st in seg.filter({'sua': True}):
         data.append(st.rescale(pq.ms) - t_pre)
 
 # List of event labels that we want to consider
-event_name_to_plot = ['TS-ON', 'WS-ON', 'CUE-ON', 'CUE-OFF', 'GO-ON', 'SR', 'RW-ON']
+event_name_to_plot = ['TS-ON', 'WS-ON', 'CUE-ON', 'CUE-OFF',
+                      'GO-ON', 'SR', 'RW-ON']
 # Get the list of events of the first trial
 all_events = seg.events[0]
 # Get the most relevant events in trial
-ev_idx = [i for i, val in enumerate(all_events.array_annotations['trial_event_labels']
-                                    ) if val in set(event_name_to_plot)]
+ev_idx = [i for i, val
+          in enumerate(all_events.array_annotations['trial_event_labels'])
+          if val in set(event_name_to_plot)]
 events = all_events[ev_idx].rescale(pq.ms)
 
 fig, axes = plt.subplots(1, 1, figsize=(5.5, 2.8), dpi=300)
@@ -71,22 +80,28 @@ events.times.rescale(pq.ms)
 
 # epochs
 # start
-axes.axvspan(events[0] - 250 * pq.ms, events[0] + 250 * pq.ms, alpha=1, color='red', fill=False,
+axes.axvspan(events[0] - 250 * pq.ms, events[0] + 250 * pq.ms,
+             alpha=1, color='red', fill=False,
              linewidth=3, ymin=0.01, ymax=0.98)
 # cue1
-axes.axvspan(events[1] - 0.25 * pq.s, events[1] + 0.25 * pq.s, alpha=1, color='orange', fill=False,
+axes.axvspan(events[1] - 0.25 * pq.s, events[1] + 0.25 * pq.s,
+             alpha=1, color='orange', fill=False,
              linewidth=3, ymin=0.01, ymax=0.98)
 # early delay
-axes.axvspan(events[2] - 0 * pq.s, events[2] + 0.5 * pq.s, alpha=1, color='yellow', fill=False,
+axes.axvspan(events[2] - 0 * pq.s, events[2] + 0.5 * pq.s,
+             alpha=1, color='yellow', fill=False,
              linewidth=3, ymin=0.01, ymax=0.98)
 # late delay
-axes.axvspan(events[4] - 0.5 * pq.s, events[4] + 0. * pq.s, alpha=1, color='green', fill=False,
+axes.axvspan(events[4] - 0.5 * pq.s, events[4] + 0. * pq.s,
+             alpha=1, color='green', fill=False,
              linewidth=3, ymin=0.01, ymax=0.98)
 # movement
-axes.axvspan(events[5] - 0.2 * pq.s, events[5] + 0.3 * pq.s, alpha=1, color='blue', fill=False,
+axes.axvspan(events[5] - 0.2 * pq.s, events[5] + 0.3 * pq.s,
+             alpha=1, color='blue', fill=False,
              linewidth=3, ymin=0.01, ymax=0.98)
 # purple
-axes.axvspan(events[6] - 0.5 * pq.s, events[6] + 0.0 * pq.s, alpha=1, color='purple', fill=False,
+axes.axvspan(events[6] - 0.5 * pq.s, events[6] + 0.0 * pq.s,
+             alpha=1, color='purple', fill=False,
              linewidth=3, ymin=0.01, ymax=0.98)
 
 # plots

@@ -1,17 +1,22 @@
+"""
+Script to create Fig 7 that shows the statistics of artificial data and the
+false positives when analyzing these data with SPADE.
+"""
 import itertools
+import os
 
 import numpy as np
 import quantities as pq
+import elephant
+
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.pylab as pylab
 
+import fig_cv2s_in_fps
 from fig2_spikeloss_r2gstats import get_cv2
 from generate_artificial_data import estimate_rate_deadtime, \
     create_st_list, estimate_deadtime
-import elephant
-import os
-import fig_cv2s_in_fps
 
 CNS = False
 if CNS:
@@ -94,8 +99,9 @@ def cut_firing_rate_into_trials(rate, epoch_length, sep, sampling_period):
     while stop_index < len_rate:
         cut_rate = rate[start_index: stop_index]
         trials_rate.append(cut_rate)
-        start_index += int((epoch_length / sampling_period).simplified.magnitude
-                           + (sep / sampling_period).simplified.magnitude)
+        start_index += int(
+            (epoch_length / sampling_period).simplified.magnitude
+            + (sep / sampling_period).simplified.magnitude)
         stop_index = int(start_index + (
                 epoch_length / sampling_period).simplified.magnitude)
     return np.array(trials_rate)
@@ -152,34 +158,52 @@ def plot_trial_firing_rate(ax, sts, gamma, ppd, neuron, max_refractory, sep,
         rate_dict[process] = rate
         rp_dict[process] = refractory_period
 
-    cut_trials_original = cut_firing_rate_into_trials(rate_dict['original'],
-                                                      epoch_length=epoch_length,
-                                                      sep=sep,
-                                                      sampling_period=sampling_period)
-    cut_trials_gamma = cut_firing_rate_into_trials(rate_dict['gamma'],
-                                                   epoch_length=epoch_length,
-                                                   sep=sep,
-                                                   sampling_period=sampling_period)
-    cut_trials_ppd = cut_firing_rate_into_trials(rate_dict['ppd'],
-                                                 epoch_length=epoch_length,
-                                                 sep=sep,
-                                                 sampling_period=sampling_period)
+    cut_trials_original = cut_firing_rate_into_trials(
+        rate_dict['original'],
+        epoch_length=epoch_length,
+        sep=sep,
+        sampling_period=sampling_period)
+    cut_trials_gamma = cut_firing_rate_into_trials(
+        rate_dict['gamma'],
+        epoch_length=epoch_length,
+        sep=sep,
+        sampling_period=sampling_period)
+    cut_trials_ppd = cut_firing_rate_into_trials(
+        rate_dict['ppd'],
+        epoch_length=epoch_length,
+        sep=sep,
+        sampling_period=sampling_period)
     x = np.arange(0, int(epoch_length.rescale(pq.ms).magnitude /
                          sampling_period.rescale(pq.ms).magnitude))
     ax.plot(np.squeeze(np.mean(cut_trials_original, axis=0)), label='original')
-    ax.fill_between(x, np.squeeze(np.mean(cut_trials_original, axis=0) - np.std(cut_trials_original, axis=0)),
-                    np.squeeze(np.mean(cut_trials_original, axis=0) + np.std(cut_trials_original, axis=0)),
-                    alpha=0.2)
+    ax.fill_between(
+        x,
+        np.squeeze(np.mean(cut_trials_original, axis=0)
+                   - np.std(cut_trials_original, axis=0)),
+        np.squeeze(np.mean(cut_trials_original, axis=0)
+                   + np.std(cut_trials_original, axis=0)),
+        alpha=0.2)
     ax.plot(np.squeeze(np.mean(cut_trials_ppd, axis=0)), label='ppd')
-    ax.fill_between(x, np.squeeze(np.mean(cut_trials_ppd, axis=0) - np.std(cut_trials_ppd, axis=0)),
-                    np.squeeze(np.mean(cut_trials_ppd, axis=0) + np.std(cut_trials_ppd, axis=0)),
-                    alpha=0.2)
+    ax.fill_between(
+        x,
+        np.squeeze(np.mean(cut_trials_ppd, axis=0)
+                   - np.std(cut_trials_ppd, axis=0)),
+        np.squeeze(np.mean(cut_trials_ppd, axis=0)
+                   + np.std(cut_trials_ppd, axis=0)),
+        alpha=0.2)
     ax.plot(np.squeeze(np.mean(cut_trials_gamma, axis=0)), label='gamma')
-    ax.fill_between(x, np.squeeze(np.mean(cut_trials_gamma, axis=0) - np.std(cut_trials_gamma, axis=0)),
-                    np.squeeze(np.mean(cut_trials_gamma, axis=0) + np.std(cut_trials_gamma, axis=0)),
-                    alpha=0.2)
-    plt.ylim(min(np.squeeze(np.mean(cut_trials_ppd, axis=0) - np.std(cut_trials_ppd, axis=0))) - 10,
-             max(np.squeeze(np.mean(cut_trials_ppd, axis=0) + np.std(cut_trials_ppd, axis=0))) + 10)
+    ax.fill_between(
+        x,
+        np.squeeze(np.mean(cut_trials_gamma, axis=0)
+                   - np.std(cut_trials_gamma, axis=0)),
+        np.squeeze(np.mean(cut_trials_gamma, axis=0)
+                   + np.std(cut_trials_gamma, axis=0)),
+        alpha=0.2)
+    plt.ylim(
+        min(np.squeeze(np.mean(cut_trials_ppd, axis=0)
+                       - np.std(cut_trials_ppd, axis=0))) - 10,
+        max(np.squeeze(np.mean(cut_trials_ppd, axis=0)
+                       + np.std(cut_trials_ppd, axis=0))) + 10)
     ax.set_xlabel('time (ms)', fontsize=fontsize,
                   labelpad=xlabelpad)
     if not CNS:
@@ -219,15 +243,15 @@ def plot_dead_time(
     # loop over the neurons
     rp_dict = {'original': [], 'ppd': [], 'gamma': []}
     for neuron in range(len(sts)):
-        for key in rp_dict.keys():
+        for key, rp_list in rp_dict.items():
             rp = estimate_deadtime(
                 processes[key][neuron],
                 max_dead_time=max_refractory)
-            rp_dict[key].append(rp.magnitude * 1000)  # append dead time in ms.
+            rp_list.append(rp.magnitude * 1000)  # append dead time in ms.
 
     bins = np.arange(0, 4, 0.1)
-    for key in rp_dict.keys():
-        ax.hist(rp_dict[key], bins=bins, alpha=1, label=key, histtype='step')
+    for key, rp in rp_dict.items():
+        ax.hist(rp, bins=bins, alpha=1, label=key, histtype='step')
     ax.legend(loc='upper right', fontsize=fontsize - 4)
     ax.set_title('Dead time of all units', fontsize=fontsize)
     ax.set_ylabel('Count', fontsize=fontsize, labelpad=0.1)
@@ -235,8 +259,8 @@ def plot_dead_time(
     ax.set_xlabel(xlabel, fontsize=fontsize,
                   labelpad=xlabelpad)
     ax.set_ylim(
-        [0, max([max(np.histogram(rp_dict[key], bins)[0])
-                 for key in rp_dict.keys()]) + 5])
+        [0, max([max(np.histogram(rp, bins)[0])
+                 for rp in rp_dict.values()]) + 5])
 
 
 def plot_isi(ax, sts, gamma, ppd, neuron, fontsize):
@@ -264,7 +288,7 @@ def plot_isi(ax, sts, gamma, ppd, neuron, fontsize):
     ppd_st = ppd[neuron]
     isi_dict = {'original': [], 'ppd': [], 'gamma': []}
     list_st = [st, ppd_st, gamma_st]
-    for index, key in enumerate(isi_dict.keys()):
+    for index, key in enumerate(isi_dict):
         isi = elephant.statistics.isi(list_st[index])
         isi_dict[key].append(isi)
     bins = np.arange(0, 0.3, 0.01)
@@ -302,7 +326,7 @@ def plot_cv2(ax, sts, gamma, ppd, sep, fontsize):
             (sts, ppd, gamma)):
         cv2_list = []
         # loop over the neurons
-        for neuron, conc_st in enumerate(conc_spiketrains):
+        for conc_st in conc_spiketrains:
             trial_list = create_st_list(conc_st, sep=sep)
             isis = [np.diff(st.magnitude)
                     for st in trial_list
@@ -313,8 +337,8 @@ def plot_cv2(ax, sts, gamma, ppd, sep, fontsize):
         cv2_dict[process].append(cv2_array)
 
     bins = np.arange(0, 1.5, 0.1)
-    for key in cv2_dict.keys():
-        ax.hist(cv2_dict[key], bins, alpha=1, label=key, histtype='step')
+    for key, cv2 in cv2_dict.items():
+        ax.hist(cv2, bins, alpha=1, label=key, histtype='step')
     ax.set_title('CV2 of all units', fontsize=fontsize)
     ax.set_ylabel('Count', fontsize=fontsize, labelpad=0.1)
     ax.set_xlabel('CV2', fontsize=fontsize,
@@ -562,7 +586,7 @@ def plot_number_fps(
     fps = calculate_fps(sessions=sessions,
                         surrogate_methods=surrogate_methods)[index]
 
-    number_datasets = 48  # TODO: Remove hardcoded number of datasets
+    number_datasets = 48
     for index_surr, surrogate in enumerate(surrogate_methods):
         print(process, surrogate, fps[surrogate])
         ax_num_fps.bar(index_surr,
@@ -726,6 +750,10 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
 
 
 def plot_cns_figure_statistics():
+    """
+    Create the figure for the CNS poster showing the statistics of the
+    artificial data.
+    """
     fig, axes = plt.subplots(
         nrows=2,
         ncols=2,
@@ -766,7 +794,9 @@ def plot_cns_figure_statistics():
 
 
 def plot_cns_figure_number_fps():
-
+    """
+    Create the figure for the CNS poster showing the number of false positives.
+    """
     fig, axes = plt.subplots(
         nrows=1,
         ncols=2,
@@ -850,4 +880,3 @@ if __name__ == "__main__":
     else:
         plot_cns_figure_number_fps()
         plot_cns_figure_statistics()
-

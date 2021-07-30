@@ -44,6 +44,15 @@ def _get_mean_optimized_pvalue_spec(setup):
 
 
 def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
+    """
+    Function creates the plot comparing to p-value spectra.
+
+    Parameters
+    ----------
+    setup1: cf.TestCaseSetUp
+    setup2: cf.TestCaseSetUp
+
+    """
     cmap = 'Blues_r'
     scatter_size = 75.
 
@@ -133,6 +142,16 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
 
 
 def plot_flattened_pvalue_spectra(setup1, setup2):
+    """
+    Function creates a plot comparing to p-value spectra, showing the p-values
+    as function of each other.
+
+    Parameters
+    ----------
+    setup1: cf.TestCaseSetUp
+    setup2: cf.TestCaseSetUp
+
+    """
 
     plt.rcParams.update({'font.size': 12,
                          'text.usetex': True})
@@ -155,17 +174,8 @@ def plot_flattened_pvalue_spectra(setup1, setup2):
                     pvalues2.append(0.)
 
     ax.scatter(np.array(pvalues1), np.array(pvalues2))
-    # ax.scatter(np.log(np.array(pvalues1)), np.log(np.array(pvalues2)))
-    # ax.set_xscale('log')
-    # ax.set_yscale('log')
     ax.set_xlabel('p-values GT')
     ax.set_ylabel('p-values UD')
-    # ax.set_xlabel('log(p-values GT)')
-    # ax.set_ylabel('log(p-values UD)')
-    # ax.set_xlim(-0.05, 1.05)
-    # ax.set_ylim(-0.05, 1.05)
-    # fig.savefig('../../plots/pvalue-comparison_loglog_3')
-    # plt.show()
 
 
 if __name__ == '__main__':

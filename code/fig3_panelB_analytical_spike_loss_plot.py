@@ -35,8 +35,8 @@ def firing_rate_clipped_gamma(firing_rate, shape_factor, bin_size):
         return firing_rate_clipped
 
     return firing_rate * \
-       (1. - 1. / gamma(shape_factor) *
-        (gamma(shape_factor) *
+        (1. - 1. / gamma(shape_factor) *
+         (gamma(shape_factor) *
          gammainc(shape_factor, shape_factor * firing_rate * bin_size)
          - gamma(shape_factor + 1) *
          gammainc(shape_factor + 1,

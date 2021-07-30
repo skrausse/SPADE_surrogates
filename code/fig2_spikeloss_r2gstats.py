@@ -1,5 +1,6 @@
 """
-Script to create Fig 2 of the manuscript
+Script to create Fig 2 of the manuscript which shows the spike count reduction
+found in experimental data.
 """
 import itertools
 

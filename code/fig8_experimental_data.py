@@ -1,3 +1,6 @@
+"""
+Script to create Fig 8 that shows the patterns shown in the experimental data.
+"""
 import matplotlib.pyplot as plt
 import numpy as np
 import quantities as pq
@@ -96,7 +99,7 @@ def create_dictionaries_statistics(surrogate, results, sessions, trialtypes,
             length[session_name][epoch] = []
 
             # Loops across all trialtypes
-            for tt_id, tt in enumerate(trialtypes):
+            for tt in trialtypes:
                 if epoch_id == 0:
                     # Initializing Dictionaries for the statistics
                     # for one trialtype
@@ -148,8 +151,8 @@ def create_dictionaries_statistics(surrogate, results, sessions, trialtypes,
                 hist_spikes[session_name] += np.histogram(
                     num_spikes[session_name][epoch], bins=np.arange(0, 10))[0]
 
-    return num_patt, lags, num_spikes, length, max_patt_per_ep, hist_spikes, \
-        hist_lags
+    return (num_patt, lags, num_spikes, length, max_patt_per_ep, hist_spikes,
+            hist_lags)
 
 
 def plot_experimental_data_results(surrogates, tag_surrogates,
@@ -206,18 +209,18 @@ def plot_experimental_data_results(surrogates, tag_surrogates,
     num_subplots = 1
     for index, surrogate in enumerate(surrogates):
         results = 'results_' + surrogate
-        num_patt, lags, num_spikes, length, max_patt_per_ep,\
-            hist_spikes, hist_lags = \
-                create_dictionaries_statistics(surrogate=surrogate,
-                                               results=results,
-                                               sessions=sessions,
-                                               trialtypes=trialtypes,
-                                               epoch_tags=epoch_tags,
-                                               binsize=binsize,
-                                               winlen=winlen)
+        num_patt = create_dictionaries_statistics(
+            surrogate=surrogate,
+            results=results,
+            sessions=sessions,
+            trialtypes=trialtypes,
+            epoch_tags=epoch_tags,
+            binsize=binsize,
+            winlen=winlen)[0]
         for session_index, session_name in enumerate(sessions):
-            # Dictionary to keep track of which trial type has already been plotted
-            label_already_assigned = dict([(tt, False) for tt in trialtypes])
+            # Dictionary to keep track of which trial type
+            # has already been plotted
+            label_already_assigned = {tt: False for tt in trialtypes}
 
             # Panel A
             # Initializing the axis for number of patterns
@@ -317,7 +320,7 @@ if __name__ == "__main__":
                   'joint_isi_dithering',
                   'isi_dithering'
                   'trial_shifting',
-                  'bin_shuffling',]
+                  'bin_shuffling']
     tag_surrogates = ['UD', 'UDD', 'JISI-D', 'ISI-D', 'TR-SHIFT', 'BIN-SHUFF']
     plot_experimental_data_results(surrogates=surrogates,
                                    tag_surrogates=tag_surrogates,

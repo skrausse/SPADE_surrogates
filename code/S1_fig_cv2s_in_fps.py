@@ -1,3 +1,7 @@
+"""
+Script to create S1 Fig that shows the CV2 of the experimental data
+(especially for neurons that are part of patterns).
+"""
 import itertools
 import os
 from collections import defaultdict
@@ -65,7 +69,8 @@ def create_firing_rate_plots(axes, what_to_plot='rate'):
     lines = {'all': None, 'UD': None,
              'UD&\nUDD': None, 'other': None}
 
-    for row_id, (axes_row, session) in enumerate(zip(axes, config['sessions'])):
+    for row_id, (axes_row, session) \
+            in enumerate(zip(axes, config['sessions'])):
 
         for ax, process in zip(axes_row, config['processes']):
             ax.set_yticks(
@@ -100,7 +105,8 @@ def create_firing_rate_plots(axes, what_to_plot='rate'):
                 if what_to_plot == 'rate':
                     n_trials = int(
                         (spiketrains[0].t_stop.simplified.item()
-                         - spiketrains[0].t_start.simplified.item()) / (epoch_length + sep))
+                         - spiketrains[0].t_start.simplified.item())
+                        / (epoch_length + sep))
 
                     effective_length = n_trials * epoch_length
 
@@ -132,7 +138,8 @@ def create_firing_rate_plots(axes, what_to_plot='rate'):
                         continue
 
                     neurons_per_method[surr_method] = np.unique(
-                        np.hstack([pattern['neurons'] for pattern in patterns]))
+                        np.hstack([pattern['neurons']
+                                   for pattern in patterns]))
                     all_neurons = np.unique(np.hstack(
                         (all_neurons, neurons_per_method[surr_method])))
 

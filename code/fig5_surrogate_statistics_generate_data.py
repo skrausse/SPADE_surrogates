@@ -160,13 +160,14 @@ def _isi(spiketrain, data_type, surr_method):
 
 def _displacement(spiketrain, dithered_spiketrain, data_type, surr_method):
     spiketrain_mag = spiketrain.rescale(pq.ms).magnitude
-    dithered_spiketrain_mag = np.sort(dithered_spiketrain.rescale(pq.ms).magnitude)
+    dithered_spiketrain_mag = np.sort(
+        dithered_spiketrain.rescale(pq.ms).magnitude)
 
     if len(spiketrain_mag) == len(dithered_spiketrain_mag):
         displacement = dithered_spiketrain_mag - spiketrain_mag
     else:
-        displacement = \
-            dithered_spiketrain_mag - spiketrain_mag[:len(dithered_spiketrain_mag)]
+        displacement = dithered_spiketrain_mag \
+                       - spiketrain_mag[:len(dithered_spiketrain_mag)]
 
     dither_mag = DITHER.rescale(pq.ms).item()
     hist, bin_edges = np.histogram(

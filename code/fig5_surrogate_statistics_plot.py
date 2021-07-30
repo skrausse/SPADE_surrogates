@@ -120,42 +120,6 @@ def _plot_displacement(axes_displacement, data_type, surr_method, type_id):
         linestyle=cf.LINE_STYLES[surr_method])
 
 
-def plot_displacement():
-    fig_displacement, axes_displacement = plt.subplots(
-        1, ncols=len(cf.DATA_TYPES), figsize=(7.5, 2.5),
-        gridspec_kw=dict(bottom=0.2, wspace=0.4, right=0.99, left=0.1))
-    for type_id, data_type in enumerate(cf.DATA_TYPES):
-        axes_displacement[type_id].set_title(data_type)
-        axes_displacement[type_id].set_xlabel(r'$\tau$ in ms')
-        axes_displacement[type_id].set_ylabel(r'p.d.f in 1/s')
-
-        for surr_method in cf.SURR_METHODS:
-            _plot_displacement(
-                axes_displacement, data_type, surr_method, type_id)
-
-    fig_displacement.savefig('../plots/displacement_non_stationary.png', dpi=300)
-
-
-def plot_correlation():
-    fig_cch, axes_cch = plt.subplots(
-        1, ncols=len(cf.DATA_TYPES), figsize=(7.5, 2.5),
-        gridspec_kw=dict(bottom=0.2, wspace=0.4, right=0.99, left=0.1))
-    for type_id, data_type in enumerate(cf.DATA_TYPES):
-        axes_cch[type_id].set_title(data_type)
-        axes_cch[type_id].set_xlabel(r'$\tau$ in ms')
-        axes_cch[type_id].set_ylabel('CCH in 1/s')
-        axes_cch[type_id].set_ylim(55, 130)
-
-        _plot_corr(axes_cch, type_id, data_type,
-                   surr_method='original', corr_type='cc')
-
-        for surr_method in cf.SURR_METHODS:
-            _plot_corr(axes_cch, type_id, data_type,
-                       surr_method, corr_type='cc')
-
-    fig_cch.savefig('../plots/cch_non_stationary_surrogate_original.png', dpi=300)
-
-
 def _plot_corr(axes_corr, type_id, data_type,
                surr_method, corr_type='ac'):
     linewidth = cf.ORIGINAL_LINEWIDTH\
@@ -262,12 +226,14 @@ def plot_firing_rate_change(axis):
     -------
     None
     """
-    results = np.load(f'{cf.DATA_PATH}/rate_step.npy', allow_pickle=True).item()
+    results = np.load(
+        f'{cf.DATA_PATH}/rate_step.npy', allow_pickle=True).item()
 
     rate_original = results['original']
-    axis.plot(rate_original.times, rate_original.simplified.magnitude,
-              label='original', linewidth=cf.ORIGINAL_LINEWIDTH,
-              color=cf.COLORS['original'], linestyle=cf.LINE_STYLES['original'])
+    axis.plot(
+        rate_original.times, rate_original.simplified.magnitude,
+        label='original', linewidth=cf.ORIGINAL_LINEWIDTH,
+        color=cf.COLORS['original'], linestyle=cf.LINE_STYLES['original'])
 
     for surr_method in cf.SURR_METHODS:
         rate_dithered = results[surr_method]
@@ -345,11 +311,13 @@ def plot_cv_change(axis):
     -------
     None
     """
-    results = np.load(f'{cf.DATA_PATH}/cv_change.npy', allow_pickle=True).item()
+    results = np.load(
+        f'{cf.DATA_PATH}/cv_change.npy', allow_pickle=True).item()
 
     cvs_real = results['cvs_real']
-    axis.plot(cvs_real, cvs_real, linewidth=cf.ORIGINAL_LINEWIDTH,
-              color=cf.COLORS['original'], linestyle=cf.LINE_STYLES['original'])
+    axis.plot(
+        cvs_real, cvs_real, linewidth=cf.ORIGINAL_LINEWIDTH,
+        color=cf.COLORS['original'], linestyle=cf.LINE_STYLES['original'])
 
     for surr_method in cf.SURR_METHODS:
         cvs_dithered = results[surr_method]
@@ -414,7 +382,8 @@ def plot_statistics_overview():
                   + cf.distance_horizontal_panels,  # left
                   cf.distance_bottom_border
                   - (top_to_bottom_id - 2)
-                  * (cf.height_side_figure + cf.distance_vertical_panels),  # bottom
+                  * (cf.height_side_figure
+                     + cf.distance_vertical_panels),  # bottom
                   cf.width_figure,  # width
                   cf.height_side_figure  # height
                   ])
@@ -482,7 +451,7 @@ def plot_statistics_overview():
             + cf.distance_horizontal_panels + 0.006,  # x
             cf.distance_bottom_border
             + 3.6
-            * (cf.height_figure + cf.distance_vertical_panels)), # y
+            * (cf.height_figure + cf.distance_vertical_panels)),  # y
         ncol=2)
     frame = legend.get_frame()
     frame.set_facecolor('0.9')
@@ -493,8 +462,11 @@ def plot_statistics_overview():
 
 
 def plot_cns_figure():
+    """
+    Create the figure for the CNS poster
+    """
     plt.rcParams.update(
-        {'lines.linewidth': cf.SURROGATES_LINEWIDTH,})
+        {'lines.linewidth': cf.SURROGATES_LINEWIDTH})
 
     fig, (axes_clip, axes_isi) = plt.subplots(
         nrows=2, ncols=3,
@@ -572,4 +544,3 @@ if __name__ == '__main__':
         plot_statistics_overview()
     if CNS:
         plot_cns_figure()
-
