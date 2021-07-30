@@ -1,13 +1,20 @@
+"""
+Script to create Fig 2 of the manuscript
+"""
 import itertools
+
 import numpy as np
-import matplotlib.pyplot as plt
+
 import quantities as pq
 from elephant import conversion
 from elephant import spike_train_surrogates
-from generate_artificial_data import estimate_rate_deadtime, create_st_list
 import elephant.statistics as stat
-import elephant.spike_train_surrogates as surrogates
+
+import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+
+from generate_artificial_data import estimate_rate_deadtime, create_st_list
+
 
 CNS = False
 if CNS:
@@ -71,11 +78,10 @@ def _mean_std_spike_counts_after_binning(sts, mean_list, std_list):
     """
     spike_counts = []
     for st in sts:
-        binned_st = conversion.BinnedSpikeTrain(st, binsize=binsize)
+        binned_st = conversion.BinnedSpikeTrain(st, bin_size=binsize)
         spike_counts.append(_total_count(binned_st))
     mean_list.append(np.mean(spike_counts))
     std_list.append(np.std(spike_counts))
-    return
 
 
 def _mean_std_residuals(binned_single_spike_count,
@@ -114,7 +120,6 @@ def _mean_std_residuals(binned_single_spike_count,
             binned_single_spike_count - _total_count(binned_st))
     mean_residuals.append(np.mean(np.array(residuals_surrogates)))
     std_residuals.append(np.std(np.array(residuals_surrogates)))
-    return
 
 
 def calculate_residuals(sts, dither, binsize,
@@ -165,16 +170,16 @@ def calculate_residuals(sts, dither, binsize,
     number_of_trials = int(sts[0].t_stop / (epoch_length + sep))
 
     # loop over spike trains
-    for i, st in enumerate(sts):
+    for st in sts:
         # bin original spike train
-        binned_st = conversion.BinnedSpikeTrain(st, binsize=binsize)
+        binned_st = conversion.BinnedSpikeTrain(st, bin_size=binsize)
         original_spike_counts.append(len(st))
         # calculate number of spikes in binned spike train
         binned_single_spike_count = _total_count(binned_st)
         binned_spike_counts.append(binned_single_spike_count)
         # dithering spikes
         surrogate_sts = spike_train_surrogates.dither_spikes(
-            st, dither, n=n_surr, edges=True)
+            st, dither, n_surrogates=n_surr, edges=True)
         # calculating mean and std and residuals of original to binned data
         _mean_std_residuals(
             binned_single_spike_count,
@@ -237,7 +242,7 @@ def plot_loss_top_panel(
     std_spike_counts_dither = []
 
     number_of_trials = int(sts[0].t_stop / (epoch_length + sep))
-    for i, st in enumerate(sts):
+    for st in sts:
         binned_st = conversion.BinnedSpikeTrain(st, binsize=binsize)
         original_spike_counts.append(len(st))
         binned_spike_counts.append(_total_count(binned_st))
@@ -371,8 +376,8 @@ def plot_isi_surr(st, ax, dither, num_surr=500, show_ylabel=True,
     # calculate isi of original spike train
     isi = stat.isi(st)
     # generate surrogates
-    surr_list = surrogates.dither_spikes(st, n=num_surr,
-                                         dither=dither * pq.s)
+    surr_list = spike_train_surrogates.dither_spikes(
+        st, n_surrogates=num_surr, dither=dither * pq.s)
     # calculate isi of surrogates
     isis = [stat.isi(dithered_st) for dithered_st in surr_list]
     bin_distance = 0.001
@@ -456,8 +461,12 @@ def get_cv2(isis):
         list of ISIs
     """
     cv2 = np.sum(
-        [2 * np.sum(np.abs(trial_isi[:-1] - trial_isi[1:]) / (trial_isi[:-1] + trial_isi[1:])) for trial_isi in isis]
-        ) / np.sum([len(trial_isi) - 1 if len(trial_isi) > 0 else 0 for trial_isi in isis])
+        [2 * np.sum(
+            np.abs(trial_isi[:-1] - trial_isi[1:])
+            / (trial_isi[:-1] + trial_isi[1:]))
+         for trial_isi in isis]
+        ) / np.sum([len(trial_isi) - 1 if len(trial_isi) > 0 else 0
+                    for trial_isi in isis])
     return cv2
 
 
@@ -482,7 +491,7 @@ def plot_cv2(sts, ax, epoch_length, sep, show_xlabel=True,
                                sep=sep)
     # loop over the neurons
     cv2_list = []
-    for neuron, conc_st in enumerate(sts_list):
+    for conc_st in sts_list:
         isis = [np.diff(st.magnitude)
                 for st in conc_st
                 if len(st) > 1]
@@ -692,7 +701,8 @@ def fig_2(folder, sessions, epoch, trialtype, dither, binsize, n_surr,
 
     # figure CV2 histogram
     ax03 = fig.add_subplot(gs01[0])
-    plot_cv2(sts_N, ax03, epoch_length=epoch_length, sep=sep, fontsize=fontsize)
+    plot_cv2(
+        sts_N, ax03, epoch_length=epoch_length, sep=sep, fontsize=fontsize)
 
     # figure Dead time histogram
     ax04 = fig.add_subplot(gs01[1])
@@ -746,11 +756,15 @@ def fig_2(folder, sessions, epoch, trialtype, dither, binsize, n_surr,
     plt.show()
     fig.savefig('../plots/fig2_spikeloss_r2gstats.png')
     # convert manually to eps
-    # inkscape fig2_spikeloss_r2gstats.pdf --export-eps=fig2_spikeloss_r2gstats.eps
+    # inkscape fig2_spikeloss_r2gstats.pdf
+    # --export-eps=fig2_spikeloss_r2gstats.eps
     fig.savefig('../plots/fig2_spikeloss_r2gstats.pdf')
 
 
 def plot_cns_figure():
+    """
+    Create the figure for the CNS poster
+    """
     # settings for the CNS poster
     fontsize = 10
 
@@ -768,8 +782,8 @@ def plot_cns_figure():
     )
     fig_residual, ax_residual = plt.subplots()
 
-    extra_part = f'{data_type}_' if data_type != 'original' else ''
-    file_nikos = f'{sts_folder}{sessions[0]}/{extra_part}{epoch}_{trialtype}.npy'
+    file_nikos = \
+        f'{sts_folder}{sessions[0]}/original_{epoch}_{trialtype}.npy'
     sts_N = np.load(
         file_nikos,
         allow_pickle=True)
@@ -868,4 +882,3 @@ if __name__ == '__main__':
                   fontsize, data_type='original')
         else:
             plot_cns_figure()
-
