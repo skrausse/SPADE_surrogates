@@ -148,3 +148,6 @@ pvalue_spectrum/
 
 # Numpy files
 *.npy
+
+# Slurm submission files
+*.jdf
