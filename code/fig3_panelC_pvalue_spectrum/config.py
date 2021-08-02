@@ -12,7 +12,7 @@ import quantities as pq
 @dataclass
 class PathSetUp:
     """
-    Data class for the pathes.
+    Data class for the paths.
     """
     spiketrain_path: str = '../../data/pvalue_spectrum/spiketrains/'
     pattern_path: str = '../../data/pvalue_spectrum/patterns/'
