@@ -1,7 +1,7 @@
 # SPADE_surrogates
 Repository containing code necessary to reproduce the results of Stella, A., Bouss, P., Palm, G., &amp; Grün, S. (2021). Generating surrogates for significance estimation of spatio-temporal spike patterns
 
-In case of any questions, please contact Alessandra Stella at a.stella@fz-juelich.de.
+**Cloning the repo**
 
 Please clone the repository by running:
 `git clone --recurse-submodules git@github.com:INM-6/SPADE_surrogates.git`.
