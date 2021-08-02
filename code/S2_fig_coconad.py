@@ -10,8 +10,13 @@ from elephant import spade
 from elephant.spike_train_generation import homogeneous_poisson_process as hpp
 from elephant.spike_train_surrogates import surrogates
 
-from coco import coconad
-print('TODO: Add Coconad to the requirements.txt')
+try:
+    from coco import coconad
+except ImportError:
+    raise ImportError(
+        'In order to make an analysis with CoCoNAD you need to install'
+        ' CoCoNAD. Thus, please download:  https://borgelt.net/src/pycoco.zip'
+        ' and install it into your conda-environment.')
 
 
 surr_methods = ('dither_spikes', 'dither_spikes_with_refractory_period',
