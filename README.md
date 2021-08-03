@@ -39,7 +39,7 @@ Switch to the environment: `conda activate surrogates`
 
 Please go to the code folder `cd code`
 - For Figure 2:
-  - `python fig2_spikeloss_r2gstats.py`  (This takes some time.)
+  - `python fig2_spikeloss_r2gstats.py`
 - For Figure 3, Panel B: 
   - `python fig3_panelB_spike_loss.py`
 - For Figure 3, Panel C:
@@ -50,7 +50,7 @@ Please go to the code folder `cd code`
   - `python plot_pvalue_spectrum.py`
   - `cd ..`
 - For Figure 5:
-  - `python fig5_surrogate_statistics_data.py` (This takes some time.)
+  - `python fig5_surrogate_statistics_data.py`
   - `python fig5_surrogate_statistics_plot.py`
 - For Figure 6:
   - `python fig6_r2gexperiment.py`
@@ -65,7 +65,12 @@ Please go to the code folder `cd code`
   - `cd ..`
   - `python fig8_experimental_data.py`
 - For S1 Figure:
-  - `python S1_fig_cv2s_in_fps.py`  (This takes some time.)
+  - `python S1_fig_cv2s_in_fps.py`
 - For S2 Figure:
   - download and install  https://borgelt.net/src/pycoco.zip 
   - `python S2_fig_coconad.py`
+  
+Scripts for Figures 2, 3, 5, 6, S1 and S2 can be run locally on a laptop. Some
+may take ~5-10 minutes in runtime, depending on the complexity of the analysis.
+Data generation and analysis steps that for computation require a cluster are
+indicated in brackets.
