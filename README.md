@@ -47,6 +47,10 @@ Create the environment by running and activate it:
 conda env create -f env.yml
 conda activate surrogates
 ```
+If the mpi4py build does not work  (for Linux):
+```
+sudo apt install libopenmpi-dev
+```
 
 
 **Creating the figures**
