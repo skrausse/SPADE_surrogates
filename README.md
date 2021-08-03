@@ -4,23 +4,37 @@ Repository containing code necessary to reproduce the results of Stella, A., Bou
 **Cloning the repo**
 
 Please clone the repository by running:
-`git clone --recurse-submodules git@github.com:INM-6/SPADE_surrogates.git`.
+```
+git clone --recurse-submodules
+git@github.com:INM-6/SPADE_surrogates.git
+```
 
 Alternatively, you can proceed by:
-`git clone git@github.com:INM-6/SPADE_surrogates.git`
-`git submodule update --init`.
+```
+git clone git@github.com:INM-6/SPADE_surrogates.git
+git submodule update --init
+```
 
 
 In order to download the data, please, go into the multielectrode_grasp folder 
 by typing:
-`cd data/multielectrode_grasp`.
+```
+cd data/multielectrode_grasp
+```
 
-Continue with `gin login`.
+Continue with 
+``` 
+gin login
+```
+
 
 If you don't have a gin-account or client, refer to the README in the multielectrode_grasp folder.
 
 Then you need to run:
-`gin get-content i140703-001-03.nev l101210-001-02.nev i140703-001.odml l101210-001.odml`. This will download the
+```
+gin get-content i140703-001-03.nev l101210-001-02.nev i140703-001.odml l101210-001.odml
+```
+This will download the
 results of the spike-sorting (.nev) and metadata files (.odml). 
 
 **Creating the conda environment**
@@ -28,8 +42,11 @@ results of the spike-sorting (.nev) and metadata files (.odml).
 For general instructions on how to use the conda environments, please refer to:
 https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html. 
 
-Create the environment by running: `conda env create -f env.yml`
-Switch to the environment: `conda activate surrogates`
+Create the environment by running and activate it:
+```
+conda env create -f env.yml
+conda activate surrogates
+```
 
 
 **Creating the figures**
