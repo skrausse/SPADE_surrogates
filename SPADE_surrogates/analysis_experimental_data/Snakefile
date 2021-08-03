@@ -2,8 +2,8 @@ configfile: "../configfile.yaml"
 
 import numpy as np
 import quantities as pq
-from os import path
-from estimate_number_occurrences import estimate_number_occurrences
+from SPADE_surrogates.analyse_data_utils.estimate_number_occurrences\
+    import estimate_number_occurrences
 
 # The 5 epochs to analyze
 epochs = config['epochs']
@@ -53,26 +53,25 @@ contexts = [epoch + '_' +tt for epoch in config['epochs'] for tt in config['tria
 
 # Create the parameter dictionary
 param_dict, excluded_neurons = \
-    estimate_number_occurrences(sessions=sessions,
-                                epochs=epochs,
-                                trialtypes=trialtypes,
-                                sep=sep,
-                                SNR_thresh=SNR_thresh,
-                                binsize=binsize,
-                                abs_min_spikes=abs_min_spikes,
-                                abs_min_occ=abs_min_occ,
-                                correction=correction,
-                                psr_param=psr_param,
-                                alpha=alpha,
-                                n_surr=n_surr,
-                                dither=dither,
-                                spectrum=spectrum,
-                                winlen=winlen,
-                                percentile_poiss=percentile_poiss,
-                                percentile_rates=percentile_rates,
-                                unit=unit,
-                                firing_rate_threshold=firing_rate_threshold,
-                                surr_method=surr_method)
+    estimate_number_occurrences(
+        sessions=sessions,
+        epochs=epochs,
+        trialtypes=trialtypes,
+        binsize=binsize,
+        abs_min_spikes=abs_min_spikes,
+        abs_min_occ=abs_min_occ,
+        correction=correction,
+        psr_param=psr_param,
+        alpha=alpha,
+        n_surr=n_surr,
+        dither=dither,
+        spectrum=spectrum,
+        winlen=winlen,
+        percentile_poiss=percentile_poiss,
+        percentile_rates=percentile_rates,
+        unit=unit,
+        firing_rate_threshold=firing_rate_threshold,
+        surr_method=surr_method)
 
 
 # Rule to collect all the results
