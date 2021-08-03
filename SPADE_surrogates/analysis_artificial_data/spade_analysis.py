@@ -5,7 +5,7 @@ from elephant.spade import spade
 from mpi4py import MPI
 import yaml
 from yaml import Loader
-from spade_utils import mkdirp, split_path
+from SPADE_surrogates.analyse_data_utils.spade_utils import mkdirp, split_path
 
 parser = argparse.ArgumentParser(
     description='Define parameter for SPADE analysis on R2G')

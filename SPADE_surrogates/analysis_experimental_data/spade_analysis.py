@@ -11,7 +11,7 @@ except ImportError:
 from mpi4py import MPI
 import yaml
 from yaml import Loader
-from spade_utils import mkdirp, split_path
+from SPADE_surrogates.analyse_data_utils.spade_utils import mkdirp, split_path
 from elephant.spade import spade
 
 parser = argparse.ArgumentParser(

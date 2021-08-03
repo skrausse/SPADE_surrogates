@@ -7,16 +7,15 @@ Please clone the repository by running:
 `git clone --recurse-submodules git@github.com:INM-6/SPADE_surrogates.git`.
 
 Alternatively, you can proceed by:
+
 `git clone git@github.com:INM-6/SPADE_surrogates.git`
+
 `git submodule update --init`.
 
 
 In order to download the data, please, go into the multielectrode_grasp folder 
 by typing:
 `cd data/multielectrode_grasp`.
-
-There jump to the last tested (by us) commit:
-`git checkout 24cd5caee3`.
 
 Continue with `gin login`.
 
@@ -32,7 +31,13 @@ For general instructions on how to use the conda environments, please refer to:
 https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html. 
 
 Create the environment by running: `conda env create -f env.yml`
+
+There might be a problem to install `mpi4py`. In this case, it would be necessary 
+to first install OpenMPI manually, e.g., on a Linux machine you can use `sudo apt install libopenmpi-dev`.
+
 Switch to the environment: `conda activate surrogates`
+
+Integrate this project as editable package: `pip install -e .`
 
 
 **Creating the figures**
