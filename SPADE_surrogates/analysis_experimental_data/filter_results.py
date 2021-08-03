@@ -3,20 +3,18 @@ import os
 import elephant.spade as spade
 import argparse
 import quantities as pq
-import yaml
-from yaml import Loader
 
 # Session and context to analyze
 parser = argparse.ArgumentParser(
-    description=
-    'Define parameter for filtering the results of the SPADE analysis on R2G')
+    description='Define parameter for filtering the results'
+                ' of the SPADE analysis on R2G')
 
 parser.add_argument('context', metavar='context', type=str,
-                   help='behavioral context (epoch_trialtype) to analyze')
+                    help='behavioral context (epoch_trialtype) to analyze')
 parser.add_argument('session', metavar='session', type=str,
-                   help='Recording session to analyze')
+                    help='Recording session to analyze')
 parser.add_argument('surrogate method', metavar='surr_method', type=str,
-                   help='Surrogate method to use')
+                    help='Surrogate method to use')
 args = parser.parse_args()
 
 # Session to analyze
@@ -110,8 +108,9 @@ patterns = spade.concept_output_to_patterns(concepts=concepts,
                                             binsize=binsize,
                                             spectrum=spectrum)
 # Attaching additional info on neurons involved in patterns
-annotations = np.load('../results/{}/{}/{}'.format(surr_method,
-    session_name, context) + '/annotations.npy', allow_pickle=True).item()
+annotations = np.load(f'../results/{surr_method}/{session_name}/{context}'
+                      f'/annotations.npy', allow_pickle=True).item()
+
 for patt_idx, selected_patt in enumerate(patterns):
     selected_patt['channel_ids'] = []
     selected_patt['unit_ids'] = []
@@ -136,7 +135,6 @@ filter_param = {'alpha': alpha,
 
 # Store merged filtered results
 np.save(
-    '../../results/experimental_data/{}/{}/{}/filtered_res.npy'.format(
-        surr_method,session_name, context), [patterns, loading_param,
-                                 filter_param, configfile_param,
-                                 spade_param])
+    f'../../results/experimental_data/{surr_method}/{session_name}/{context}'
+    f'/filtered_res.npy',
+    [patterns, loading_param, filter_param, configfile_param, spade_param])

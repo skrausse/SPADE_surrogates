@@ -20,7 +20,7 @@ parser.add_argument(
     'process', metavar='process', type=str,
     help='Point process to analyze')
 parser.add_argument('surrogate method', metavar='surr_method', type=str,
-                   help='Surrogate method to use')
+                    help='Surrogate method to use')
 args = parser.parse_args()
 
 # Session to analyze

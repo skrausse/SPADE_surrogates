@@ -9,7 +9,8 @@ epochs = config['epochs']
 trialtypes = config['trialtypes']
 # The sessions to analyze
 sessions = config['sessions']
-# Absolute (independent of the number of spikes) minimum number of occurrences of a pattern
+# Absolute (independent of the number of spikes) minimum number
+# of occurrences of a pattern
 abs_min_occ = config['abs_min_occ']
 # Magnitude of the binsize used
 binsize = config['binsize']
@@ -43,7 +44,8 @@ surr_method = config['surr_method']
 processes = config['processes']
 # The sessions to analyze
 sessions = config['sessions']
-contexts = [epoch + '_' +tt for epoch in config['epochs'] for tt in config['trialtypes']]
+contexts = [epoch + '_' +tt for epoch in config['epochs']
+            for tt in config['trialtypes']]
 
 # Create the parameter dictionary
 param_dict, excluded_neurons = \
@@ -68,13 +70,19 @@ param_dict, excluded_neurons = \
         firing_rate_threshold=firing_rate_threshold,
         surr_method=surr_method)
 
+
 # Rule to collect all the results
 rule all:
     input:
-         [f'../../results/artificial_data/{surr_method}/{process}/{session}/{context}/{job_id}/results.npy'
-         for process in processes for session in sessions for context in contexts for job_id in param_dict[session][process][context]] + [
-             f'../../results/artificial_data/{surr_method}/{process}/{session}/{context}/filtered_res.npy'
-             for context in contexts for session in sessions for process in processes ]
+        [f'../../results/artificial_data/{surr_method}/{process}/{session}/'
+         f'{context}/{job_id}/results.npy'
+         for process in processes for session in sessions
+         for context in contexts
+         for job_id in param_dict[session][process][context]] + [
+             f'../../results/artificial_data/{surr_method}/{process}/'
+             f'{session}/{context}/filtered_res.npy'
+             for context in contexts
+             for session in sessions for process in processes]
 
 
 # Rule to store the new version of the dictionary containing all the parameters
@@ -87,6 +95,7 @@ rule create_parameter_dict:
     run:
         np.save('./param_dict.npy', param_dict)
 
+
 # Rule to run the SPADE analysis on the data (FIM + spectrum computation)
 rule analyze_data:
     input:
@@ -98,14 +107,15 @@ rule analyze_data:
     shell:
         "mpirun python spade_analysis.py {wildcards.job_id} {wildcards.context} {wildcards.session} {wildcards.process} {wildcards.surr_method}"
 
+
 # Function to create output path for filtered results
 def select_job_ids_context(wildcards):
-    return ['../../results/artificial_data/{surr_method}/{process}/{session}/{context}/{job_id}/results.npy'.format(surr_method=surr_method,
-                                                                                                                    job_id=job_id,
-                                                                                   process=wildcards.process,
-                                                                                   session=wildcards.session,
-                                                                                   context=wildcards.context)
-            for job_id in param_dict[wildcards.session][wildcards.process][wildcards.context]]
+    return [
+        f'../../results/artificial_data/{surr_method}/{wildcards.process}/' \
+        f'{wildcards.session}/{wildcards.context}/{job_id}/results.npy'
+        for job_id in param_dict[wildcards.session][wildcards.process][
+            wildcards.context]]
+
 
 # Rule to apply the PSF and the PSR on the mined patterns
 rule filter_results:

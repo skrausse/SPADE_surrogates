@@ -14,11 +14,11 @@ parser.add_argument('job_id', metavar='job_id', type=int,
 parser.add_argument('context', metavar='context', type=str,
                     help='behavioral context (epoch_trialtype) to analyze')
 parser.add_argument('session', metavar='session', type=str,
-                   help='Recording session to analyze')
+                    help='Recording session to analyze')
 parser.add_argument('process', metavar='process', type=str,
-                   help='Point process to analyze')
+                    help='Point process to analyze')
 parser.add_argument('surrogate method', metavar='surr_method', type=str,
-                   help='Surrogate method to use')
+                    help='Surrogate method to use')
 
 args = parser.parse_args()
 
@@ -80,7 +80,8 @@ firing_rate_threshold = config['firing_rate_threshold']
 # Check that parameter in dict correspond to parsed argument
 if context != epoch + '_' + trialtype:
     raise ValueError(
-        'The job_id argument does not correspond to a job of the given context')
+        'The job_id argument does not correspond'
+        ' to a job of the given context')
 sep = 2 * winlen * binsize
 load_param = {'session': session,
               'epoch': epoch,
@@ -105,14 +106,14 @@ for st_idx, st in enumerate(sts):
 if firing_rate_threshold is not None:
     try:
         excluded_neurons = np.load('excluded_neurons.npy',
-                               allow_pickle=True).item()[session]
+                                   allow_pickle=True).item()[session]
         for neuron in excluded_neurons:
             sts.pop(int(neuron))
     except FileNotFoundError:
         print('excluded neurons list is not yet computed: '
               'run estimate_number_occurrences script')
 
-##### SPADE analysis ######
+# SPADE analysis
 comm = MPI.COMM_WORLD  # create MPI communicator
 rank = comm.Get_rank()  # get rank of current MPI task
 size = comm.Get_size()  # get number of parallel processes
@@ -153,6 +154,6 @@ if rank == 0:
                                     config])
     # Storing annotations param
     np.save(
-        f'../../results/artificial_data/{surr_method}/{process}/{session}/{epoch}_{trialtype}'
-        + '/annotations.npy',
+        f'../../results/artificial_data/{surr_method}/{process}/'
+        f'{session}/{epoch}_{trialtype}/annotations.npy',
         annotations_dict)

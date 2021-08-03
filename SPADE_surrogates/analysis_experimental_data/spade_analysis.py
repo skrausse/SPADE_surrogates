@@ -1,29 +1,22 @@
 import numpy as np
 import quantities as pq
-
-import sys
-sys.path.insert(0, './multielectrode_grasp/code/python-neo')
 import argparse
-try:
-    from . import rgutils
-except ImportError:
-    import rgutils
 from mpi4py import MPI
 import yaml
 from yaml import Loader
-from SPADE_surrogates.analyse_data_utils.spade_utils import mkdirp, split_path
 from elephant.spade import spade
+from SPADE_surrogates.analyse_data_utils.spade_utils import mkdirp, split_path
 
 parser = argparse.ArgumentParser(
     description='Define parameter for SPADE analysis on R2G')
 parser.add_argument('job_id', metavar='job_id', type=int,
-                   help='id of the job to perform in this call')
+                    help='id of the job to perform in this call')
 parser.add_argument('context', metavar='context', type=str,
-                   help='behavioral context (epoch_trialtype) to analyze')
+                    help='behavioral context (epoch_trialtype) to analyze')
 parser.add_argument('session', metavar='session', type=str,
-                   help='Recording session to analyze')
+                    help='Recording session to analyze')
 parser.add_argument('surrogate method', metavar='surr_method', type=str,
-                   help='Surrogate method to use')
+                    help='Surrogate method to use')
 
 args = parser.parse_args()
 
@@ -86,7 +79,8 @@ synchsize = config['synchsize']
 # Check that parameter in dict correspond to parsed argument
 if context != epoch + '_' + trialtype:
     raise ValueError(
-        'The job_id argument does not correspond to a job of the given context')
+        'The job_id argument does not correspond'
+        ' to a job of the given context')
 sep = 2 * winlen * binsize
 load_param = {'session': session,
               'epoch': epoch,
@@ -96,7 +90,6 @@ load_param = {'session': session,
               'sep': sep,
               'firing_rate_threshold': firing_rate_threshold}
 
-# TODO: change synchrofact removal approach in rgutils
 # Loading data
 sts = np.load(f'../../data/concatenated_spiketrains/{session}'
               f'/{epoch}_{trialtype}.npy',
@@ -120,7 +113,7 @@ if firing_rate_threshold is not None:
               'run estimate_number_occurrences script')
 
 
-##### SPADE analysis ######
+# SPADE analysis
 comm = MPI.COMM_WORLD   # create MPI communicator
 rank = comm.Get_rank()  # get rank of current MPI task
 size = comm.Get_size()  # get number of parallel processes
@@ -142,11 +135,8 @@ spade_res = spade(spiketrains=sts,
                   output_format='concepts')
 
 # Path where to store the results
-res_path = '../../results/experimental_data/{}/{}/{}_{}/{}'.format(surr_method,
-                                                                   session,
-                                                                epoch,
-                                                                trialtype,
-                                                                job_id)
+res_path = f'../../results/experimental_data/{surr_method}/{session}/' \
+           f'{epoch}_{trialtype}/{job_id}'
 
 # Create path is not already existing
 path_temp = './'
@@ -163,6 +153,6 @@ if rank == 0:
                                     config])
     # Storing annotations param
     np.save(
-        '../../results/experimental_data/{}/{}/{}_{}'.format(
-            surr_method, session, epoch, trialtype) + '/annotations.npy',
+        f'../../results/experimental_data/{surr_method}/{session}/'
+        f'{epoch}_{trialtype}/annotations.npy',
         annotations_dict)
