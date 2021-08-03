@@ -15,9 +15,6 @@ In order to download the data, please, go into the multielectrode_grasp folder
 by typing:
 `cd data/multielectrode_grasp`.
 
-There jump to the last tested (by us) commit:
-`git checkout 24cd5caee3`.
-
 Continue with `gin login`.
 
 If you don't have a gin-account or client, refer to the README in the multielectrode_grasp folder.
