@@ -3,15 +3,19 @@ This script creates the ad-hoc modeled artificial data mimicking experimental
 data's features
 """
 # -*- coding: utf-8 -*-
+import math
 import sys
 import os
+import warnings
 
 import numpy as np
 import quantities as pq
 import elephant.spike_train_generation as stg
 import elephant.statistics as stat
+import elephant.kernels as kernels
+import scipy
 
-from scipy.special import gamma as gamma_function
+from scipy.special import gamma as gamma_function, erf
 from scipy.optimize import brentq
 from tqdm import tqdm
 
@@ -259,7 +263,7 @@ def instantaneous_rate(spiketrains, sampling_period, kernel='auto',
     def optimal_kernel(st):
         width_sigma = None
         if len(st) > 0:
-            width_sigma = optimal_kernel_bandwidth(
+            width_sigma = stat.optimal_kernel_bandwidth(
                 st.magnitude, times=None, bootstrap=False)['optw']
         if width_sigma is None:
             raise ValueError("Unable to calculate optimal kernel width for "
@@ -281,7 +285,7 @@ def instantaneous_rate(spiketrains, sampling_period, kernel='auto',
             "'spiketrains' must be a list of neo.SpikeTrain's or a single "
             "neo.SpikeTrain. Found: '{}'".format(type(spiketrains)))
 
-    if not is_time_quantity(sampling_period):
+    if not stat.is_time_quantity(sampling_period):
         raise TypeError(
             "The 'sampling_period' must be a time Quantity. \n"
             "Found: {}".format(type(sampling_period)))
@@ -299,18 +303,19 @@ def instantaneous_rate(spiketrains, sampling_period, kernel='auto',
     if not isinstance(cutoff, (float, int)):
         raise TypeError("'cutoff' must be float or integer")
 
-    if not is_time_quantity(t_start, allow_none=True):
+    if not stat.is_time_quantity(t_start, allow_none=True):
         raise TypeError("'t_start' must be a time Quantity")
 
-    if not is_time_quantity(t_stop, allow_none=True):
+    if not stat.is_time_quantity(t_stop, allow_none=True):
         raise TypeError("'t_stop' must be a time Quantity")
 
     if not isinstance(trim, bool):
         raise TypeError("'trim' must be bool")
 
-    check_neo_consistency(spiketrains,
-                          object_type=neo.SpikeTrain,
-                          t_start=t_start, t_stop=t_stop)
+    stat.check_neo_consistency(
+        spiketrains,
+        object_type=neo.SpikeTrain,
+        t_start=t_start, t_stop=t_stop)
     if kernel == 'auto':
         if len(spiketrains) == 1:
             kernel = optimal_kernel(spiketrains[0])
@@ -419,6 +424,7 @@ def instantaneous_rate(spiketrains, sampling_period, kernel='auto',
                               (np.mean(rate[:, i]).magnitude * duration)
 
     return rate
+
 
 def estimate_deadtime(spiketrain, max_dead_time):
     """
@@ -677,7 +683,7 @@ def generate_artificial_data(data, seed, max_refractory, processes,
             cv = get_cv_operational_time(spiketrain=spiketrain,
                                          rate_list=rate_list,
                                          sep=sep)
-            shape_factor = 1/(cv)**2
+            shape_factor = 1 / cv ** 2
             print('cv = ', cv, 'shape_factor = ', shape_factor)
             if np.count_nonzero(rate) != 0:
                 gamma_spiketrain = stg.inhomogeneous_gamma_process(
