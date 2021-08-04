@@ -13,7 +13,7 @@ from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.pylab as pylab
 
-import fig_cv2s_in_fps
+from S1_fig_cv2s_in_fps import create_firing_rate_plots
 from fig2_spikeloss_r2gstats import get_cv2
 from generate_artificial_data import estimate_rate_deadtime, \
     create_st_list, estimate_deadtime
@@ -734,7 +734,7 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
 
     axes_c_d = ((ax_c_left, ax_c_right), (ax_d_left, ax_d_right))
 
-    lines = fig_cv2s_in_fps.create_firing_rate_plots(axes=axes_c_d)
+    lines = create_firing_rate_plots(axes=axes_c_d)
 
     ax_c_right.legend(
         list(lines.values()),
