@@ -602,10 +602,10 @@ def cv_change():
 
 if __name__ == '__main__':
     print('clipped firing rate and eff_moved')
-    # clipped_rates_and_eff_moved()
+    clipped_rates_and_eff_moved()
     print('statistical analysis of single rate')
     statistical_analysis_of_single_rate()
     print('firing rate change')
-    # firing_rate_change()
+    firing_rate_change()
     print('cv_change')
-    # cv_change()
+    cv_change()
