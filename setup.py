@@ -8,7 +8,7 @@ setup(
       author="Alessandra stella",
       author_email="a.stella@fz-juelich.de",
 
-      license='GPL',
+      license='BSD',
 
       classifiers=[
           'Development Status :: 2 - Pre-Alpha',
