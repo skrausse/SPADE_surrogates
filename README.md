@@ -57,6 +57,7 @@ sudo apt install libopenmpi-dev
 
 Please go to the code folder `cd SPADE_surrogates`
 - For Figure 2:
+  - `python generate_original_concatenated_data.py` 
   - `python fig2_spikeloss_r2gstats.py`
 - For Figure 3, Panel B: 
   - `python fig3_panelB_spike_loss.py`
@@ -83,9 +84,11 @@ Please go to the code folder `cd SPADE_surrogates`
   - `cd ..`
   - `python fig8_experimental_data.py`
 - For S1 Figure:
+  - run the scripts for Figure 7 
   - `python S1_fig_cv2s_in_fps.py`
 - For S2 Figure:
-  - download and install  https://borgelt.net/src/pycoco.zip 
+  - download and unzip  https://borgelt.net/src/pycoco.zip 
+  - in pycoco directory run `pip install -e .`
   - `python S2_fig_coconad.py`
   
 Scripts for Figures 2, 3, 5, 6, S1 and S2 can be run locally on a laptop. Some

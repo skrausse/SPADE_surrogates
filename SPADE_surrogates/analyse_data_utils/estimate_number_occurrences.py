@@ -422,8 +422,16 @@ def estimate_number_occurrences(
                 # sort the neuron indexes in decreasing order (easy to pop)
                 excluded_neurons[session] = np.sort(
                     excluded_neurons[session])[::-1]
-    if not os.path.exists('./excluded_neurons.npy'):
-        np.save('excluded_neurons', excluded_neurons)
+    if processes[0] == 'original':
+        if not os.path.exists('../analysis_experimental_data/'
+                              'excluded_neurons.npy'):
+            np.save('../analysis_experimental_data/'
+                    'excluded_neurons.npy', excluded_neurons)
+    else:
+        if not os.path.exists('../analysis_artificial_data/'
+                              'excluded_neurons.npy'):
+            np.save('../analysis_artificial_data/'
+                    'excluded_neurons.npy', excluded_neurons)
     return param_dict, excluded_neurons
 
 

@@ -111,7 +111,7 @@ if firing_rate_threshold is not None:
             sts.pop(int(neuron))
     except FileNotFoundError:
         print('excluded neurons list is not yet computed: '
-              'run estimate_number_occurrences script')
+              'run Snakefile script')
 
 # SPADE analysis
 comm = MPI.COMM_WORLD  # create MPI communicator
