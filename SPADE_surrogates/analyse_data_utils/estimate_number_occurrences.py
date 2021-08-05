@@ -390,10 +390,8 @@ def estimate_number_occurrences(
     for session in sessions:
         param_dict[session] = {}
         for process in processes:
-            if process == 'original':
+            if not process == 'original':
                 param_dict[session][process] = {}
-            else:
-                param_dict[session] = {}
 
             if firing_rate_threshold is not None:
                 excluded_neurons[session] = np.array([])
