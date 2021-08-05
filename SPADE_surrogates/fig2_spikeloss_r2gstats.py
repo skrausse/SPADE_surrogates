@@ -754,7 +754,7 @@ def fig_2(folder, sessions, epoch, trialtype, dither, binsize, n_surr,
         x=0.055, y=0.25, s='C', fontsize=12, multialignment='center')
     fig.align_ylabels()
 
-    plt.show()
+    # plt.show()
     fig.savefig('../plots/fig2_spikeloss_r2gstats.png')
     # convert manually to eps
     # inkscape fig2_spikeloss_r2gstats.pdf
