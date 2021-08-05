@@ -36,9 +36,7 @@ def data_path(session):
 
     """
     if isinstance(session, str):
-        path = os.path.dirname(os.getcwd()) + \
-               '/data/multielectrode_grasp/datasets/'
-        # path = '../data/multielectrode_grasp/datasets/'
+        path = '../data/multielectrode_grasp/datasets/'
     elif isinstance(session, rgio.ReachGraspIO):
         fullpath = session.filename
         path = ''
@@ -65,9 +63,7 @@ def odml_path(session):
 
     """
     if isinstance(session, str):
-        path = os.path.dirname(os.getcwd()) + \
-               '/data/multielectrode_grasp/datasets/'
-        # path = '../data/multielectrode_grasp/datasets/'
+        path = '../data/multielectrode_grasp/datasets/'
     return path
 
 

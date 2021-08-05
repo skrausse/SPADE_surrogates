@@ -3,8 +3,11 @@ Script to create Fig 6 which explains the segmentation of the experimental
 data.
 """
 import quantities as pq
+import sys
+sys.path.insert(0, '../data/multielectrode_grasp/code/python-neo')
 import neo
-from neo.utils import add_epoch, cut_segment_by_epoch, get_events
+sys.path.insert(0, '../data/multielectrode_grasp/code')
+from neo_utils import add_epoch, cut_segment_by_epoch, get_events
 
 import matplotlib.pyplot as plt
 from viziphant.rasterplot import rasterplot
@@ -30,12 +33,13 @@ block = session.read_block(
     load_events=True,
     load_waveforms=False,
     scaling='raw')
-
 data_segment = block.segments[0]
 start_events = get_events(
     data_segment,
-    performance_in_trial_str='correct_trial',
-    trial_event_labels=trigger)
+    properties={
+        'trial_event_labels': trigger,
+        'performance_in_trial': session.performance_codes[
+            'correct_trial']})
 start_event = start_events[0]
 epoch = add_epoch(
     data_segment,
@@ -64,7 +68,7 @@ event_name_to_plot = ['TS-ON', 'WS-ON', 'CUE-ON', 'CUE-OFF',
 all_events = seg.events[0]
 # Get the most relevant events in trial
 ev_idx = [i for i, val
-          in enumerate(all_events.array_annotations['trial_event_labels'])
+          in enumerate(all_events.annotations['trial_event_labels'])
           if val in set(event_name_to_plot)]
 events = all_events[ev_idx].rescale(pq.ms)
 
@@ -111,5 +115,5 @@ axes.set_ylabel('Neurons', fontsize=8)
 axes.set_xlabel('Time (ms)', fontsize=8)
 axes.tick_params(axis="x", labelsize=8)
 axes.tick_params(axis="y", labelsize=8)
-plt.savefig('./plots/r2g_trial.eps', dpi=300)
-plt.savefig('./plots/r2g_trial.svg', dpi=300)
+plt.savefig('../plots/fig6_r2gexperiment.eps', dpi=300)
+plt.savefig('../plots/fig6_r2gexperiment.svg', dpi=300)
