@@ -8,9 +8,21 @@ import os
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.cm as colormaps
 import quantities as pq
 
 from scipy.special import gamma, gammainc
+
+
+def adjust_lightness(color, amount=0.5):
+    import matplotlib.colors as mc
+    import colorsys
+    try:
+        c = mc.cnames[color]
+    except:
+        c = color
+    c = colorsys.rgb_to_hls(*mc.to_rgb(c))
+    return colorsys.hls_to_rgb(c[0], max(0, min(1, amount * c[1])), c[2])
 
 
 def firing_rate_clipped_gamma(firing_rate, shape_factor, bin_size):
@@ -172,10 +184,12 @@ def plot_spike_count_reduction(
     -------
     None
     """
-    colors = ('C0', 'C1', 'C2', 'C3')
+    cmap = colormaps.get_cmap('Greys')
+    colors = [cmap(amount)
+              for amount in (0.3, 0.5, 0.7, 0.9)]
 
     fig, axes = plt.subplots(
-        1, 2, figsize=(3.5, 2.5), sharey='all', dpi=300)
+        1, 2, figsize=(6.5/2, 2.5), sharey='all', dpi=300)
     fig.subplots_adjust(left=0.17, bottom=0.17, wspace=0.1, right=0.98)
 
     for dead_time_id, dead_time in enumerate(dead_times):
@@ -235,7 +249,7 @@ def plot_spike_count_reduction(
         ax.tick_params(axis='x', labelsize='small')
         ax.tick_params(axis='y', labelsize='small')
         ax.legend(fontsize='x-small')
-        ax.set_title(data_type)
+        ax.set_title(data_type, fontsize=10)
 
     fig.savefig(plot_path, dpi=300)
     plt.show()
