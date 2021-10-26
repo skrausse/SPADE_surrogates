@@ -549,21 +549,39 @@ def create_figure_clipped_rate():
         1, 3,
         sharex='all',
         sharey='all',
-        figsize=(6.5, 1.5),
+        figsize=(6.5, 2.),
         gridspec_kw=dict(
             wspace=0.1,
-            bottom=0.25,
-            top=0.85,
-            right=0.95,
-            left=0.1
+            bottom=0.35,
+            top=0.89,
+            right=0.99,
+            left=0.09
         )
     )
     plot_clipped_firing_rate(axes_clip)
     axes_clip[0].set_ylabel(r'$1 - N_{clip}/N$',
-                            labelpad=cf.YLABELPAD2,)
+                            labelpad=0.5,
+                            fontsize='small')
     for data_id, data_type in enumerate(cf.DATA_TYPES):
         axes_clip[data_id].set_title(data_type, fontsize=10)
+        axes_clip[data_id].tick_params(axis='x', labelsize='small')
+        axes_clip[data_id].tick_params(axis='y', labelsize='small')
+        axes_clip[data_id].set_xlabel(r'$\lambda$ (Hz)',
+                                      labelpad=-0.5,
+                                      fontsize='small')
+
+    handles, labels = axes_clip[0].get_legend_handles_labels()
+
+    fig.legend(
+        handles, labels, fontsize='small',
+        fancybox=True, ncol=7, loc="lower left",
+        mode="expand", borderaxespad=0.5)
+
+    fig.savefig(f'{cf.PLOT_PATH}/{cf.FIG_NAME}', dpi=300)
+    plt.show()
+
     fig.savefig('../plots/clipped_rates.eps', dpi=300)
+    fig.savefig('../plots/clipped_rates.svg', dpi=300)
     plt.show()
 
 
