@@ -72,7 +72,7 @@ SHAPE_FACTOR = get_shape_factor_from_cv2(CV2)
 
 #  plotting
 
-FIGSIZE = (7.5, 4.5)
+FIGSIZE = (6.5, 4.5)  # width corresponding to a bit less than 16.6 cm
 XLABELPAD = -0.5
 YLABELPAD = 0.5
 YLABELPAD2 = 0.5   # for formulae with subscript
@@ -125,12 +125,12 @@ width_figure = (1. - (distance_left_border + distance_right_border
                       + distance_horizontal_panels)) / 4
 
 distance_top_border = 0.05
-distance_bottom_border = 0.09
+distance_bottom_border = 0.16
 
 distance_vertical_panels = 0.09
 
 height_figure = (1. - (distance_top_border + distance_bottom_border
-                       + 3. * distance_vertical_panels)) / 4
+                       + 2. * distance_vertical_panels)) / 3
 
 
 height_side_figure = 0.15

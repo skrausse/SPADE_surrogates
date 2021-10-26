@@ -368,13 +368,13 @@ def plot_statistics_overview():
                   cf.distance_left_border + cf.width_figure * left_to_right_id,
                     # bottom
                   cf.distance_bottom_border
-                  - (top_to_bottom_id-3)
+                  - (top_to_bottom_id-2)
                   * (cf.height_figure + cf.distance_vertical_panels),
                     # width
                   cf.width_figure,
                     # height
                   cf.height_figure])
-        for left_to_right_id in range(3)] for top_to_bottom_id in range(4)]
+        for left_to_right_id in range(3)] for top_to_bottom_id in range(3)]
 
     right_side_axes = \
         [fig.add_axes(
@@ -382,19 +382,20 @@ def plot_statistics_overview():
                   + cf.distance_horizontal_panels,  # left
                   cf.distance_bottom_border
                   - (top_to_bottom_id - 2)
-                  * (cf.height_side_figure
+                  * (cf.height_figure
                      + cf.distance_vertical_panels),  # bottom
                   cf.width_figure,  # width
-                  cf.height_side_figure  # height
+                  cf.height_figure  # height
                   ])
          for top_to_bottom_id in range(3)]
 
-    axes_clip, axes_isi, axes_cc, axes_ac = axes
+    # axes_clip, axes_isi, axes_cc, axes_ac = axes
+    axes_isi, axes_cc, axes_ac = axes
     axis_cv, axis_moved, axis_step = right_side_axes
 
-    axes_clip[0].set_ylabel(r'$1 - N_{clip}/N$',
-                            labelpad=cf.YLABELPAD2,
-                            )
+    # axes_clip[0].set_ylabel(r'$1 - N_{clip}/N$',
+    #                         labelpad=cf.YLABELPAD2,
+    #                         )
     axes_isi[0].set_ylabel(r'$p(\tau)$ (1/s)',
                            labelpad=cf.YLABELPAD,
                            )
@@ -405,7 +406,7 @@ def plot_statistics_overview():
                           labelpad=cf.YLABELPAD,
                           )
 
-    plot_clipped_firing_rate(axes_clip)
+    # plot_clipped_firing_rate(axes_clip)
 
     plot_statistical_analysis_of_single_rate(axes_isi, axes_ac, axes_cc)
 
@@ -414,21 +415,21 @@ def plot_statistics_overview():
     plot_cv_change(axis_cv)
 
     for data_id, data_type in enumerate(cf.DATA_TYPES):
-        axes[0][data_id].set_title(data_type)
+        axes[0][data_id].set_title(data_type, fontsize=10)
 
     for axis_id, axis in enumerate(axes):
         letter_pos_x = -0.25
         letter_pos_y = 1.05  # if axis_id < 3 else 0.8
         axis[0].text(
             letter_pos_x, letter_pos_y, cf.LETTERS[axis_id],
-            transform=axis[0].transAxes, fontsize=15)
+            transform=axis[0].transAxes, fontsize=12)
         _hide_y_ticks(axis[1])
         _hide_y_ticks(axis[2])
 
     for axis_id, axis in enumerate(right_side_axes):
         axis.text(
             -0.15, 1.05, cf.LETTERS[len(axes) + axis_id],
-            transform=axis.transAxes, fontsize=15)
+            transform=axis.transAxes, fontsize=12)
 
     for axis in axes_ac:
         axis.set_xticks((-40, -20, 0, 20, 40))
@@ -444,18 +445,24 @@ def plot_statistics_overview():
 
     handles, labels = axes_isi[0].get_legend_handles_labels()
 
-    legend = fig.legend(
-        handles, labels, fontsize='x-small',
-        bbox_to_anchor=(
-            cf.distance_left_border + cf.width_figure * 4
-            + cf.distance_horizontal_panels + 0.006,  # x
-            cf.distance_bottom_border
-            + 3.6
-            * (cf.height_figure + cf.distance_vertical_panels)),  # y
-        ncol=2)
-    frame = legend.get_frame()
-    frame.set_facecolor('0.9')
-    frame.set_edgecolor('0.9')
+    # legend = fig.legend(
+    #     handles, labels, fontsize='x-small',
+    #     bbox_to_anchor=(
+    #         cf.distance_left_border + cf.width_figure * 4
+    #         + cf.distance_horizontal_panels + 0.006,  # x
+    #         cf.distance_bottom_border
+    #         + 3.6
+    #         * (cf.height_figure + cf.distance_vertical_panels)),  # y
+    #     ncol=2)
+    #
+    # frame = legend.get_frame()
+    # frame.set_facecolor('0.9')
+    # frame.set_edgecolor('0.9')
+
+    fig.legend(
+        handles, labels, fontsize='small',
+        fancybox=True, shadow=True, ncol=7, loc="lower left",
+        mode="expand", borderaxespad=1)
 
     fig.savefig(f'{cf.PLOT_PATH}/{cf.FIG_NAME}', dpi=300)
     plt.show()
@@ -537,10 +544,34 @@ def plot_cns_figure():
         dpi=300)
 
 
+def create_figure_clipped_rate():
+    fig, axes_clip = plt.subplots(
+        1, 3,
+        sharex='all',
+        sharey='all',
+        figsize=(6.5, 1.5),
+        gridspec_kw=dict(
+            wspace=0.1,
+            bottom=0.25,
+            top=0.85,
+            right=0.95,
+            left=0.1
+        )
+    )
+    plot_clipped_firing_rate(axes_clip)
+    axes_clip[0].set_ylabel(r'$1 - N_{clip}/N$',
+                            labelpad=cf.YLABELPAD2,)
+    for data_id, data_type in enumerate(cf.DATA_TYPES):
+        axes_clip[data_id].set_title(data_type, fontsize=10)
+    fig.savefig('../plots/clipped_rates.eps', dpi=300)
+    plt.show()
+
+
 if __name__ == '__main__':
     # plot_correlation()
     # plot_displacement()
-    if not CNS:
-        plot_statistics_overview()
-    if CNS:
-        plot_cns_figure()
+    create_figure_clipped_rate()
+    # if not CNS:
+    #     plot_statistics_overview()
+    # if CNS:
+    #     plot_cns_figure()
