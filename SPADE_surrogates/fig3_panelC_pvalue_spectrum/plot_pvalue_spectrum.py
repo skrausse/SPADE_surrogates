@@ -54,7 +54,7 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
 
     """
     cmap = 'Blues_r'
-    scatter_size = 75.
+    scatter_size = 45.
 
     size = setup1.sizes_to_analyze[0]
 
@@ -64,8 +64,11 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
         vmax=1.,
         base=10.)
 
-    fig, axes = plt.subplots(2, 1, figsize=(3.5, 5.), sharex='all')
-    fig.subplots_adjust(hspace=0.32, right=0.85, top=0.95, bottom=0.1)
+    centimeters = 1/2.54  # centimeters in inches
+    fig, axes = plt.subplots(  # 12.7
+        2, 1, figsize=(8.5*centimeters, 10.0*centimeters), sharex='all',
+        gridspec_kw=dict(hspace=0.32, right=0.85, top=0.93, bottom=0.12,
+                         left=0.15))
 
     # find max_occurrences to fill up with zeroes
     max_occ = []
