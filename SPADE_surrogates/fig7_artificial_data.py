@@ -18,24 +18,8 @@ from fig2_spikeloss_r2gstats import get_cv2
 from generate_artificial_data import estimate_rate_deadtime, \
     create_st_list, estimate_deadtime
 
-CNS = False
-if CNS:
-    cns_figwidth = 4.
-    import seaborn as sns
-    sns.reset_orig()
-    sns.despine(trim=True)
-    sns.color_palette()
-    sns.set()
-    plt.rcParams.update(
-        {'axes.labelsize': 9,
-         'legend.fontsize': 5,
-         'xtick.labelsize': 8,
-         'ytick.labelsize': 8,
-         'xtick.major.pad': -2,
-         'ytick.major.pad': -2,
-         })
-
-xlabelpad = 2. if CNS else None
+xlabelpad = 0.5
+ylabelpad = -0.3
 
 excluded_neurons = np.load(
     'analysis_artificial_data/excluded_neurons.npy',
@@ -206,11 +190,7 @@ def plot_trial_firing_rate(ax, sts, gamma, ppd, neuron, max_refractory, sep,
                        + np.std(cut_trials_ppd, axis=0))) + 10)
     ax.set_xlabel('time (ms)', fontsize=fontsize,
                   labelpad=xlabelpad)
-    if not CNS:
-        ax.set_ylabel('firing rate (Hz)', fontsize=fontsize)
-    else:
-        ax.set_ylabel('firing rate (Hz)', fontsize=fontsize,
-                      labelpad=0.1)
+    ax.set_ylabel('firing rate (Hz)', fontsize=fontsize)
     ax.set_title('Single unit average FR', fontsize=fontsize)
 
     xticks = ax.get_xticks().tolist()
@@ -254,8 +234,8 @@ def plot_dead_time(
         ax.hist(rp, bins=bins, alpha=1, label=key, histtype='step')
     ax.legend(loc='upper right', fontsize=fontsize - 4)
     ax.set_title('Dead time of all units', fontsize=fontsize)
-    ax.set_ylabel('Count', fontsize=fontsize, labelpad=0.1)
-    xlabel = 'd (ms)' if CNS else 'DT (ms)'
+    ax.set_ylabel('Count', fontsize=fontsize, labelpad=ylabelpad)
+    xlabel = 'd (ms)'
     ax.set_xlabel(xlabel, fontsize=fontsize,
                   labelpad=xlabelpad)
     ax.set_ylim(
@@ -297,7 +277,7 @@ def plot_isi(ax, sts, gamma, ppd, neuron, fontsize):
 
     ax.set_xlabel('ISI (s)', fontsize=fontsize,
                   labelpad=xlabelpad)
-    ax.set_ylabel('Count', fontsize=fontsize, labelpad=0.1)
+    ax.set_ylabel('Count', fontsize=fontsize, labelpad=ylabelpad)
     ax.set_title('Single unit ISI', fontsize=fontsize)
 
 
@@ -340,7 +320,7 @@ def plot_cv2(ax, sts, gamma, ppd, sep, fontsize):
     for key, cv2 in cv2_dict.items():
         ax.hist(cv2, bins, alpha=1, label=key, histtype='step')
     ax.set_title('CV2 of all units', fontsize=fontsize)
-    ax.set_ylabel('Count', fontsize=fontsize, labelpad=0.1)
+    ax.set_ylabel('Count', fontsize=fontsize, labelpad=ylabelpad)
     ax.set_xlabel('CV2', fontsize=fontsize,
                   labelpad=xlabelpad)
 
@@ -529,8 +509,8 @@ def calculate_fps_rate(surrogate_methods, sessions, binsize, winlen,
         for session in sessions:
             folder_res = \
                 [f.path for f in os.scandir(
-                 f'../results/artificial_data/'
-                 f'{surrogate}/{process}/{session}/') if f.is_dir()]
+                    f'../results/artificial_data/'
+                    f'{surrogate}/{process}/{session}/') if f.is_dir()]
             for result in folder_res:
                 patterns = np.load(
                     f'{result}/filtered_res.npy', allow_pickle=True)[0]
@@ -601,15 +581,14 @@ def plot_number_fps(
          for surrogate in surrogate_methods], zorder=2)
     ax_num_fps.tick_params(axis='both', which='major',
                            labelsize=tick_size)
-    if not CNS:
-        ax_num_fps.tick_params(axis="x", pad=-15)
+    ax_num_fps.tick_params(axis="x", pad=-15)
 
 
-def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
-                            sep, sampling_period, epoch_length,
-                            sessions, surrogate_methods,
-                            processes,
-                            label_size, tick_size):
+def figure_artificial_data(sts, gamma, ppd, neuron, max_refractory,
+                           sep, sampling_period, epoch_length,
+                           sessions, surrogate_methods,
+                           processes,
+                           label_size, tick_size):
     """
     Function reproducing figure 8 of the paper.
     Evaluation and analysis of false positive for pattern detection with SPADE.
@@ -653,22 +632,22 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
         list of strings of the point process models employed (e.g. ['ppd',
         'gamma'])
     label_size: int
-        label size for legend
+        font size for labels
     tick_size: int
         tick size for y and x axes
     """
     # gridspec inside gridspec
-    fig = plt.figure(figsize=(5.2, 6.5), dpi=300)
-    plt.subplots_adjust(top=0.95, bottom=0.07, left=0.12, right=0.95)
-    params = {'legend.fontsize': 8,
-              'figure.figsize': (6, 7),
-              'axes.labelsize': 10,
-              'axes.titlesize': 10,
-              'xtick.labelsize': 8,
-              'ytick.labelsize': 8}
+    fig = plt.figure(figsize=(4.5, 3), dpi=300)
+    plt.subplots_adjust(top=0.92, bottom=0.07, left=0.12, right=0.95)
+    params = {'legend.fontsize': 5,
+              'axes.labelsize': label_size,
+              'axes.titlesize': label_size,
+              'xtick.labelsize': tick_size,
+              'ytick.labelsize': tick_size}
     pylab.rcParams.update(params)
 
-    gs = gridspec.GridSpec(2, 1, figure=fig, height_ratios=[0.3, 0.7])
+    gs = gridspec.GridSpec(2, 1, figure=fig, height_ratios=[0.5, 0.5],
+                           hspace=0.5)
 
     # Panel A
     gs0 = gridspec.GridSpecFromSubplotSpec(nrows=1, ncols=4,
@@ -679,38 +658,26 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
     ax04 = fig.add_subplot(gs0[3])
     axes = (ax01, ax02, ax03, ax04)
     panelA_plot(axes=axes, sts=sts, gamma=gamma, ppd=ppd, neuron=neuron,
-                max_refractory=max_refractory, sep=sep, fontsize=8,
+                max_refractory=max_refractory, sep=sep, fontsize=label_size,
                 sampling_period=sampling_period, epoch_length=epoch_length)
     ax03.set_xlim(0, 2)
     ax02.set_xlim(0, 0.2)
     ax01.set_ylim(0, 40)
-    ax04.legend(fontsize='xx-small')
+    ax04.legend()
     plt.text(x=-0.55, y=1.05, s='A', transform=ax01.transAxes, fontsize=10)
 
-    # Panel B and C
+    # Panel B
     gs_down = gridspec.GridSpecFromSubplotSpec(
-        nrows=1, ncols=2, subplot_spec=gs[1])
+        nrows=1, ncols=2, subplot_spec=gs[1], hspace=0.45)
 
     # ppd
-    gs_down_left = gridspec.GridSpecFromSubplotSpec(
-        nrows=3, ncols=1, subplot_spec=gs_down[0], hspace=0.45)
-    ax_b_left = fig.add_subplot(gs_down_left[0])  # Panel B left
-    ax_c_left = fig.add_subplot(gs_down_left[1])  # Panel C left
-    ax_d_left = fig.add_subplot(gs_down_left[2])  # Panel D left
+    ax_b_left = fig.add_subplot(gs_down[0])  # Panel B left
 
-    gs_down_right = gridspec.GridSpecFromSubplotSpec(
-        nrows=3, ncols=1, subplot_spec=gs_down[1], hspace=0.45)
-    ax_b_right = fig.add_subplot(gs_down_right[0])   # Panel B right
-    ax_c_right = fig.add_subplot(gs_down_right[1])   # Panel C right
-    ax_d_right = fig.add_subplot(gs_down_right[2])   # Panel D right
+    ax_b_right = fig.add_subplot(gs_down[1])   # Panel B right
 
     # bar plots for number of false positives
     plt.text(x=- 0.25, y=1.05, s='B', transform=ax_b_left.transAxes,
-             fontsize=title_size)
-    plt.text(x=- 0.25, y=1.05, s='C', transform=ax_c_left.transAxes,
-             fontsize=title_size)
-    plt.text(x=- 0.25, y=1.05, s='D', transform=ax_d_left.transAxes,
-             fontsize=title_size)
+             fontsize=10)
 
     for index, (process, ax_num_fps) in enumerate(
             zip(processes, (ax_b_left, ax_b_right))):
@@ -723,116 +690,22 @@ def figure8_artificial_data(sts, gamma, ppd, neuron, max_refractory,
             tick_size=tick_size)
 
         if process == 'gamma':
-            ax_num_fps.legend(fontsize='xx-small', ncol=2)
+            ax_num_fps.legend(ncol=2)
         ax_num_fps.set_ylabel('FPs per dataset',
-                              size=label_size, labelpad=2.5)
+                              size=label_size, labelpad=2.3)
 
         if process == 'ppd':
             ax_num_fps.set_title('PPD', y=0.95, size=label_size)
         else:
             ax_num_fps.set_title('Gamma', y=0.95, size=label_size)
 
-    axes_c_d = ((ax_c_left, ax_c_right), (ax_d_left, ax_d_right))
 
-    lines = create_firing_rate_plots(axes=axes_c_d)
-
-    ax_c_right.legend(
-        list(lines.values()),
-        list(lines.keys()),
-        loc='lower right',
-        fontsize='xx-small')
 
     # convert manually to eps
     # inkscape fig_artificial_data.pdf --export-eps=fig_artificial_data.eps
-    plt.savefig('../plots/fig_artificial_data.pdf')
-    plt.savefig('../plots/fig_artificial_data.png')
+    plt.savefig('../plots/fig_artificial_dataAB.pdf')
+    plt.savefig('../plots/fig_artificial_dataAB.png')
     plt.show()
-
-
-def plot_cns_figure_statistics():
-    """
-    Create the figure for the CNS poster showing the statistics of the
-    artificial data.
-    """
-    fig, axes = plt.subplots(
-        nrows=2,
-        ncols=2,
-        figsize=(cns_figwidth, 2.5),
-        gridspec_kw=dict(
-            hspace=0.9, wspace=0.3,
-            bottom=0.13,
-            left=0.1,
-            right=0.98,
-            top=0.9,
-        )
-    )
-
-    axes = (axes[0, 0], axes[0, 1], axes[1, 0], axes[1, 1], )
-    panelA_plot(axes=axes, sts=sts, gamma=gamma, ppd=ppd, neuron=neuron,
-                max_refractory=max_refractory, sep=sep, fontsize=8,
-                sampling_period=sampling_period, epoch_length=epoch_length)
-
-    for ax in axes:
-        ax.tick_params(axis='both', which='major',
-                       labelsize=tick_size)
-
-    handles, labels = axes[0].get_legend_handles_labels()
-    legend = fig.legend(handles, labels, fontsize='xx-small',
-                        bbox_to_anchor=(0.98,  # x
-                                        0.89))  # y
-    frame = legend.get_frame()
-    frame.set_facecolor('0.9')
-    frame.set_edgecolor('0.9')
-
-    axes[3].get_legend().remove()
-
-    plt.show()
-    fig.savefig(
-        '../plots/poster_artificial_data_1.pdf',
-        dpi=30)
-    plt.close(fig=fig)
-
-
-def plot_cns_figure_number_fps():
-    """
-    Create the figure for the CNS poster showing the number of false positives.
-    """
-    fig, axes = plt.subplots(
-        nrows=1,
-        ncols=2,
-        figsize=(cns_figwidth, 1.25),
-        gridspec_kw=dict(
-            hspace=1.0, wspace=0.35,
-            bottom=0.15,
-            left=0.1,
-            right=0.98,
-            top=0.9,
-        )
-    )
-    for index, (process, ax_num_fps) in enumerate(
-            zip(processes, axes)):
-        plot_number_fps(
-            ax_num_fps=ax_num_fps,
-            index=index,
-            process=process,
-            sessions=sessions,
-            surrogate_methods=surrogate_methods,
-            tick_size=tick_size)
-
-        if process == 'gamma':
-            ax_num_fps.legend(fontsize=5.5, ncol=2)
-            ax_num_fps.set_ylim(-0.2, 6.5)
-        ax_num_fps.set_ylabel('FPs per dataset',
-                              size=label_size, labelpad=2.5)
-
-        if process == 'ppd':
-            ax_num_fps.set_ylim(-0.4, 11.5)
-            ax_num_fps.set_title('PPD', y=0.95, size=label_size)
-        else:
-            ax_num_fps.set_title('Gamma', y=0.95, size=label_size)
-    plt.show()
-    fig.savefig('../plots/poster_artificial_data_2.pdf', dpi=300)
-    plt.close(fig=fig)
 
 
 if __name__ == "__main__":
@@ -844,9 +717,9 @@ if __name__ == "__main__":
     epoch_length = 500 * pq.ms
     sampling_period = 0.1 * pq.ms
     neuron = 39
-    label_size = 8
-    title_size = 10
-    tick_size = 8
+    label_size = 7
+    title_size = 8
+    tick_size = 7
 
     # bins for last panel
     scale = 3
@@ -862,21 +735,17 @@ if __name__ == "__main__":
     ppd = np.load(f'../data/artificial_data/ppd/{session}/'
                   f'ppd_{epoch}_{trialtype}.npy', allow_pickle=True)
 
-    if not CNS:
-        figure8_artificial_data(
-            sts=sts,
-            gamma=gamma,
-            ppd=ppd,
-            neuron=neuron,
-            max_refractory=max_refractory,
-            sep=sep,
-            sampling_period=sampling_period,
-            epoch_length=epoch_length,
-            sessions=sessions,
-            surrogate_methods=surrogate_methods,
-            processes=processes,
-            label_size=label_size,
-            tick_size=tick_size)
-    else:
-        plot_cns_figure_number_fps()
-        plot_cns_figure_statistics()
+    figure_artificial_data(
+        sts=sts,
+        gamma=gamma,
+        ppd=ppd,
+        neuron=neuron,
+        max_refractory=max_refractory,
+        sep=sep,
+        sampling_period=sampling_period,
+        epoch_length=epoch_length,
+        sessions=sessions,
+        surrogate_methods=surrogate_methods,
+        processes=processes,
+        label_size=label_size,
+        tick_size=tick_size)
