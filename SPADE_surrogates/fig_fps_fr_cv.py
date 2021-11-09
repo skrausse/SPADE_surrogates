@@ -6,12 +6,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import quantities as pq
-import S1_fig_cv2s_in_fps
 
 import yaml
 
 from generate_artificial_data import get_cv2
-
 
 
 def create_firing_rate_plots(axes, what_to_plot='rate'):
@@ -23,7 +21,8 @@ def create_firing_rate_plots(axes, what_to_plot='rate'):
     lines = {'all': None, 'only UD': None,
              'UD & UDD': None, 'other': None}
 
-    for row_id, (axes_row, session) in enumerate(zip(axes, config['sessions'])):
+    for row_id, (axes_row, session) \
+            in enumerate(zip(axes, config['sessions'])):
 
         for ax, process in zip(axes_row, config['processes']):
             ax.set_yticks(
@@ -58,7 +57,8 @@ def create_firing_rate_plots(axes, what_to_plot='rate'):
                 if what_to_plot == 'rate':
                     n_trials = int(
                         (spiketrains[0].t_stop.simplified.item()
-                         - spiketrains[0].t_start.simplified.item()) / (epoch_length + sep))
+                         - spiketrains[0].t_start.simplified.item()) /
+                        (epoch_length + sep))
 
                     effective_length = n_trials * epoch_length
 
@@ -90,7 +90,8 @@ def create_firing_rate_plots(axes, what_to_plot='rate'):
                         continue
 
                     neurons_per_method[surr_method] = np.unique(
-                        np.hstack([pattern['neurons'] for pattern in patterns]))
+                        np.hstack([pattern['neurons']
+                                   for pattern in patterns]))
                     all_neurons = np.unique(np.hstack(
                         (all_neurons, neurons_per_method[surr_method])))
 
@@ -168,13 +169,12 @@ if __name__ == '__main__':
     monkeys = {'i140703-001': 'Monkey N', 'l101210-001': 'Monkey L'}
     capitalized_processes = {'ppd': 'PPD', 'gamma': 'Gamma'}
 
-
     fig = plt.figure(figsize=figsize)
     plt.subplots_adjust(bottom=0.13, top=0.95, right=0.95, hspace=0.35)
     gs = gridspec.GridSpec(ncols=1, nrows=2,
                            figure=fig)
 
-    #firing rates
+    # firing rates
     gs0 = gridspec.GridSpecFromSubplotSpec(nrows=2, ncols=2,
                                            subplot_spec=gs[0], hspace=0.55,
                                            wspace=0.3)
@@ -187,7 +187,7 @@ if __name__ == '__main__':
         axes_fr,
         what_to_plot='rate')
 
-    #cv2s
+    # cv2s
     gs1 = gridspec.GridSpecFromSubplotSpec(nrows=2, ncols=2,
                                            subplot_spec=gs[1], hspace=0.55,
                                            wspace=0.3)

@@ -1,6 +1,6 @@
 """
-Script to create Fig 2 of the manuscript which shows the spike count reduction
-found in experimental data.
+Script to create the figure of the manuscript which shows the spike count
+reduction found in experimental data.
 """
 import itertools
 
@@ -15,24 +15,6 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 from generate_artificial_data import estimate_rate_deadtime, create_st_list
-
-
-CNS = False
-if CNS:
-    cns_figwidth = 4.
-    import seaborn as sns
-
-    sns.despine(trim=True)
-    sns.color_palette()
-    sns.set()
-    plt.rcParams.update(
-        {'axes.labelsize': 9,
-         'legend.fontsize': 9,
-         'xtick.labelsize': 8,
-         'ytick.labelsize': 8,
-         'xtick.major.pad': 0,
-         'ytick.major.pad': 0,
-         })
 
 
 XLABELPAD = -0.25
@@ -274,16 +256,15 @@ def plot_loss_top_panel(
     ax_loss.errorbar(firing_rates, mean_loss_dither, yerr=std_loss_dither,
                      fmt='o', label='UD Surrogate', color=colors[1],
                      marker='x')
-    if not CNS:
-        ax_loss.set_ylabel('Spike count\ndecrease', fontsize=fontsize)
+
+    ax_loss.set_ylabel('Spike count\ndecrease', fontsize=fontsize)
 
     ax_loss.set_xlim(left=2. / epoch_length.magnitude, right=65)
     ax_loss.set_ylim(bottom=-0.01, top=0.23)
     ax_loss.tick_params(axis="x", labelsize=8)
     ax_loss.tick_params(axis="y", labelsize=8)
-    if not CNS:
-        ax_loss.legend(fontsize=fontsize - 2,
-                       loc='upper right')
+
+    ax_loss.legend(fontsize=fontsize - 2, loc='upper right')
 
     ax_residuals.errorbar(
         firing_rates, -binned_loss + mean_loss_dither, yerr=std_loss_dither,
@@ -645,14 +626,6 @@ def fig_2(folder, sessions, epoch, trialtype, dither, binsize, n_surr,
     # hide ticklabels of first ISI figure
     plt.setp(ax11.get_xticklabels(), visible=False)
 
-    # plot_residuals(ax=ax12,
-    #                sts=sts_L,
-    #                binsize=binsize,
-    #                dither=dither,
-    #                epoch_length=epoch_length,
-    #                winlen=winlen,
-    #                n_surr=n_surr,
-    #                fontsize=fontsize)
     ax12.set_ylabel('')
     ax11.set_title('Monkey L', fontsize=10)
 
@@ -755,72 +728,11 @@ def fig_2(folder, sessions, epoch, trialtype, dither, binsize, n_surr,
     fig.align_ylabels()
 
     # plt.show()
-    fig.savefig('../plots/fig2_spikeloss_r2gstats.png')
+    fig.savefig('../plots/fig_spikeloss_r2gstats.png')
     # convert manually to eps
     # inkscape fig2_spikeloss_r2gstats.pdf
     # --export-eps=fig2_spikeloss_r2gstats.eps
-    fig.savefig('../plots/fig2_spikeloss_r2gstats.pdf')
-
-
-def plot_cns_figure():
-    """
-    Create the figure for the CNS poster
-    """
-    # settings for the CNS poster
-    fontsize = 10
-
-    fig_loss, ax_loss = plt.subplots(
-        nrows=1, ncols=1,
-        gridspec_kw=dict(
-            # hspace=0.,
-            # height_ratios=(2., 1.),
-            top=0.98,
-            bottom=0.21,
-            left=0.15,
-            right=0.98,
-        ),
-        figsize=(cns_figwidth, 2.),
-    )
-    fig_residual, ax_residual = plt.subplots()
-
-    file_nikos = \
-        f'{sts_folder}{sessions[0]}/original_{epoch}_{trialtype}.npy'
-    sts_N = np.load(
-        file_nikos,
-        allow_pickle=True)
-
-    plot_loss_top_panel(
-        ax_loss=ax_loss,
-        ax_residuals=ax_residual,
-        sts=sts_N,
-        binsize=binsize,
-        dither=dither * pq.s,
-        n_surr=n_surr,
-        epoch_length=epoch_length,
-        winlen=winlen,
-        fontsize=fontsize
-    )
-    ax_loss.set_ylabel(
-        'Count decrease',
-        # fontsize=fontsize
-    )
-
-    ax_loss.set_yticks(
-        (0.0, 0.05, 0.1, 0.15))
-    ax_loss.set_ylim(-0.005, 0.155)
-    # ax_loss[0].set_xticks([])
-
-    ax_loss.set_xticks([0, 10, 20, 30, 40, 50, 60])
-    ax_loss.set_xlim(0, 52)
-    ax_loss.set_xlabel(
-        'Average firing rate (Hz)',
-        # fontsize=fontsize
-    )
-    ax_loss.legend(loc='upper left')
-
-    plt.close(fig=fig_residual)
-    plt.show()
-    fig_loss.savefig('../plots/poster_spike_loss.pdf', dpi=300)
+    fig.savefig('../plots/fig_spikeloss_r2gstats.pdf')
 
 
 if __name__ == '__main__':
@@ -877,9 +789,6 @@ if __name__ == '__main__':
         else:
             sts_folder = f'../data/artificial_data/{data_type}/'
 
-        if not CNS:
-            fig_2(sts_folder, sessions, epoch, trialtype, dither, binsize,
-                  n_surr, winlen, epoch_length, sorting_deadtime, sep,
-                  fontsize, data_type='original')
-        else:
-            plot_cns_figure()
+        fig_2(sts_folder, sessions, epoch, trialtype, dither, binsize,
+              n_surr, winlen, epoch_length, sorting_deadtime, sep,
+              fontsize, data_type='original')

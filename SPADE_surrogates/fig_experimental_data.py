@@ -1,5 +1,6 @@
 """
-Script to create Fig 8 that shows the patterns shown in the experimental data.
+Script to create the figure that shows the patterns shown in the experimental
+data.
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -297,9 +298,9 @@ def plot_experimental_data_results(surrogates, tag_surrogates,
     fig_mean_stat.align_ylabels()
 
     fig_mean_stat.savefig('../../figures/'
-                          '/fig8_experimental_data.eps', dpi=300)
+                          '/fig_experimental_data.eps', dpi=300)
     fig_mean_stat.savefig('../../figures/'
-                          '/fig8_experimental_data.png', dpi=300)
+                          '/fig_experimental_data.png', dpi=300)
 
 
 if __name__ == "__main__":

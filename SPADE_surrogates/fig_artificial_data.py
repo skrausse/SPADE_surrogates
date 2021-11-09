@@ -1,6 +1,6 @@
 """
-Script to create Fig 7 that shows the statistics of artificial data and the
-false positives when analyzing these data with SPADE.
+Script to create the figure that shows the statistics of artificial data and
+the false positives when analyzing these data with SPADE.
 """
 import itertools
 import os
@@ -13,8 +13,7 @@ from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.pylab as pylab
 
-from S1_fig_cv2s_in_fps import create_firing_rate_plots
-from fig2_spikeloss_r2gstats import get_cv2
+from fig_spikeloss_r2gstats import get_cv2
 from generate_artificial_data import estimate_rate_deadtime, \
     create_st_list, estimate_deadtime
 
@@ -698,8 +697,6 @@ def figure_artificial_data(sts, gamma, ppd, neuron, max_refractory,
             ax_num_fps.set_title('PPD', y=0.95, size=label_size)
         else:
             ax_num_fps.set_title('Gamma', y=0.95, size=label_size)
-
-
 
     # convert manually to eps
     # inkscape fig_artificial_data.pdf --export-eps=fig_artificial_data.eps

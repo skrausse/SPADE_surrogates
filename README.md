@@ -56,42 +56,44 @@ sudo apt install libopenmpi-dev
 **Creating the figures**
 
 Please go to the code folder `cd SPADE_surrogates`
-- For Figure 2:
+- For Figure 3:
+  - `python fig_r2gexperiment.py`
+- For Figure 4:
+  - `python fig_surrogate_statistics_data.py`
+  - `python fig_surrogate_statistics_plot.py`
+- For Figure 5 & Figure 6C:
   - `python generate_original_concatenated_data.py` 
-  - `python fig2_spikeloss_r2gstats.py`
-- For Figure 3, Panel B: 
-  - `python fig3_panelB_spike_loss.py`
-- For Figure 3, Panel C:
-  - `cd fig3_panelC_pvalue_spectrum`
+  - `python fig_spikeloss_r2gstats.py`
+- For Figure 6B:
+  - `python fig_analytical_spike_loss.py`
+- For Figure 6C:
+  - you get it with Figure 5
+- For Figure 7:
+  - `cd fig_pvalue_spectrum`
   - `python max_order_statistics.py`
   - `python create_independent_spiketrains.py`
   - `mpirun python analyze_independent_spiketrains.py` (This step should be done on a cluster)
   - `python plot_pvalue_spectrum.py`
   - `cd ..`
-- For Figure 5:
-  - `python fig5_surrogate_statistics_data.py`
-  - `python fig5_surrogate_statistics_plot.py`
-- For Figure 6:
-  - `python fig6_r2gexperiment.py`
-- For Figure 7:
+- For Figure 8:
   - `cd analysis_artifial_data`
   - `snakemake`  (This step should be done a cluster.)
   - `cd ..`
-  - `python fig7_artificial_data.py`
-- For Figure 8:
+  - `python fig_artificial_data.py`
+- For Figure 9:
+  - run the scripts for Figure 8 
+  - `python fig_fps_fr_cv.py`
+- For Figure 10:
   - `cd analysis_experimental_data.py`
   - `snakemake`  (This step should be done a cluster.)
   - `cd ..`
-  - `python fig8_experimental_data.py`
-- For S1 Figure:
-  - run the scripts for Figure 7 
-  - `python S1_fig_cv2s_in_fps.py`
-- For S2 Figure:
+  - `python fig_experimental_data.py`
+- For Figure 11:
   - download and unzip  https://borgelt.net/src/pycoco.zip 
   - in pycoco directory run `pip install -e .`
   - `python S2_fig_coconad.py`
   
-Scripts for Figures 2, 3, 5, 6, S1 and S2 can be run locally on a laptop. Some
+Scripts for Figures 3, 4, 5, 6, 11 can be run locally on a laptop. Some
 may take ~5-10 minutes in runtime, depending on the complexity of the analysis.
 Data generation and analysis steps that for computation require a cluster are
 indicated in brackets.

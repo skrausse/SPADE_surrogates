@@ -1,5 +1,5 @@
 """
-Script to create S2 Fig that shows the difference between CoCoNAD and FIM.
+Script to create the figure that shows the difference between CoCoNAD and FIM.
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -187,7 +187,7 @@ if __name__ == '__main__':
     ax[0].set_ylabel('Num. Synchronies per sec.')
     ax[0].set_xlabel('firing rate in Hz', labelpad=-2.)
     ax[0].set_title('CoCoNAD')
-    # ax[0].legend()
+
     print('FIM')
     print('rates', rates)
     print('original', mean_patterns_fim)
@@ -200,7 +200,7 @@ if __name__ == '__main__':
     ax[1].set_xlabel('firing rate in Hz', labelpad=-2.)
     ax[1].set_title('FIM')
     ax[1].legend(fontsize='x-small')
-    # ax[1].set_ylabel('Num. Synchronies per sec.')
+
     fig.savefig('../plots/fig_coconad.png')
     fig.savefig('../plots/fig_coconad.eps')
     plt.show()

@@ -185,4 +185,3 @@ if __name__ == '__main__':
     setup_gt = cf.TestCaseSetUp(surr_method='ground_truth')
     setup_ud = cf.TestCaseSetUp(surr_method='dither_spikes')
     plot_comparison_of_two_pvalue_spectra(setup_gt, setup_ud)
-    # plot_flattened_pvalue_spectra(setup_gt, setup_ud)

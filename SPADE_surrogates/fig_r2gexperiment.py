@@ -1,5 +1,5 @@
 """
-Script to create Fig 6 which explains the segmentation of the experimental
+Script to create the figure which explains the segmentation of the experimental
 data.
 """
 import quantities as pq
@@ -115,5 +115,5 @@ axes.set_ylabel('Neurons', fontsize=8)
 axes.set_xlabel('Time (ms)', fontsize=8)
 axes.tick_params(axis="x", labelsize=8)
 axes.tick_params(axis="y", labelsize=8)
-plt.savefig('../plots/fig6_r2gexperiment.eps', dpi=300)
-plt.savefig('../plots/fig6_r2gexperiment.svg', dpi=300)
+plt.savefig('../plots/fig_r2gexperiment.eps', dpi=300)
+plt.savefig('../plots/fig_r2gexperiment.svg', dpi=300)

@@ -1,5 +1,5 @@
 """
-Module to plot Fig. 4 which shows the analytical spike count reduction
+Module to plot the figure which shows the analytical spike count reduction
 for PPD and Gamma spike trains and for their uniform-dithered surrogates.
 """
 
@@ -12,17 +12,6 @@ import matplotlib.cm as colormaps
 import quantities as pq
 
 from scipy.special import gamma, gammainc
-
-
-def adjust_lightness(color, amount=0.5):
-    import matplotlib.colors as mc
-    import colorsys
-    try:
-        c = mc.cnames[color]
-    except:
-        c = color
-    c = colorsys.rgb_to_hls(*mc.to_rgb(c))
-    return colorsys.hls_to_rgb(c[0], max(0, min(1, amount * c[1])), c[2])
 
 
 def firing_rate_clipped_gamma(firing_rate, shape_factor, bin_size):
@@ -265,7 +254,7 @@ if __name__ == '__main__':
     binsize = 5. * pq.ms
     deadtimes = np.arange(1.5, 3.1, 0.5) * pq.ms
     ditherparameter = 25 * pq.ms
-    plotpath = '../plots/fig3_panelB_analytical_spike_count_reduction.svg'
+    plotpath = '../plots/fig_analytical_spike_count_reduction.svg'
 
     plot_spike_count_reduction(
         firing_rates=firingrates,
@@ -273,5 +262,4 @@ if __name__ == '__main__':
         dither_parameter=ditherparameter,
         dead_times=deadtimes,
         shape_factors=shapefactors,
-        plot_path=plotpath
-    )
+        plot_path=plotpath)
