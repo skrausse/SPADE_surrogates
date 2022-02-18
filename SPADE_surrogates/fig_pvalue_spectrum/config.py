@@ -47,7 +47,7 @@ class SpadeSetUp:
     surr_method: str = 'joint_isi_dithering'
     psr_param: Union[Tuple[int], None] = (2, 2, 2)
     output_format: str = 'patterns'
-    sizes_to_analyze: Tuple[int] = (3, )
+    sizes_to_analyze: Tuple[int] = (2, 3, 4, 5)
 
     @property
     def surr_method_short(self):
