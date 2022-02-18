@@ -87,7 +87,15 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
         occs = []
         pvs = []
 
+        durs_smaller_thresh = []
+        occs_smaller_thresh = []
+
+        durs_smaller_bonf = []
+        occs_smaller_bonf = []
+
         for dur in optimized_pvalue_spec[size].keys():
+            found_smaller_thresh = False
+            found_smaller_bonf = False
             fill = list(
                 range(list(optimized_pvalue_spec[size][dur].keys())[-1]+1,
                       max_occ+1))
@@ -95,9 +103,25 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
                 durs.append(dur)
                 occs.append(occ)
                 if optimized_pvalue_spec[size][dur][occ]:
-                    pvs.append(optimized_pvalue_spec[size][dur][occ])
+                    pvalue = optimized_pvalue_spec[size][dur][occ]
                 else:
-                    pvs.append(0)
+                    pvalue = 0
+                pvs.append(pvalue)
+                if not found_smaller_thresh and pvalue < 0.05:
+                    durs_smaller_thresh.append(dur - 0.5)
+                    durs_smaller_thresh.append(dur + 0.5)
+                    occs_smaller_thresh.append(occ - 0.5)
+                    occs_smaller_thresh.append(occ - 0.5)
+                    found_smaller_thresh = True
+                if not found_smaller_bonf and pvalue < 0.05/(12*4):
+                    durs_smaller_bonf.append(dur - 0.5)
+                    durs_smaller_bonf.append(dur + 0.5)
+                    occs_smaller_bonf.append(occ - 0.5)
+                    occs_smaller_bonf.append(occ - 0.5)
+                    found_smaller_bonf = True
+
+        # durs_smaller_thresh = np.array(durs_smaller_thresh)
+        # occs_smaller_thresh = np.array(occs_smaller_thresh)
 
         durs_zeros = []
         occs_zeros = []
@@ -121,6 +145,10 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
                      c=pvs_zeros, marker='s',
                      cmap='binary_r')
 
+        axis.plot(occs_smaller_thresh, durs_smaller_thresh)
+
+        axis.plot(occs_smaller_bonf, durs_smaller_bonf)
+
         if axis_id == 1:
             axis.set_xlabel('number of occurrences')
         axis.set_ylabel('duration', labelpad=1.8)
@@ -140,6 +168,8 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
 
     cbar.set_label('p-value')
     fig.savefig('../../plots/fig3_panelC_pvalue_spectrum.svg',
+                dpi=300)
+    fig.savefig('../../plots/fig3_panelC_pvalue_spectrum.png',
                 dpi=300)
     plt.show()
 
