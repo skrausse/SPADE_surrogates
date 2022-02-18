@@ -19,7 +19,7 @@ else:
 if __name__ == '__main__':
     np.random.seed(RANK)
     random.seed(RANK)
-    for surr_method in ('dither_spikes', 'ground_truth'):
+    for surr_method in ('dither_spikes', 'ground_truth', 'trial_shifting'):
         setup = SPADE(surr_method=surr_method)
 
         list_of_spiketrains = np.load(

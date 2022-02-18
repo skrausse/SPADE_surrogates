@@ -60,8 +60,19 @@ class SpadeSetUp:
         surr_methods = {'dither_spikes': 'UD',
                         'joint_isi_dithering': 'JISI',
                         'dither_spikes_with_refractory_period': 'UDR',
-                        'ground_truth': 'GT'}
+                        'ground_truth': 'GT',
+                        'trial_shifting': 'TR-SHIFT'}
         return surr_methods[self.surr_method]
+
+    @property
+    def surr_kwargs(self):
+        surr_kwargs: dict = {'dither_spikes': {},
+                             'joint_isi_dithering': {},
+                             'dither_spikes_with_refractory_period': {},
+                             'ground_truth': {},
+                             'trial_shifting': {'trial_length': 100.*pq.ms,
+                                                'trial_separation': 0.*pq.ms}}
+        return surr_kwargs[self.surr_method]
 
 
 @dataclass

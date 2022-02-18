@@ -69,7 +69,8 @@ class SPADE(create_st.SpikeTrainGeneration):
                 surr_method=self.surr_method,
                 psr_param=None,
                 output_format='concepts',
-                ground_truth=self.create_independent_spike_trains
+                ground_truth=self.create_independent_spike_trains,
+                **self.surr_kwargs
             )
             if rank == 0:
                 concepts.extend(spade_output['patterns'])
