@@ -459,6 +459,7 @@ def calculate_fps(surrogate_methods, sessions):
     ppd_fps = {}
     for surrogate in surrogate_methods:
         ppd_fps[surrogate] = 0
+        list_fps = []
         for session in sessions:
             folder_res = [f.path for f in
                           os.scandir('../results/artificial_data/' +
@@ -468,8 +469,17 @@ def calculate_fps(surrogate_methods, sessions):
                 res = np.load(result + '/filtered_res.npy', allow_pickle=True)
                 if len(res[0]) > 0:
                     ppd_fps[surrogate] += len(res[0])
+                    list_fps.append(len(res[0]))
+        print('PPD', surrogate)
+        print('Number of FP-patterns:', np.sum(list_fps))
+        print('Number of datasets with #FP-patterns>1:',  len(list_fps))
+        print('Family-wise error rate (#FP-patterns>1 / #datasets): ',
+              len(list_fps)/48)
+        print()
+
     for index, surrogate in enumerate(surrogate_methods):
         gamma_fps[surrogate_methods[index]] = 0
+        list_fps = []
         for session in sessions:
             folder_res = [f.path for f in
                           os.scandir('../results/artificial_data/' +
@@ -479,6 +489,14 @@ def calculate_fps(surrogate_methods, sessions):
                 res = np.load(result + '/filtered_res.npy', allow_pickle=True)
                 if len(res[0]) > 0:
                     gamma_fps[surrogate_methods[index]] += len(res[0])
+                    list_fps.append(len(res[0]))
+        print('Gamma', surrogate)
+        print('Number of FP-patterns:', np.sum(list_fps))
+        print('Number of datasets with #FP-patterns>1:',  len(list_fps))
+        print('Family-wise error rate (#FP-patterns>1 / #datasets): ',
+              len(list_fps)/48)
+        print()
+
     return ppd_fps, gamma_fps
 
 
@@ -561,13 +579,13 @@ def plot_number_fps(
     tick_size: int
         tick size for x and y ticks
     """
-    print('Number of False positives for', process)
+    # print('Number of False positives for', process)
     fps = calculate_fps(sessions=sessions,
                         surrogate_methods=surrogate_methods)[index]
 
     number_datasets = 48
     for index_surr, surrogate in enumerate(surrogate_methods):
-        print(process, surrogate, fps[surrogate])
+        # print(process, surrogate, fps[surrogate])
         ax_num_fps.bar(index_surr,
                        fps[surrogate]/number_datasets,
                        width=0.5,
