@@ -56,7 +56,7 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
     cmap = 'Blues_r'
     scatter_size = 45.
 
-    size = setup1.sizes_to_analyze[0]
+    size = 3  # size for the plotting
 
     color_norm = mcolors.SymLogNorm(
         linthresh=1e-6,
@@ -67,7 +67,7 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
     centimeters = 1/2.54  # centimeters in inches
     fig, axes = plt.subplots(  # 12.7
         2, 1, figsize=(8.5*centimeters, 10.0*centimeters), sharex='all',
-        gridspec_kw=dict(hspace=0.32, right=0.85, top=0.93, bottom=0.12,
+        gridspec_kw=dict(hspace=0.32, right=0.85, top=0.88, bottom=0.12,
                          left=0.15))
 
     # find max_occurrences to fill up with zeroes
@@ -155,7 +155,7 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
         if axis_id == 0:
             axis.set_title('Ground Truth')
         else:
-            axis.set_title('Uniform Dithering')
+            axis.set_title('Trial Shifting')
         axis.set_yticks(np.arange(1, setup.win_len, 2))
         axis.set_yticklabels(np.arange(2, setup.win_len+1, 2))
 
@@ -167,9 +167,10 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
     cbar = fig.colorbar(mappable=cbar_map, ax=axes)
 
     cbar.set_label('p-value')
-    fig.savefig('../../plots/fig3_panelC_pvalue_spectrum.svg',
+    fig.suptitle(f'P-value spectrum (PPD; d={setup_gt.dead_time.item()}ms)')
+    fig.savefig('../../plots/fig3_panelC_pvalue_spectrum_tr_shift.svg',
                 dpi=300)
-    fig.savefig('../../plots/fig3_panelC_pvalue_spectrum.png',
+    fig.savefig('../../plots/fig3_panelC_pvalue_spectrum_tr_shift.png',
                 dpi=300)
     plt.show()
 
@@ -213,5 +214,5 @@ def plot_flattened_pvalue_spectra(setup1, setup2):
 
 if __name__ == '__main__':
     setup_gt = cf.TestCaseSetUp(surr_method='ground_truth')
-    setup_ud = cf.TestCaseSetUp(surr_method='dither_spikes')
+    setup_ud = cf.TestCaseSetUp(surr_method='trial_shifting')
     plot_comparison_of_two_pvalue_spectra(setup_gt, setup_ud)
