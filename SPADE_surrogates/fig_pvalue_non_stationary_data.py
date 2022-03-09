@@ -30,19 +30,24 @@ data_type = data_types[0]
 session = sessions[0]
 epoch = epochs[4]
 trial_type = trial_types[0]
-size = 2
+
+n_surrogates = 5000
+winlen = 12
+spectrum = '3d#'
 
 cmap = 'Blues_r'
 scatter_size = 45.
 color_norm = mcolors.SymLogNorm(
-    linthresh=1e-6,
-    vmin=1e-6,
+    linthresh=1./n_surrogates,
+    vmin=1./n_surrogates,
     vmax=1.,
     base=10.)
+centimeters = 1/2.54  # centimeters in inches
+
 
 def load_results(
         data_type, session, epoch, trial_type,
-        surr_method, size, min_size):
+        surr_method, size):
     path = f'../results/artificial_data/' \
            f'{surr_method}/{data_type}/' \
            f'{session}/{epoch}_{trial_type}'
@@ -56,13 +61,14 @@ def load_results(
     results = np.load(result_path, allow_pickle=True)[0]
     return results
 
+
 def get_optimized_pvalue_spec(
         data_type, session, epoch, trial_type,
-        surr_method, size, min_size):
+        surr_method, size):
 
     results = load_results(
         data_type, session, epoch, trial_type,
-        surr_method, size, min_size)
+        surr_method, size)
 
     pv_spec = results['pvalue_spectrum']
 
@@ -74,91 +80,122 @@ def get_optimized_pvalue_spec(
     return optimized_pvalue_spec
 
 
+def plot_pvalue_for_one_size(
+        axis, data_type, session, epoch, trial_type,
+        surr_method, size, number_of_tests, number_of_tests_per_size):
+    optimized_pvalue_spec = get_optimized_pvalue_spec(
+        data_type, session, epoch, trial_type,
+        surr_method, size)
+
+    durs = []
+    occs = []
+    pvs = []
+
+    durs_smaller_thresh = []
+    occs_smaller_thresh = []
+
+    durs_smaller_bonf = []
+    occs_smaller_bonf = []
+
+    max_occ = []
+    for dur in optimized_pvalue_spec[size].keys():
+        for occ in optimized_pvalue_spec[size][dur].keys():
+            max_occ.append(occ)
+
+    if len(max_occ) == 0:
+        return
+    max_occ = max(max_occ)
+
+    for dur in optimized_pvalue_spec[size].keys():
+        found_smaller_thresh = False
+        found_smaller_bonf = False
+        fill = list(
+            range(list(optimized_pvalue_spec[size][dur].keys())[-1] + 1,
+                  max_occ + 1))
+        for occ in list(optimized_pvalue_spec[size][dur].keys()) + fill:
+            durs.append(dur)
+            occs.append(occ)
+            if optimized_pvalue_spec[size][dur][occ]:
+                pvalue = optimized_pvalue_spec[size][dur][occ]
+            else:
+                pvalue = 0
+            pvs.append(pvalue)
+            if not found_smaller_thresh and pvalue < 0.05:
+                durs_smaller_thresh.append(dur - 0.5)
+                durs_smaller_thresh.append(dur + 0.5)
+                occs_smaller_thresh.append(occ - 0.5)
+                occs_smaller_thresh.append(occ - 0.5)
+                found_smaller_thresh = True
+            if not found_smaller_bonf and pvalue < 0.05 / number_of_tests:
+                durs_smaller_bonf.append(dur - 0.5)
+                durs_smaller_bonf.append(dur + 0.5)
+                occs_smaller_bonf.append(occ - 0.5)
+                occs_smaller_bonf.append(occ - 0.5)
+                found_smaller_bonf = True
+
+    # durs_smaller_thresh = np.array(durs_smaller_thresh)
+    # occs_smaller_thresh = np.array(occs_smaller_thresh)
+
+    durs_zeros = []
+    occs_zeros = []
+    pvs_zeros = []
+
+    for dur in optimized_pvalue_spec[size].keys():
+        fill = list(
+            range(list(optimized_pvalue_spec[size][dur].keys())[-1] + 1,
+                  max_occ + 1))
+        for occ in list(optimized_pvalue_spec[size][dur].keys()) + fill:
+            if not optimized_pvalue_spec[size][dur][occ]:
+                durs_zeros.append(dur)
+                occs_zeros.append(occ)
+                pvs_zeros.append(0)
+
+    axis.scatter(occs, durs, s=scatter_size,
+                 c=pvs, marker='s', cmap=cmap,
+                 norm=color_norm)
+
+    axis.scatter(occs_zeros, durs_zeros, s=scatter_size,
+                 c=pvs_zeros, marker='s',
+                 cmap='binary_r')
+
+    axis.plot(occs_smaller_thresh, durs_smaller_thresh)
+
+    axis.plot(occs_smaller_bonf, durs_smaller_bonf)
+
+    pattern_occ, pattern_dur = get_pattern_occ_duration(
+        data_type, session, epoch, trial_type,
+        surr_method, size)
+
+    reduced_pattern_occ = []
+    reduced_pattern_dur = []
+
+    for occ, dur in zip(pattern_occ, pattern_dur):
+        if optimized_pvalue_spec[size][dur][occ] < 0.9999:
+            reduced_pattern_occ.append(occ)
+            reduced_pattern_dur.append(dur)
+
+    axis.scatter(reduced_pattern_occ, reduced_pattern_dur,
+                 s=scatter_size/4, c='C1', marker='x')
+
+    axis.set_title(
+        f'Size {size}, #Tests: {number_of_tests_per_size[size]}')
+
+
 def create_pvalue_plot(data_type, session, epoch, trial_type, surr_method):
-    centimeters = 1/2.54  # centimeters in inches
+    number_of_tests_per_size, tested_pattern_occs, tested_pattern_durs = \
+        get_numbers_of_tests_all_sizes(
+            data_type, session, epoch, trial_type, surr_method)
+    number_of_tests = sum(number_of_tests_per_size.values())
 
-    fig, axes = plt.subplots(2, 2, figsize=(2*8.5*centimeters, 2*10.0*centimeters))
+    fig, axes = plt.subplots(
+        2, 2, figsize=(2*8.5*centimeters, 2*10.0*centimeters))
     for axis, size in zip(axes.flatten(), range(2, 6)):
-        optimized_pvalue_spec = get_optimized_pvalue_spec(
-            data_type, session, epoch, trial_type,
-            surr_method, size, min_size)
+        plot_pvalue_for_one_size(
+            axis, data_type, session, epoch, trial_type,
+            surr_method, size, number_of_tests, number_of_tests_per_size)
 
-        durs = []
-        occs = []
-        pvs = []
-
-        durs_smaller_thresh = []
-        occs_smaller_thresh = []
-
-        durs_smaller_bonf = []
-        occs_smaller_bonf = []
-
-        max_occ = []
-        for dur in optimized_pvalue_spec[size].keys():
-            for occ in optimized_pvalue_spec[size][dur].keys():
-                max_occ.append(occ)
-
-        if len(max_occ) == 0:
-            continue
-        max_occ = max(max_occ)
-
-        for dur in optimized_pvalue_spec[size].keys():
-            found_smaller_thresh = False
-            found_smaller_bonf = False
-            fill = list(
-                range(list(optimized_pvalue_spec[size][dur].keys())[-1]+1,
-                      max_occ+1))
-            for occ in list(optimized_pvalue_spec[size][dur].keys()) + fill:
-                durs.append(dur)
-                occs.append(occ)
-                if optimized_pvalue_spec[size][dur][occ]:
-                    pvalue = optimized_pvalue_spec[size][dur][occ]
-                else:
-                    pvalue = 0
-                pvs.append(pvalue)
-                if not found_smaller_thresh and pvalue < 0.05:
-                    durs_smaller_thresh.append(dur - 0.5)
-                    durs_smaller_thresh.append(dur + 0.5)
-                    occs_smaller_thresh.append(occ - 0.5)
-                    occs_smaller_thresh.append(occ - 0.5)
-                    found_smaller_thresh = True
-                if not found_smaller_bonf and pvalue < 0.05/(12*4):
-                    durs_smaller_bonf.append(dur - 0.5)
-                    durs_smaller_bonf.append(dur + 0.5)
-                    occs_smaller_bonf.append(occ - 0.5)
-                    occs_smaller_bonf.append(occ - 0.5)
-                    found_smaller_bonf = True
-
-        # durs_smaller_thresh = np.array(durs_smaller_thresh)
-        # occs_smaller_thresh = np.array(occs_smaller_thresh)
-
-        durs_zeros = []
-        occs_zeros = []
-        pvs_zeros = []
-
-        for dur in optimized_pvalue_spec[size].keys():
-            fill = list(
-                range(list(optimized_pvalue_spec[size][dur].keys())[-1]+1,
-                      max_occ+1))
-            for occ in list(optimized_pvalue_spec[size][dur].keys()) + fill:
-                if not optimized_pvalue_spec[size][dur][occ]:
-                    durs_zeros.append(dur)
-                    occs_zeros.append(occ)
-                    pvs_zeros.append(0)
-
-        axis.scatter(occs, durs, s=scatter_size,
-                     c=pvs, marker='s', cmap=cmap,
-                     norm=color_norm)
-
-        axis.scatter(occs_zeros, durs_zeros, s=scatter_size,
-                     c=pvs_zeros, marker='s',
-                     cmap='binary_r')
-
-        axis.plot(occs_smaller_thresh, durs_smaller_thresh)
-
-        axis.plot(occs_smaller_bonf, durs_smaller_bonf)
-
-        axis.set_title(f'Size {size}')
+        axis.scatter(tested_pattern_occs[size], tested_pattern_durs[size],
+                     s=scatter_size / 4, c='C3', marker='x')
 
     cbar_map = cm.ScalarMappable(
             norm=color_norm,
@@ -169,50 +206,94 @@ def create_pvalue_plot(data_type, session, epoch, trial_type, surr_method):
 
     cbar.set_label('p-value')
 
-
-    save_path = f'../plots/pvalue_spectra'
+    save_path = f'../plots/pvalue_spectra_patterns_spade'
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    fig.suptitle(f'{data_type} {session} {epoch} {trial_type} {surr_method}')
+    fig.suptitle(f'{data_type} {session} {epoch} '
+                 f'{trial_type} {LABELS[surr_method]} '
+                 f'\n #Tests {number_of_tests}')
 
     fig.savefig(
         f'{save_path}/{data_type}_{session}_{epoch}_{trial_type}_{surr_method}')
     plt.close(fig)
 
 
-def get_number_of_tests(
+def get_pattern_occ_duration(
         data_type, session, epoch, trial_type,
-        surr_method, size, min_size):
+        surr_method, size):
     results = load_results(
         data_type, session, epoch, trial_type,
-        surr_method, size, min_size)
+        surr_method, size)
+
+    concepts = results['patterns']
+
+    signatures = {(len(concept[0]), len(concept[1]),
+                   max(np.array(concept[0]) % winlen))
+                  for concept in concepts}
+    signatures = np.array(list(signatures))
+
+    pattern_occ = signatures[:, 1]
+    pattern_duration = signatures[:, 2]
+
+    return pattern_occ, pattern_duration
+
+
+def get_number_of_tests(
+        data_type, session, epoch, trial_type,
+        surr_method, size, verbose=True):
+    results = load_results(
+        data_type, session, epoch, trial_type,
+        surr_method, size)
 
     pv_spec = results['pvalue_spectrum']
     concepts = results['patterns']
-    winlen = 12
-    spectrum = '3d#'
+
+    if verbose:
+        print(f'\n{size=}')
+        print(f'entries of pvalue-spectrum: {len(pv_spec)}')
+
+    if len(pv_spec) == 0:
+        if verbose:
+            print(f'number of tests: 0')
+        return 0, np.array([]), np.array([])
 
     pv_spec = np.array(pv_spec)
     mask = spade._mask_pvalue_spectrum(pv_spec, concepts, spectrum, winlen)
     pvalues = pv_spec[:, -1]
-
     pvalues_totest = pvalues[mask]
-    print(f'{size=}')
-    print(f'number of tests: {len(pvalues_totest)}')
-    return len(pvalues_totest)
+    pattern_occ = pv_spec[:, 1][mask]
+    pattern_dur = pv_spec[:, 2][mask]
+
+    if verbose:
+        print(f'number of tests: {len(pvalues_totest)}')
+    return len(pvalues_totest), pattern_occ, pattern_dur
+
+
+def get_numbers_of_tests_all_sizes(
+        data_type, session, epoch, trial_type, surr_method):
+    numbers_of_tests = {}
+    pattern_occs = {}
+    pattern_durs = {}
+    for size in range(2, 11):
+        number_of_tests, pattern_occ, pattern_dur = get_number_of_tests(
+            data_type, session, epoch, trial_type,
+            surr_method, size)
+        numbers_of_tests[size] = number_of_tests
+        pattern_occs[size] = pattern_occ
+        pattern_durs[size] = pattern_dur
+
+    return numbers_of_tests, pattern_occs, pattern_durs
 
 
 if __name__ == '__main__':
     pass
     # for data_type, session, epoch, trial_type, surr_method in product(
-    #         data_types, sessions, epochs, trial_types, surr_methods):
-    #     create_pvalue_plot(data_type, session, epoch, trial_type, surr_method)
+            #         data_types, sessions, epochs, trial_types, surr_methods):
+    # create_pvalue_plot(data_type, session, epoch, trial_type, surr_method)
+    # signatures = get_pattern_occ_duration(
+    #     data_type, session, epoch, trial_type,
+    #     surr_method, size=2)
+    for surr_method in surr_methods:
+        create_pvalue_plot(data_type, session, epoch, trial_type, surr_method)
 
-    for size in range(2, 8):
-        try:
-            get_number_of_tests(
-                data_type, session, epoch, trial_type,
-                surr_method, size, min_size)
-        except IndexError:
-            pass
