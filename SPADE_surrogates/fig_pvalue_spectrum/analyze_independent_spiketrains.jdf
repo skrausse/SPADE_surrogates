@@ -4,7 +4,7 @@
 #SBATCH -o ../../data/pvalue_spectrum/slurm/spade.%A.out
 #SBATCH -e ../../data/pvalue_spectrum/slurm/spade.%A.err
 #SBATCH --time 1-0:00:00
-#SBATCH --array 0-5
+#SBATCH --array 0-6
 #SBATCH --mail-user=p.bouss@fz-juelich.de
 #SBATCH --mail-type=END
 #SBATCH --ntasks-per-node=48

@@ -21,7 +21,8 @@ surr_methods = ('dither_spikes',
                 'joint_isi_dithering',
                 'isi_dithering',
                 'trial_shifting',
-                'bin_shuffling')
+                'bin_shuffling',
+                'ground_truth')
 
 if __name__ == '__main__':
     ARRAY_ID = int(os.environ['SLURM_ARRAY_TASK_ID'])

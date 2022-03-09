@@ -89,4 +89,4 @@ class TestCaseSetUp(SpadeSetUp, PathSetUp):
     t_start: pq.Quantity = 0*pq.s
     t_stop: pq.Quantity = 2*pq.s
     data_type: str = 'PPD'
-    n_realizations: int = 100
+    n_realizations: int = 20

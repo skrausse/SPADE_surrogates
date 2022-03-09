@@ -57,10 +57,11 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
     scatter_size = 45.
 
     size = 3  # size for the plotting
+    lower_limit = 1./(setup1.n_realizations*setup1.n_surrogates)
 
     color_norm = mcolors.SymLogNorm(
-        linthresh=1e-6,
-        vmin=1e-6,
+        linthresh=lower_limit,
+        vmin=lower_limit,
         vmax=1.,
         base=10.)
 
@@ -153,9 +154,9 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
             axis.set_xlabel('number of occurrences')
         axis.set_ylabel('duration', labelpad=1.8)
         if axis_id == 0:
-            axis.set_title('Ground Truth')
+            axis.set_title(f'{setup1.surr_method_short}')
         else:
-            axis.set_title('Trial Shifting')
+            axis.set_title(f'{setup2.surr_method_short}')
         axis.set_yticks(np.arange(1, setup.win_len, 2))
         axis.set_yticklabels(np.arange(2, setup.win_len+1, 2))
 
@@ -167,10 +168,10 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
     cbar = fig.colorbar(mappable=cbar_map, ax=axes)
 
     cbar.set_label('p-value')
-    fig.suptitle(f'P-value spectrum (PPD; d={setup_gt.dead_time.item()}ms)')
-    fig.savefig('../../plots/fig3_panelC_pvalue_spectrum_tr_shift.svg',
+    fig.suptitle(f'P-value spectrum (PPD; d={setup1.dead_time.item()}ms)')
+    fig.savefig(f'../../plots/fig3_panelC_pvalue_spectrum_{setup2.surr_method_short}.svg',
                 dpi=300)
-    fig.savefig('../../plots/fig3_panelC_pvalue_spectrum_tr_shift.png',
+    fig.savefig(f'../../plots/fig3_panelC_pvalue_spectrum_{setup2.surr_method_short}.png',
                 dpi=300)
     plt.show()
 
@@ -213,6 +214,11 @@ def plot_flattened_pvalue_spectra(setup1, setup2):
 
 
 if __name__ == '__main__':
-    setup_gt = cf.TestCaseSetUp(surr_method='ground_truth')
-    setup_ud = cf.TestCaseSetUp(surr_method='trial_shifting')
-    plot_comparison_of_two_pvalue_spectra(setup_gt, setup_ud)
+    setup_ud = cf.TestCaseSetUp(surr_method='dither_spikes')
+    for surr_method in ('dither_spikes_with_refractory_period',
+                        'joint_isi_dithering',
+                        'isi_dithering',
+                        'trial_shifting',
+                        'bin_shuffling'):
+        setup_2 = cf.TestCaseSetUp(surr_method=surr_method)
+        plot_comparison_of_two_pvalue_spectra(setup_ud, setup_2)
