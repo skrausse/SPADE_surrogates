@@ -73,7 +73,13 @@ def plot_comparison_of_two_pvalue_spectra(setup1, setup2):
 
     # find max_occurrences to fill up with zeroes
     max_occ = []
-    for axis_id, (axis, setup) in enumerate(zip(axes, (setup1, setup2))):
+    for surr_method in ('dither_spikes_with_refractory_period',
+                        'joint_isi_dithering',
+                        'isi_dithering',
+                        'trial_shifting',
+                        'bin_shuffling',
+                        'ground_truth'):
+        setup = cf.TestCaseSetUp(surr_method=surr_method)
         optimized_pvalue_spec = _get_mean_optimized_pvalue_spec(setup)
 
         for dur in optimized_pvalue_spec[size].keys():
@@ -219,6 +225,7 @@ if __name__ == '__main__':
                         'joint_isi_dithering',
                         'isi_dithering',
                         'trial_shifting',
-                        'bin_shuffling'):
+                        'bin_shuffling',
+                        'ground_truth'):
         setup_2 = cf.TestCaseSetUp(surr_method=surr_method)
         plot_comparison_of_two_pvalue_spectra(setup_ud, setup_2)
