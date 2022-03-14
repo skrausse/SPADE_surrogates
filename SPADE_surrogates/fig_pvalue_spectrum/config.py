@@ -70,7 +70,7 @@ class SpadeSetUp:
     @property
     def surr_kwargs(self):
         if self.surr_method == 'trial_shifting':
-            return {'trial_length': 500.*pq.ms,
+            return {'trial_length': 100.*pq.ms,
                     'trial_separation': 0.*pq.ms}
         # else:
         return {}
@@ -82,11 +82,11 @@ class TestCaseSetUp(SpadeSetUp, PathSetUp):
     Data class with the set up to generate the spike trains, combined with the
     SPADE and path setup.
     """
-    n_spiketrains: int = 10
+    n_spiketrains: int = 20
     rate: pq.Quantity = 60 * pq.Hz
     dead_time: pq.Quantity = 1.6 * pq.ms
     shape_factor: float = 2.
     t_start: pq.Quantity = 0*pq.s
-    t_stop: pq.Quantity = 15*pq.s
+    t_stop: pq.Quantity = 2*pq.s
     data_type: str = 'PPD'
-    n_realizations: int = 100
+    n_realizations: int = 20

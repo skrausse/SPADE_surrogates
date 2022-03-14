@@ -25,7 +25,7 @@ LABELS = {'ud': 'UD',
           'tr_shift': 'TR-SHIFT',
           'bin_shuffling': 'WIN-SHUFF'}
 
-surr_method = surr_methods[0]
+# surr_method = surr_methods[0]
 data_type = data_types[0]
 session = sessions[0]
 epoch = epochs[4]
@@ -82,7 +82,8 @@ def get_optimized_pvalue_spec(
 
 def plot_pvalue_for_one_size(
         axis, data_type, session, epoch, trial_type,
-        surr_method, size, number_of_tests, number_of_tests_per_size):
+        surr_method, size, number_of_tests, number_of_tests_per_size,
+        max_occ=None):
     optimized_pvalue_spec = get_optimized_pvalue_spec(
         data_type, session, epoch, trial_type,
         surr_method, size)
@@ -97,14 +98,15 @@ def plot_pvalue_for_one_size(
     durs_smaller_bonf = []
     occs_smaller_bonf = []
 
-    max_occ = []
-    for dur in optimized_pvalue_spec[size].keys():
-        for occ in optimized_pvalue_spec[size][dur].keys():
-            max_occ.append(occ)
+    if max_occ is None:
+        max_occ = []
+        for dur in optimized_pvalue_spec[size].keys():
+            for occ in optimized_pvalue_spec[size][dur].keys():
+                max_occ.append(occ)
 
-    if len(max_occ) == 0:
-        return
-    max_occ = max(max_occ)
+        if len(max_occ) == 0:
+            return
+        max_occ = max(max_occ)
 
     for dur in optimized_pvalue_spec[size].keys():
         found_smaller_thresh = False
@@ -174,11 +176,19 @@ def plot_pvalue_for_one_size(
             reduced_pattern_occ.append(occ)
             reduced_pattern_dur.append(dur)
 
-    axis.scatter(reduced_pattern_occ, reduced_pattern_dur,
-                 s=scatter_size/4, c='C1', marker='x')
+    min_occ = np.min(reduced_pattern_occ)
+    axis.set_xlim(left=min_occ-(4/size)**2,
+                  right=max_occ+(4/size)**2)
+
+    # axis.scatter(reduced_pattern_occ, reduced_pattern_dur,
+    #              s=scatter_size/4, c='C1', marker='x')
+
+    axis.set_yticks(np.arange(1, winlen, 2))
+    axis.set_yticklabels(np.arange(2, winlen + 1, 2))
 
     axis.set_title(
         f'Size {size}, #Tests: {number_of_tests_per_size[size]}')
+    return min_occ, max_occ
 
 
 def create_pvalue_plot(data_type, session, epoch, trial_type, surr_method):
@@ -286,6 +296,60 @@ def get_numbers_of_tests_all_sizes(
     return numbers_of_tests, pattern_occs, pattern_durs
 
 
+def compare_pvalue_spectra(surrogate_methods, sizes):
+
+    fig, axes = plt.subplots(
+        nrows=len(surrogate_methods), ncols=len(sizes),
+        figsize=(len(sizes)*8*centimeters,
+                 len(surrogate_methods)*8*centimeters),
+        # sharey='all', sharex='col',
+        constrained_layout=True)
+
+    max_occ = {}
+    min_occ = {}
+    for surr_id, (surr_method, axes_row) in enumerate(
+            zip(surrogate_methods[::-1], axes[::-1])):
+        print(surr_method)
+        number_of_tests_per_size, tested_pattern_occs, tested_pattern_durs = \
+            get_numbers_of_tests_all_sizes(
+                data_type, session, epoch, trial_type, surr_method)
+        number_of_tests = sum(number_of_tests_per_size.values())
+
+        for size, axis in zip(sizes, axes_row):
+            if surr_id == 0:
+                min_occ[size], max_occ[size] = plot_pvalue_for_one_size(
+                    axis, data_type, session, epoch, trial_type,
+                    surr_method, size, number_of_tests,
+                    number_of_tests_per_size)
+            else:
+                plot_pvalue_for_one_size(
+                    axis, data_type, session, epoch, trial_type,
+                    surr_method, size, number_of_tests,
+                    number_of_tests_per_size,
+                    max_occ=max_occ[size])
+            axis.set_title(f'{LABELS[surr_method]}, size {size}')
+            axis.set_xlabel('occurrences')
+            axis.set_ylabel('duration')
+
+    cbar_map = cm.ScalarMappable(
+        norm=color_norm,
+        cmap=cmap)
+
+    cbar_map.set_array(np.array([]))
+    cbar = fig.colorbar(mappable=cbar_map, ax=axes)
+
+    cbar.set_label('p-value')
+
+    fig.suptitle(f'Comparison of p-value spectra \n'
+                 f'{data_type.upper()}, {session}, {epoch}, '
+                 f'{trial_type}')
+    fig.savefig(
+        f'../plots/pvalue_comparison_'
+        f'{data_type}_{session}_{epoch}_{trial_type}')
+
+    plt.show()
+
+
 if __name__ == '__main__':
     pass
     # for data_type, session, epoch, trial_type, surr_method in product(
@@ -294,6 +358,8 @@ if __name__ == '__main__':
     # signatures = get_pattern_occ_duration(
     #     data_type, session, epoch, trial_type,
     #     surr_method, size=2)
-    for surr_method in surr_methods:
-        create_pvalue_plot(data_type, session, epoch, trial_type, surr_method)
-
+    # for surr_method in surr_methods:
+    #     create_pvalue_plot(data_type, session, epoch, trial_type, surr_method)
+    compare_pvalue_spectra(
+        surrogate_methods=('ud', 'tr_shift'),
+        sizes=(2, 3, 4))
