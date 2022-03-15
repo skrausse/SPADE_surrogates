@@ -83,7 +83,7 @@ def get_optimized_pvalue_spec(
 def plot_pvalue_for_one_size(
         axis, data_type, session, epoch, trial_type,
         surr_method, size, number_of_tests, number_of_tests_per_size,
-        max_occ=None):
+        max_occ=None, min_occ=None):
     optimized_pvalue_spec = get_optimized_pvalue_spec(
         data_type, session, epoch, trial_type,
         surr_method, size)
@@ -176,7 +176,8 @@ def plot_pvalue_for_one_size(
             reduced_pattern_occ.append(occ)
             reduced_pattern_dur.append(dur)
 
-    min_occ = np.min(reduced_pattern_occ)
+    if min_occ is None:
+        min_occ = np.min(reduced_pattern_occ)
     axis.set_xlim(left=min_occ-(4/size)**2,
                   right=max_occ+(4/size)**2)
 
@@ -326,7 +327,7 @@ def compare_pvalue_spectra(surrogate_methods, sizes):
                     axis, data_type, session, epoch, trial_type,
                     surr_method, size, number_of_tests,
                     number_of_tests_per_size,
-                    max_occ=max_occ[size])
+                    max_occ=max_occ[size], min_occ=min_occ[size])
             axis.set_title(f'{LABELS[surr_method]}, size {size}')
             axis.set_xlabel('occurrences')
             axis.set_ylabel('duration')
