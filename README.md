@@ -19,7 +19,7 @@ git submodule update --init
 In order to download the data, please, go into the multielectrode_grasp folder 
 by typing:
 ```
-cd data/multielectrode_grasp
+cd data/multielectrode_grasp/datasets
 ```
 
 Continue with 
