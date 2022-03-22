@@ -38,8 +38,8 @@ spectrum = '3d#'
 cmap = 'Blues_r'
 scatter_size = 45.
 color_norm = mcolors.SymLogNorm(
-    linthresh=1./n_surrogates,
-    vmin=1./n_surrogates,
+    linthresh=1./(n_surrogates*20),
+    vmin=1./(n_surrogates*20),
     vmax=1.,
     base=10.)
 centimeters = 1/2.54  # centimeters in inches
@@ -301,10 +301,14 @@ def compare_pvalue_spectra(surrogate_methods, sizes):
 
     fig, axes = plt.subplots(
         nrows=len(surrogate_methods), ncols=len(sizes),
-        figsize=(len(sizes)*8*centimeters,
-                 len(surrogate_methods)*8*centimeters),
-        # sharey='all', sharex='col',
-        constrained_layout=True)
+        figsize=(len(sizes)*8.5*centimeters,
+                 len(surrogate_methods)*5.*centimeters),
+        # sharey='all',
+        sharex='col',
+        gridspec_kw=dict(hspace=0.32, right=0.85, top=0.88, bottom=0.12,
+                         left=0.15),
+        squeeze=False
+    )
 
     max_occ = {}
     min_occ = {}
@@ -328,9 +332,10 @@ def compare_pvalue_spectra(surrogate_methods, sizes):
                     surr_method, size, number_of_tests,
                     number_of_tests_per_size,
                     max_occ=max_occ[size], min_occ=min_occ[size])
-            axis.set_title(f'{LABELS[surr_method]}, size {size}')
-            axis.set_xlabel('occurrences')
-            axis.set_ylabel('duration')
+            axis.set_title(f'{LABELS[surr_method]}')
+            if surr_id == 0:
+                axis.set_xlabel('number of occurrences')
+            axis.set_ylabel('duration', labelpad=1.8)
 
     cbar_map = cm.ScalarMappable(
         norm=color_norm,
@@ -341,12 +346,11 @@ def compare_pvalue_spectra(surrogate_methods, sizes):
 
     cbar.set_label('p-value')
 
-    fig.suptitle(f'Comparison of p-value spectra \n'
-                 f'{data_type.upper()}, {session}, {epoch}, '
-                 f'{trial_type}')
+    fig.suptitle(f'P-value spectrum '
+                 f'(non-stationary {data_type.upper()})')
     fig.savefig(
         f'../plots/pvalue_comparison_'
-        f'{data_type}_{session}_{epoch}_{trial_type}')
+        f'{data_type}_{session}_{epoch}_{trial_type}', dpi=300)
 
     plt.show()
 
@@ -363,4 +367,4 @@ if __name__ == '__main__':
     #     create_pvalue_plot(data_type, session, epoch, trial_type, surr_method)
     compare_pvalue_spectra(
         surrogate_methods=('ud', 'tr_shift'),
-        sizes=(2, 3, 4))
+        sizes=(3,))
