@@ -42,7 +42,7 @@ def plot_clipped_firing_rate(axes_clip):
             axes_clip[type_id].plot(
                 rates[data_type],
                 1. - np.array(ratio_clipped_surr[data_type][surr_method]),
-                label=surr_method,
+                label=cf.LABELS[surr_method],
                 color=cf.COLORS[surr_method],
                 linestyle=cf.LINE_STYLES[surr_method],
             )
