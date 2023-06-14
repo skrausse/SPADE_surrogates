@@ -26,6 +26,11 @@ Continue with
 ``` 
 gin login
 ```
+Possibly, you will need to run 
+```commandline
+gin init
+```
+if you didn't you use `gin` before on your computer. 
 
 If you don't have a gin-account or client, refer to the README in the multielectrode_grasp folder.
 
@@ -41,17 +46,18 @@ results of the spike-sorting (.nev) and metadata files (.odml).
 For general instructions on how to use the conda environments, please refer to:
 https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html. 
 
-Create the environment by running and activate it:
+To install the environment, first check that you have `libopenmpi-dev` installed. 
+If not, run (for Linux):
+```
+sudo apt install libopenmpi-dev
+```
+
+Continue by installing the environment with:
 ```
 conda env create -f env.yml
 conda activate surrogates
 pip install -e .
 ```
-If the mpi4py build does not work  (for Linux):
-```
-sudo apt install libopenmpi-dev
-```
-
 
 **Creating the figures**
 
