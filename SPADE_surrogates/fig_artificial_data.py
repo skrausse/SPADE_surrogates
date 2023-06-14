@@ -731,7 +731,7 @@ if __name__ == "__main__":
     max_refractory = 4 * pq.ms
     epoch_length = 500 * pq.ms
     sampling_period = 0.1 * pq.ms
-    neuron = 39
+    neuron = 39  # {'unit_id': 1, 'channel_id': 24, 'connector_aligned_id': 70}
     label_size = 7
     title_size = 8
     tick_size = 7

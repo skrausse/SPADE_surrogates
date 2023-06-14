@@ -43,7 +43,7 @@ class SpadeSetUp:
     dither: pq.Quantity = 25 * pq.ms
     spectrum: str = '3d#'
     alpha: float = 0.05
-    stat_corr: str = 'holm'
+    stat_corr: str = 'fdr_bh'
     surr_method: str = 'joint_isi_dithering'
     psr_param: Union[Tuple[int], None] = (2, 2, 2)
     output_format: str = 'patterns'
@@ -58,21 +58,22 @@ class SpadeSetUp:
         str
         """
         surr_methods = {'dither_spikes': 'UD',
-                        'joint_isi_dithering': 'JISI',
-                        'dither_spikes_with_refractory_period': 'UDR',
+                        'dither_spikes_with_refractory_period': 'UDD',
+                        'joint_isi_dithering': 'JISI-D',
+                        'isi_dithering': 'ISI-D',
                         'ground_truth': 'GT',
-                        'trial_shifting': 'TR-SHIFT'}
+                        'trial_shifting': 'TR-SHIFT',
+                        'bin_shuffling': 'WIN-SHUFF'
+                        }
         return surr_methods[self.surr_method]
 
     @property
     def surr_kwargs(self):
-        surr_kwargs: dict = {'dither_spikes': {},
-                             'joint_isi_dithering': {},
-                             'dither_spikes_with_refractory_period': {},
-                             'ground_truth': {},
-                             'trial_shifting': {'trial_length': 100.*pq.ms,
-                                                'trial_separation': 0.*pq.ms}}
-        return surr_kwargs[self.surr_method]
+        if self.surr_method == 'trial_shifting':
+            return {'trial_length': 100.*pq.ms,
+                    'trial_separation': 0.*pq.ms}
+        # else:
+        return {}
 
 
 @dataclass
@@ -86,6 +87,6 @@ class TestCaseSetUp(SpadeSetUp, PathSetUp):
     dead_time: pq.Quantity = 1.6 * pq.ms
     shape_factor: float = 2.
     t_start: pq.Quantity = 0*pq.s
-    t_stop: pq.Quantity = 1*pq.s
+    t_stop: pq.Quantity = 2*pq.s
     data_type: str = 'PPD'
-    n_realizations: int = 100
+    n_realizations: int = 20

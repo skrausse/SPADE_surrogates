@@ -49,6 +49,7 @@ class SPADE(create_st.SpikeTrainGeneration):
         for size in self.sizes_to_analyze:
             mean, std = max_binomial_statistics[
                 (int(self.rate), size)]
+            # one could add  here, but for runtime it was taken out here.
             min_occ = int(round(mean - std))
             min_occ = max(min_occ, 1)
 
