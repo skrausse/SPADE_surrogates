@@ -34,6 +34,11 @@ if you didn't you use `gin` before on your computer.
 
 If you don't have a gin-account or client, refer to the README in the multielectrode_grasp folder.
 
+Checkout the release 1.1.0 of that repo by running:
+```commandline
+git checkout 1.1.0
+```
+
 Then you need to run:
 ```
 gin get-content i140703-001-03.nev l101210-001-02.nev i140703-001.odml l101210-001.odml
