@@ -111,7 +111,12 @@ rule analyze_data:
         result = '../../results/experimental_data/{surr_method}/{session}/{context}/{job_id}/results.npy'
     threads: 10
     shell:
-        "python spade_analysis.py {wildcards.job_id} {wildcards.context} {wildcards.session} {wildcards.surr_method}"
+        """
+        python spade_analysis.py --job_id {wildcards.job_id} \
+                                 --context {wildcards.context} \
+                                 --session {wildcards.session} \
+                                 --surr_method {wildcards.surr_method} \
+        """
 
 
 # Function to create output path for filtered results
