@@ -7,7 +7,7 @@ from yaml import Loader
 from elephant.spade import spade
 import sys
 sys.path.append('../analyse_data_utils')
-import mkdirp, split_path
+from spade_utils import mkdirp, split_path
 
 parser = argparse.ArgumentParser(
     description='Define parameter for SPADE analysis on R2G')
