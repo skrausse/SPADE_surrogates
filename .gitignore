@@ -151,4 +151,4 @@ pvalue_spectrum/
 
 # Slurm submission files
 *.jdf
-*.sh
+# *.sh
