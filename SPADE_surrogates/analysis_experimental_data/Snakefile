@@ -95,8 +95,8 @@ rule create_parameter_dict:
     input:
         '../configfile.yaml'
     output:
-        'param_dict.npy',
-        'excluded_neurons.npy'
+        result = 'param_dict.npy',
+        second_result = 'excluded_neurons.npy'
     run:
         np.save('./param_dict.npy', param_dict)
         np.save('./excluded_neurons.npy', excluded_neurons)
@@ -109,7 +109,7 @@ rule analyze_data:
         script='spade_analysis.py'
     threads: 60
     output:
-        '../../results/experimental_data/{surr_method}/{session}/{context}/{job_id}/results.npy'
+        result = '../../results/experimental_data/{surr_method}/{session}/{context}/{job_id}/results.npy'
     shell:
         "mpirun python spade_analysis.py {wildcards.job_id} {wildcards.context} {wildcards.session} {wildcards.surr_method}"
 
@@ -128,6 +128,6 @@ rule filter_results:
         results=select_job_ids_context,
         script='filter_results.py'
     output:
-        '../../results/experimental_data/{surr_method}/{session}/{context}/filtered_res.npy'
+        result = '../../results/experimental_data/{surr_method}/{session}/{context}/filtered_res.npy'
     shell:
         "python filter_results.py {wildcards.context} {wildcards.session} {wildcards.surr_method}"
