@@ -46,6 +46,11 @@ gin get-content i140703-001-03.nev l101210-001-02.nev i140703-001.odml l101210-0
 This will download the
 results of the spike-sorting (.nev) and metadata files (.odml). 
 
+If this fails to download the files, you can try git-annex as an alternative:
+```
+git-annex get i140703-001-03.nev l101210-001-02.nev i140703-001.odml l101210-001.odml
+```
+
 **Creating the conda environment**
 
 For general instructions on how to use the conda environments, please refer to:
@@ -95,6 +100,7 @@ Please go to the code folder `cd SPADE_surrogates`
   - run the scripts for Figure 8 
   - `python fig_fps_fr_cv.py`
 - For Figure 10:
+  - `python generate_original_concatenated_data.py` 
   - `cd analysis_experimental_data.py`
   - `snakemake`  (This step should be done a cluster.)
   - `cd ..`
