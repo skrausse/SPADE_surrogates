@@ -2,8 +2,10 @@ configfile: "../configfile.yaml"
 
 import numpy as np
 import quantities as pq
-from SPADE_surrogates.analyse_data_utils.estimate_number_occurrences\
-    import estimate_number_occurrences
+
+import sys 
+sys.path.append('../analyse_data_utils')
+from estimate_number_occurrences import estimate_number_occurrences
 
 # The 5 epochs to analyze
 epochs = config['epochs']
