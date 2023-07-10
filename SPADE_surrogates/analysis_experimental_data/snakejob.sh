@@ -10,7 +10,7 @@
 #SBATCH --error=../../../01_cluster_output/surrogates_%j.err                            # redirect cluster errors
 #SBATCH --partition=hamstein                                                            # Specify which partition to use
 
-cd ~/projects/SPADE_surrogates/SPADE_surrogates/analysis_experimental_data/snakejob.sh
+cd ~/projects/SPADE_surrogates/SPADE_surrogates/analysis_experimental_data
 module load mpi/openmpi
 module load mpi/mpich/3.2
 module load mpi/mpich/3.3.2
