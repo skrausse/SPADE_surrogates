@@ -13,7 +13,7 @@ from yaml import Loader
 
 import sys 
 sys.path.append('../analyse_data_utils')
-from analyse_data_utils import spade_utils as utils
+import spade_utils as utils
 
 
 def create_rate_dict(
