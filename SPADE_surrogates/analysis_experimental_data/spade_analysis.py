@@ -34,7 +34,7 @@ surr_method = args.surr_method
 param_dict = np.load('./param_dict.npy', encoding='latin1',
                      allow_pickle=True).item()
 # Load general parameters
-with open("configfile.yaml", 'r') as stream:
+with open("../configfile.yaml", 'r') as stream:
     config = yaml.load(stream, Loader=Loader)
 
 
