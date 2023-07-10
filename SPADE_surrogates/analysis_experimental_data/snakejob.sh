@@ -15,7 +15,6 @@ module load mpi/openmpi
 module load mpi/mpich/3.2
 module load mpi/mpich/3.3.2
 
-
 snakemake   --cores 60 \
             --rerun-incomplete  \
             --keep-going \
