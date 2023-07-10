@@ -107,7 +107,6 @@ rule analyze_data:
         parameter_file='param_dict.npy',
         excluded_neurons = 'excluded_neurons.npy',
         script='spade_analysis.py'
-    threads: 60
     output:
         result = '../../results/experimental_data/{surr_method}/{session}/{context}/{job_id}/results.npy'
     shell:
