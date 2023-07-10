@@ -47,9 +47,9 @@ n_surr = config['n_surr']
 binsize = (config['binsize'] * pq.s).rescale(unit)
 correction = config['correction']
 # Parameter specific to the job
-min_occ = param_dict[session][context][job_id]['min_occ']
-min_spikes = param_dict[session][context][job_id]['min_spikes']
-max_spikes = param_dict[session][context][job_id]['max_spikes']
+min_occ = int(param_dict[session][context][job_id]['min_occ'])
+min_spikes = int(param_dict[session][context][job_id]['min_spikes'])
+max_spikes = int(param_dict[session][context][job_id]['max_spikes'])
 # Parameter fixed
 min_neu = min_spikes
 # Fix alpha and psr_param to None since statistical correction and
