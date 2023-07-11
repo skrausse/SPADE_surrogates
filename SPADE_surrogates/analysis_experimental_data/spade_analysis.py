@@ -49,7 +49,10 @@ correction = config['correction']
 # Parameter specific to the job
 min_occ = int(param_dict[session][context][job_id]['min_occ'])
 min_spikes = int(param_dict[session][context][job_id]['min_spikes'])
-max_spikes = int(param_dict[session][context][job_id]['max_spikes'])
+if type(param_dict[session][context][job_id]['max_spikes'])==float:
+    max_spikes = int(param_dict[session][context][job_id]['max_spikes'])
+else:
+    max_spikes = param_dict[session][context][job_id]['max_spikes']
 # Parameter fixed
 min_neu = min_spikes
 # Fix alpha and psr_param to None since statistical correction and
