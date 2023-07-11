@@ -24,8 +24,8 @@ snakemake --jobs 1000\
                             --mail-type=FAIL\
                             --mem={cluster.mem}\
 	                    --partition=hamstein2022\
-	                    -o /users/krausse/spade_comparison/cluster_output/rule-%j.out\
-                        -e /users/krausse/spade_comparison/cluster_output/rule-%j.err"\
+	                    -o ../../../01_cluster_output/surr_job_%j.out\
+                        -e ../../../01_cluster_output/surr_job_%j.err"\
           --jobname "{jobid}.{rulename}"\
 	      --latency-wait 90\
           --keep-going\
