@@ -22,10 +22,11 @@ snakemake --jobs 1000\
           --cluster "sbatch -n {cluster.n}\
                             --time {cluster.time}\
                             --mail-type=FAIL\
+                            --mail-user=s.krausse@fz-juelich.de\
                             --mem={cluster.mem}\
-	                    --partition=hamstein2022\
-	                    -o ../../../01_cluster_output/surr_job_%j.out\
-                        -e ../../../01_cluster_output/surr_job_%j.err"\
+	                        --partition=hamstein2022\
+	                        -o ../../../01_cluster_output/surr_job_%j.out\
+                            -e ../../../01_cluster_output/surr_job_%j.err"\
           --jobname "{jobid}.{rulename}"\
 	      --latency-wait 90\
           --keep-going\
