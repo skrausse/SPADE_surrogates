@@ -9,13 +9,12 @@
 #SBATCH --error=../../../01_cluster_output/surrogates_%j.err                            # redirect cluster errors
 #SBATCH --partition=hamstein2022                                                        # Specify which partition to use
 
-module load mpi/openmpi/4.0.3rc4
+module load mpi/openmpi
 
 # source activate patterns
 
 snakemake --unlock\
-	  --configfile configfile.yaml
-          --use-conda\
+	  --configfile ../configfile.yaml
           --cores 1
 
 snakemake --jobs 1000\
@@ -24,12 +23,11 @@ snakemake --jobs 1000\
                             --time {cluster.time}\
                             --mail-type=FAIL\
                             --mem={cluster.mem}\
-	                    --partition=blaustein\
+	                    --partition=hamstein2022\
 	                    -o /users/krausse/spade_comparison/cluster_output/rule-%j.out\
                         -e /users/krausse/spade_comparison/cluster_output/rule-%j.err"\
           --jobname "{jobid}.{rulename}"\
-          --use-conda\
-	  --latency-wait 90\
+	      --latency-wait 90\
           --keep-going\
           --rerun-incomplete\
-	  --cores 160
+	      --cores 160
