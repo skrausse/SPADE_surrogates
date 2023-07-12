@@ -110,7 +110,7 @@ rule analyze_data:
     output:
         result = '../../results/experimental_data/{surr_method}/{session}/{context}/{job_id}/results.npy'
     shell:
-        "python spade_analysis.py {wildcards.job_id} {wildcards.context} {wildcards.session} {wildcards.surr_method}"
+        "mpirun python spade_analysis.py {wildcards.job_id} {wildcards.context} {wildcards.session} {wildcards.surr_method}"
 
 
 # Function to create output path for filtered results
