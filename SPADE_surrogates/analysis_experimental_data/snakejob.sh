@@ -13,8 +13,9 @@
 # source activate patterns
 
 snakemake --unlock\
-	  --configfile ../configfile.yaml
-          --cores 1
+	  --configfile ../configfile.yaml\
+          --cores 1\
+	  --rerun-incomplete
 
 snakemake --jobs 1000\
           --cluster-config cluster.json\
