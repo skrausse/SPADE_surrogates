@@ -17,27 +17,4 @@ snakemake   --cores 60 \
             --latency-wait 90 \
             --nolock \
 
-<<<<<<< HEAD
-snakemake --unlock\
-	  --configfile ../configfile.yaml\
-          --cores 1\
-	  --rerun-incomplete
-
-snakemake --jobs 1000\
-          --cluster-config cluster.json\
-          --cluster "sbatch -n {cluster.n}\
-                            --time {cluster.time}\
-                            --mail-type=FAIL\
-                            --mail-user=s.krausse@fz-juelich.de\
-                            --mem={cluster.mem}\
-	                        --partition=hamstein\
-	                        -o ../../../01_cluster_output/surr_job_%j.out\
-                            -e ../../../01_cluster_output/surr_job_%j.err"\
-          --jobname "{jobid}.{rulename}"\
-	      --latency-wait 90\
-          --keep-going\
-          --rerun-incomplete\
-	      --cores 160
-=======
 scontrol show jobid ${SLURM_JOBID} -dd        
->>>>>>> 6a5261aba95d2bad6cc08416557fd584814f75ad
