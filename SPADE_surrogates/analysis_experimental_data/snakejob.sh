@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --time=96:00:00   								                                # walltime
-#SBATCH --mem=12G	   								                                    # memory per CPU core
+#SBATCH --mem=16G	   								                                    # memory per CPU core
 #SBATCH -J "SPADE surrogates"                                                           # job name
 #SBATCH --mail-user=s.krausse@fz-juelich.de   						                    # email address
 #SBATCH --mail-type=END									                                # notify on job completed
