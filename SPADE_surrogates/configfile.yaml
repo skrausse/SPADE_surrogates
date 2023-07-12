@@ -1,6 +1,6 @@
 # The sessions to analyze
 #sessions : ['i140703-001','l101210-001']
-sessions : ['i140703-001','l101210-001']
+sessions : ['l101210-001']
 # The 5 epochs to analyze
 epochs : ['start', 'cue1', 'earlydelay', 'latedelay', 'movement', 'hold']
 # The 4 trial types to analyze
