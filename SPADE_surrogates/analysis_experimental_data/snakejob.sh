@@ -2,7 +2,7 @@
 #SBATCH --time=96:00:00   								                                # walltime
 #SBATCH --ntasks=60   									                                # number of processor cores (i.e. tasks)
 #SBATCH --mem=32G	   								                                    # memory per CPU core
-#SBATCH -J SPADE surrogates"                                                            # job name
+#SBATCH -J "SPADE surrogates"                                                            # job name
 #SBATCH --mail-user=s.krausse@fz-juelich.de   						                    # email address
 #SBATCH --mail-type=END									                                # notify on job completed
 #SBATCH --mail-type=FAIL							                                    # notify on job failed
