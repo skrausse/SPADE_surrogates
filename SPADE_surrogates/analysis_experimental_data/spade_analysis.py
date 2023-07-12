@@ -1,7 +1,7 @@
 import numpy as np
 import quantities as pq
 import argparse
-from mpi4py import MPI
+# from mpi4py import MPI
 import yaml
 from yaml import Loader
 from elephant.spade import spade
@@ -118,11 +118,13 @@ if firing_rate_threshold is not None:
               'run Snakefile script')
 
 
-# SPADE analysis
-comm = MPI.COMM_WORLD   # create MPI communicator
-rank = comm.Get_rank()  # get rank of current MPI task
-size = comm.Get_size()  # get number of parallel processes
-print(size, 'number vp')
+# # SPADE analysis
+# comm = MPI.COMM_WORLD   # create MPI communicator
+# rank = comm.Get_rank()  # get rank of current MPI task
+# size = comm.Get_size()  # get number of parallel processes
+# print(size, 'number vp')
+rank = 0
+size = 1
 
 spade_res = spade(spiketrains=sts,
                   binsize=binsize,
@@ -153,13 +155,13 @@ for folder in split_path(res_path):
 
 if rank == 0:
     # Storing spade results
-    np.save(
-        res_path + '/results.npy', [spade_res,
-                                    load_param,
-                                    spade_param,
-                                    config])
-    # Storing annotations param
-    np.save(
-        f'../../results/experimental_data/{surr_method}/{session}/'
-        f'{epoch}_{trialtype}/annotations.npy',
-        annotations_dict)
+    np.save(res_path + '/results.npy', spade_res)
+    np.save(res_path + '/results_load_param.npy', load_param)
+    np.save(res_path + '/results_spade_param.npy', spade_param)
+    np.save(res_path + '/results_config.npy', config)
+
+    # # Storing annotations param
+    # np.save(
+    #     f'../../results/experimental_data/{surr_method}/{session}/'
+    #     f'{epoch}_{trialtype}/annotations.npy',
+    #     annotations_dict)

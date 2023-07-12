@@ -9,7 +9,6 @@
 #SBATCH --error=../../../01_cluster_output/surrogates_%j.err                            # redirect cluster errors
 #SBATCH --partition=hamstein                                                        # Specify which partition to use
 
-module load mpi/openmpi
 
 # source activate patterns
 
