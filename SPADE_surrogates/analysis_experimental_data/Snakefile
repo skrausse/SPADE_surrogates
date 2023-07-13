@@ -117,13 +117,14 @@ rule analyze_data:
 
 # Function to create output path for filtered results
 def select_job_ids_context(wildcards):
-    return [f'../../results/experimental_data/{wildcards.surr_method}/{wildcards.session}/{wildcards.context}/{job_id}/results.npy' for job_id in param_dict[wildcards.session][wildcards.context]]
+    return 
 
 
 # Rule to apply the PSF and the PSR on the mined patterns
 rule filter_results:
     input:
-        results=select_job_ids_context,
+        results=expand('../../results/experimental_data/{{surr_method}}/{{session}}/{{context}}/{job_id}/results.npy',
+                        job_id = param_dict[wildcards.session][wildcards.context]),
         script='filter_results.py'
     output:
         result = '../../results/experimental_data/{surr_method}/{session}/{context}/filtered_res.npy'
