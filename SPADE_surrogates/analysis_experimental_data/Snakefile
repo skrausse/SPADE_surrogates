@@ -81,10 +81,10 @@ param_dict, excluded_neurons = \
 # Rule to collect all the results
 rule all:
     input:
-        [f'../../results/experimental_data/{surr_method}/{session}/{context}/{job_id}/results.npy'
+        [f'../../results/experimental_data/{{surr_method}}/{session}/{context}/{job_id}/results.npy'
          for session in sessions for context in contexts
          for job_id in param_dict[session][context]] + [
-            f'../../results/experimental_data/{surr_method}/{session}/{context}/filtered_res.npy'
+            f'../../results/experimental_data/{{surr_method}}/{session}/{context}/filtered_res.npy'
              for context in contexts for session in sessions]
 
 # Rule to store the new version of the dictionary containing all the parameters
