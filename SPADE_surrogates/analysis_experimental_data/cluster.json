@@ -8,7 +8,7 @@
     },
       "analyze_data": {
         "time": "72:00:00",
-        "n":1,
+        "n":48,
         "mem":"32G",
 	"name"      : "{wildcards}.{rule}"
     }
