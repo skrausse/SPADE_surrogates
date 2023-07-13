@@ -16,7 +16,7 @@ snakemake --jobs 1000 \
                             --time 12:00:00 \
                             --mail-type=FAIL \
                             --mail-user=s.krausse@fz-juelich.de \
-                            --mem={32G} \
+                            --mem=32G \
 	                        --partition=hamstein \
 	                        -o ../../../01_cluster_output/surr_job_%j.out \
                             -e ../../../01_cluster_output/surr_job_%j.err" \
