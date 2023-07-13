@@ -24,7 +24,7 @@ snakemake --jobs 1000 \
 	      --latency-wait 90 \
           --keep-going \
           --rerun-incomplete \
-          --nolock
+          --nolock \
 	      --cores 160
 
 scontrol show jobid ${SLURM_JOBID} -dd        
