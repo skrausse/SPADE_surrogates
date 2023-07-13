@@ -81,15 +81,13 @@ param_dict, excluded_neurons = \
 # Rule to collect all the results
 rule all:
     input:
-        results = expand('../../results/experimental_data/{surr_method}/{session}/{context}/{job_id}/results.npy',
-                            surr_method = surr_method,
-                            session = sessions,
-                            context = contexts,
-                            job_id = param_dict[session][context]),
-        filtered_results = expand('../../results/experimental_data/{surr_method}/{session}/{context}/filtered_res.npy',
-                            surr_method = surr_method,
-                            session = sessions,
-                            context = contexts)
+        [f'../../results/experimental_data/{surr_method}/{session}/{context}'
+         f'/{job_id}/results.npy'
+         for session in sessions for context in contexts
+         for job_id in param_dict[session][context]] + [
+            f'../../results/experimental_data/{surr_method}/{session}'
+            f'/{context}/filtered_res.npy'
+             for context in contexts for session in sessions]
 
 # Rule to store the new version of the dictionary containing all the parameters
 # in the case the configfile changed
@@ -117,14 +115,16 @@ rule analyze_data:
 
 # Function to create output path for filtered results
 def select_job_ids_context(wildcards):
-    return 
+    return [
+        f'../../results/experimental_data/{wildcards.surr_method}'
+        f'/{wildcards.session}/{wildcards.context}/{job_id}/results.npy'
+        for job_id in param_dict[wildcards.session][wildcards.context]]
 
 
 # Rule to apply the PSF and the PSR on the mined patterns
 rule filter_results:
     input:
-        results=expand('../../results/experimental_data/{{surr_method}}/{{session}}/{{context}}/{job_id}/results.npy',
-                        job_id = param_dict[wildcards.session][wildcards.context]),
+        results=select_job_ids_context,
         script='filter_results.py'
     output:
         result = '../../results/experimental_data/{surr_method}/{session}/{context}/filtered_res.npy'
