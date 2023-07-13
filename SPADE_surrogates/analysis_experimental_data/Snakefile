@@ -86,7 +86,7 @@ rule all:
                             session = sessions,
                             context = contexts,
                             job_id = param_dict[session][context])
-        filtered_results = expand('../../results/experimental_data/{surr_method}/{session}/{context}/{job_id}/filtered_res.npy',
+        filtered_results = expand('../../results/experimental_data/{surr_method}/{session}/{context}/filtered_res.npy',
                             surr_method = surr_method,
                             session = sessions,
                             context = contexts)
